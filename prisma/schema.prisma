@@ -1,0 +1,1213 @@
+// Campus Market — Prisma schema
+// Reference: docs/DATABASE_DESIGN.md
+// Conventions: UUID primary keys, UTC timestamps, money stored as integer pesewas,
+// soft deletion via deletedAt, explicit relations, JSON only for snapshots/payloads.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UniversityStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DEACTIVATED
+}
+
+enum SessionRevocationReason {
+  USER_LOGOUT
+  PASSWORD_CHANGED
+  ADMIN_REVOKED
+  EXPIRED
+}
+
+enum StudentVerificationMethod {
+  INSTITUTION_EMAIL
+  STUDENT_ID
+  OFFICIAL_DOCUMENT
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VendorVerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
+enum VendorStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  SUSPENDED
+  CLOSED
+}
+
+enum CategoryType {
+  PRODUCT
+  SERVICE
+}
+
+enum ProductStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  REJECTED
+  OUT_OF_STOCK
+  ARCHIVED
+}
+
+enum ProductCondition {
+  NEW
+  LIKE_NEW
+  USED_GOOD
+  USED_FAIR
+  REFURBISHED
+  NOT_SPECIFIED
+}
+
+enum DeliveryOption {
+  PICKUP
+  CAMPUS_DELIVERY
+  COURIER
+}
+
+enum ReservationStatus {
+  HELD
+  CONSUMED
+  RELEASED
+  EXPIRED
+}
+
+enum CartStatus {
+  ACTIVE
+  CONVERTED
+  ABANDONED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PARTIALLY_FULFILLED
+  FULFILLED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
+enum VendorOrderStatus {
+  PENDING
+  ACCEPTED
+  PREPARING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum FulfillmentType {
+  PICKUP
+  DELIVERY
+}
+
+enum OrderActorType {
+  BUYER
+  VENDOR
+  ADMIN
+  SYSTEM
+}
+
+enum PaymentProvider {
+  PAYSTACK
+  HUBTEL
+  MOCK
+}
+
+enum PaymentStatus {
+  PENDING
+  INITIATED
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CANCELLED
+}
+
+enum PaymentChannel {
+  CARD
+  MOBILE_MONEY
+  BANK_TRANSFER
+  USSD
+  WALLET
+  UNKNOWN
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  PROCESSING
+  COMPLETED
+  REJECTED
+  FAILED
+}
+
+enum LedgerEntryType {
+  SALE
+  REFUND
+  FEE
+  ADJUSTMENT
+  PAYOUT
+  CHARGEBACK
+}
+
+enum LedgerEntryStatus {
+  PENDING
+  AVAILABLE
+  PAYOUT_PROCESSED
+  REVERSED
+}
+
+enum PayoutStatus {
+  SCHEDULED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum CourierType {
+  CAMPUS_RIDER
+  THIRD_PARTY
+  INTERNAL
+}
+
+enum ReviewStatus {
+  PENDING
+  PUBLISHED
+  REJECTED
+  REMOVED
+}
+
+enum ReportTargetType {
+  PRODUCT
+  VENDOR
+  USER
+  ORDER
+  REVIEW
+  MESSAGE
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum DisputeCategory {
+  NOT_RECEIVED
+  NOT_AS_DESCRIBED
+  PAYMENT_ISSUE
+  QUALITY_ISSUE
+  LATE_DELIVERY
+  OTHER
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_BUYER
+  RESOLVED_VENDOR
+  RESOLVED_PARTIAL
+  CLOSED
+}
+
+enum NotificationType {
+  ORDER
+  PAYMENT
+  MESSAGE
+  REVIEW
+  SYSTEM
+  PROMOTION
+  ALERT
+}
+
+enum SupportTicketStatus {
+  OPEN
+  PENDING_CUSTOMER
+  PENDING_AGENT
+  RESOLVED
+  CLOSED
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AnnouncementAudience {
+  ALL
+  BUYERS
+  VENDORS
+  CAMPUS
+}
+
+enum WebhookStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+  IGNORED
+}
+
+// ---------------------------------------------------------------------------
+// Tenancy and identity
+// ---------------------------------------------------------------------------
+
+model University {
+  id        String           @id @default(uuid()) @db.Uuid
+  name      String
+  code      String           @unique
+  country   String           @default("Ghana")
+  status    UniversityStatus @default(ACTIVE)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  campuses Campus[]
+  users    User[]
+
+  @@map("universities")
+}
+
+model Campus {
+  id           String   @id @default(uuid()) @db.Uuid
+  universityId String   @db.Uuid
+  name         String
+  address      String?
+  city         String
+  region       String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  university      University       @relation(fields: [universityId], references: [id], onDelete: Restrict)
+  users           User[]
+  vendorProfiles  VendorProfile[]
+  products        Product[]
+  pickupLocations PickupLocation[]
+  orders          Order[]
+
+  @@index([universityId])
+  @@map("campuses")
+}
+
+model User {
+  id                    String     @id @default(uuid()) @db.Uuid
+  email                 String     @unique @db.VarChar(320)
+  phone                 String?    @db.VarChar(32)
+  passwordHash          String     @db.VarChar(255)
+  fullName              String     @db.VarChar(160)
+  avatarUrl             String?
+  universityId          String?    @db.Uuid
+  campusId              String?    @db.Uuid
+  status                UserStatus @default(PENDING_VERIFICATION)
+  emailVerifiedAt       DateTime?
+  phoneVerifiedAt       DateTime?
+  personalizationOptOut Boolean    @default(false)
+  lastLoginAt           DateTime?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  deletedAt             DateTime?
+
+  university            University?              @relation(fields: [universityId], references: [id], onDelete: SetNull)
+  campus                Campus?                  @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  roles                 UserRole[]
+  sessions              Session[]
+  emailTokens           EmailVerificationToken[]
+  passwordTokens        PasswordResetToken[]
+  studentVerifications  StudentVerification[]
+  reviewedVerifications StudentVerification[]    @relation("StudentVerificationReviewer")
+  preferences           UserPreference?
+  vendorProfile         VendorProfile?
+  orders                Order[]
+  reviews               Review[]
+  messages              Message[]
+  conversations         Conversation[]           @relation("ConversationBuyer")
+  notifications         Notification[]
+  reports               Report[]                 @relation("ReportReporter")
+  assignedReports       Report[]                 @relation("ReportAssignee")
+  disputes              Dispute[]                @relation("DisputeRaisedBy")
+  disputesAgainst       Dispute[]                @relation("DisputeAgainst")
+  assignedDisputes      Dispute[]                @relation("DisputeAssignee")
+  disputeEvidence       DisputeEvidence[]
+  auditLogs             AuditLog[]
+  grantedRoles          UserRole[]               @relation("UserRoleGrantor")
+  supportTickets        SupportTicket[]
+  assignedTickets       SupportTicket[]          @relation("TicketAssignee")
+  announcements         Announcement[]
+  refundsRequested      Refund[]                 @relation("RefundRequester")
+  refundsProcessed      Refund[]                 @relation("RefundProcessor")
+  deliveries            Delivery[]
+  statusHistory         OrderStatusHistory[]
+  platformSettings      PlatformSetting[]
+  searchHistory         SearchHistory[]
+  cart                  Cart?
+  wishlist              Wishlist?
+
+  @@index([campusId, status])
+  @@index([status, createdAt])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(64)
+  description String?
+  createdAt   DateTime @default(now())
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique @db.VarChar(96)
+  description String?
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
+  grantedBy String?  @db.Uuid
+  grantedAt DateTime @default(now())
+
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role    Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  grantor User? @relation("UserRoleGrantor", fields: [grantedBy], references: [id], onDelete: SetNull)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Session {
+  id               String                   @id @default(uuid()) @db.Uuid
+  userId           String                   @db.Uuid
+  tokenHash        String                   @unique @db.VarChar(128)
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  revocationReason SessionRevocationReason?
+  ipAddress        String?                  @db.VarChar(64)
+  userAgent        String?                  @db.VarChar(512)
+  createdAt        DateTime                 @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique @db.VarChar(128)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique @db.VarChar(128)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model StudentVerification {
+  id               String                    @id @default(uuid()) @db.Uuid
+  userId           String                    @db.Uuid
+  method           StudentVerificationMethod
+  institutionEmail String?                   @db.VarChar(320)
+  documentUrl      String?
+  status           VerificationStatus        @default(PENDING)
+  reviewedBy       String?                   @db.Uuid
+  reviewedAt       DateTime?
+  notes            String?
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("StudentVerificationReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@map("student_verifications")
+}
+
+model UserPreference {
+  userId                 String   @id @db.Uuid
+  personalizationEnabled Boolean  @default(true)
+  notificationPrefsJson  Json?
+  locale                 String   @default("en-GH")
+  currency               String   @default("GHS")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+// ---------------------------------------------------------------------------
+// Vendors and catalog
+// ---------------------------------------------------------------------------
+
+model VendorProfile {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  userId             String                   @unique @db.Uuid
+  storeName          String                   @db.VarChar(120)
+  slug               String                   @unique @db.VarChar(140)
+  description        String?
+  logoUrl            String?
+  campusId           String?                  @db.Uuid
+  businessCategory   String?                  @db.VarChar(80)
+  verificationStatus VendorVerificationStatus @default(PENDING)
+  status             VendorStatus             @default(PENDING)
+  ratingAvg          Float                    @default(0)
+  ratingCount        Int                      @default(0)
+  phone              String?                  @db.VarChar(32)
+  whatsapp           String?                  @db.VarChar(32)
+  pickupAvailable    Boolean                  @default(true)
+  deliveryAvailable  Boolean                  @default(false)
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  deletedAt          DateTime?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campus        Campus?        @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  products      Product[]
+  cartItems     CartItem[]
+  vendorOrders  VendorOrder[]
+  reviews       Review[]
+  conversations Conversation[]
+  ledgerEntries LedgerEntry[]
+  payouts       Payout[]
+
+  @@index([campusId, status])
+  @@map("vendor_profiles")
+}
+
+model Category {
+  id        String       @id @default(uuid()) @db.Uuid
+  parentId  String?      @db.Uuid
+  name      String       @db.VarChar(120)
+  slug      String       @unique @db.VarChar(140)
+  type      CategoryType @default(PRODUCT)
+  iconUrl   String?
+  sortOrder Int          @default(0)
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@index([parentId, sortOrder])
+  @@map("categories")
+}
+
+model Product {
+  id                   String           @id @default(uuid()) @db.Uuid
+  vendorId             String           @db.Uuid
+  categoryId           String           @db.Uuid
+  name                 String           @db.VarChar(180)
+  slug                 String           @unique @db.VarChar(200)
+  description          String?
+  pricePesewas         Int
+  originalPricePesewas Int?
+  condition            ProductCondition @default(NOT_SPECIFIED)
+  quantity             Int              @default(0)
+  reservedQuantity     Int              @default(0)
+  status               ProductStatus    @default(DRAFT)
+  campusId             String?          @db.Uuid
+  deliveryOptions      DeliveryOption[] @default([])
+  pickupAvailable      Boolean          @default(true)
+  tags                 String[]         @default([])
+  viewsCount           Int              @default(0)
+  ratingAvg            Float            @default(0)
+  ratingCount          Int              @default(0)
+  publishedAt          DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  deletedAt            DateTime?
+
+  vendor           VendorProfile          @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  category         Category               @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  campus           Campus?                @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  images           ProductImage[]
+  variants         ProductVariant[]
+  cartItems        CartItem[]
+  wishlistItems    WishlistItem[]
+  orderItems       OrderItem[]
+  reservations     InventoryReservation[]
+  reviews          Review[]
+  featuredListings FeaturedListing[]
+  conversations    Conversation[]
+
+  @@index([status, campusId, categoryId, createdAt])
+  @@index([status, pricePesewas])
+  @@index([vendorId, status])
+  @@map("products")
+}
+
+model ProductImage {
+  id              String   @id @default(uuid()) @db.Uuid
+  productId       String   @db.Uuid
+  url             String
+  storagePublicId String?
+  altText         String?  @db.VarChar(160)
+  sortOrder       Int      @default(0)
+  width           Int?
+  height          Int?
+  createdAt       DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, sortOrder])
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id                String   @id @default(uuid()) @db.Uuid
+  productId         String   @db.Uuid
+  name              String   @db.VarChar(120)
+  sku               String?  @unique @db.VarChar(80)
+  priceDeltaPesewas Int      @default(0)
+  stock             Int      @default(0)
+  attributesJson    Json?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  product      Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  reservations InventoryReservation[]
+
+  @@index([productId, isActive])
+  @@map("product_variants")
+}
+
+model InventoryReservation {
+  id        String            @id @default(uuid()) @db.Uuid
+  orderId   String            @db.Uuid
+  productId String            @db.Uuid
+  variantId String?           @db.Uuid
+  quantity  Int
+  expiresAt DateTime
+  status    ReservationStatus @default(HELD)
+  createdAt DateTime          @default(now())
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  product Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@index([productId, status])
+  @@index([expiresAt, status])
+  @@map("inventory_reservations")
+}
+
+model FeaturedListing {
+  id        String    @id @default(uuid()) @db.Uuid
+  productId String    @db.Uuid
+  startsAt  DateTime
+  endsAt    DateTime?
+  position  Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([isActive, position])
+  @@map("featured_listings")
+}
+
+// ---------------------------------------------------------------------------
+// Commerce
+// ---------------------------------------------------------------------------
+
+model Cart {
+  id         String     @id @default(uuid()) @db.Uuid
+  userId     String?    @unique @db.Uuid
+  guestToken String?    @unique @db.VarChar(128)
+  status     CartStatus @default(ACTIVE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([status, updatedAt])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  cartId    String   @db.Uuid
+  productId String   @db.Uuid
+  variantId String?  @db.Uuid
+  vendorId  String   @db.Uuid
+  quantity  Int      @default(1)
+  addedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  vendor  VendorProfile   @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, productId, variantId])
+  @@index([vendorId])
+  @@map("cart_items")
+}
+
+model Wishlist {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  createdAt DateTime @default(now())
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items WishlistItem[]
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  wishlistId String   @db.Uuid
+  productId  String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  wishlist Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistId, productId])
+  @@map("wishlist_items")
+}
+
+model Order {
+  id                   String         @id @default(uuid()) @db.Uuid
+  orderNumber          String         @unique @db.VarChar(32)
+  buyerId              String         @db.Uuid
+  status               OrderStatus    @default(PENDING_PAYMENT)
+  subtotalPesewas      Int
+  deliveryTotalPesewas Int            @default(0)
+  totalPesewas         Int
+  currency             String         @default("GHS")
+  deliveryMethod       DeliveryOption
+  deliveryAddressJson  Json?
+  campusId             String?        @db.Uuid
+  notes                String?
+  idempotencyKey       String         @unique @db.VarChar(128)
+  placedAt             DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  deletedAt            DateTime?
+
+  buyer         User                   @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+  campus        Campus?                @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  vendorOrders  VendorOrder[]
+  payments      Payment[]
+  disputes      Dispute[]
+  statusHistory OrderStatusHistory[]
+  reservations  InventoryReservation[]
+
+  @@index([buyerId, placedAt])
+  @@index([status, placedAt])
+  @@map("orders")
+}
+
+model VendorOrder {
+  id                 String            @id @default(uuid()) @db.Uuid
+  orderId            String            @db.Uuid
+  vendorId           String            @db.Uuid
+  status             VendorOrderStatus @default(PENDING)
+  subtotalPesewas    Int
+  deliveryFeePesewas Int               @default(0)
+  totalPesewas       Int
+  fulfillmentType    FulfillmentType
+  pickupLocationId   String?           @db.Uuid
+  trackingCode       String?           @db.VarChar(64)
+  notes              String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  order          Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  vendor         VendorProfile        @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  pickupLocation PickupLocation?      @relation(fields: [pickupLocationId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+  deliveries     Delivery[]
+  ledgerEntries  LedgerEntry[]
+
+  @@index([vendorId, status, createdAt])
+  @@index([orderId])
+  @@map("vendor_orders")
+}
+
+model OrderItem {
+  id                  String   @id @default(uuid()) @db.Uuid
+  vendorOrderId       String   @db.Uuid
+  productId           String?  @db.Uuid
+  variantId           String?  @db.Uuid
+  titleSnapshot       String   @db.VarChar(200)
+  unitPricePesewas    Int
+  quantity            Int
+  lineTotalPesewas    Int
+  productSnapshotJson Json?
+  createdAt           DateTime @default(now())
+
+  vendorOrder VendorOrder     @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+  product     Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  review      Review?
+
+  @@index([vendorOrderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id            String         @id @default(uuid()) @db.Uuid
+  orderId       String         @db.Uuid
+  vendorOrderId String?        @db.Uuid
+  fromStatus    String?        @db.VarChar(48)
+  toStatus      String         @db.VarChar(48)
+  actorId       String?        @db.Uuid
+  actorType     OrderActorType @default(SYSTEM)
+  reason        String?
+  createdAt     DateTime       @default(now())
+
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  vendorOrder VendorOrder? @relation(fields: [vendorOrderId], references: [id], onDelete: Cascade)
+  actor       User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@map("order_status_history")
+}
+
+// ---------------------------------------------------------------------------
+// Payments and fulfilment
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id                String          @id @default(uuid()) @db.Uuid
+  orderId           String          @db.Uuid
+  provider          PaymentProvider
+  providerReference String          @unique @db.VarChar(120)
+  amountPesewas     Int
+  currency          String          @default("GHS")
+  status            PaymentStatus   @default(PENDING)
+  channel           PaymentChannel  @default(UNKNOWN)
+  paidAt            DateTime?
+  rawPayloadJson    Json?
+  idempotencyKey    String          @unique @db.VarChar(128)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  refunds Refund[]
+
+  @@index([orderId, status])
+  @@index([status, createdAt])
+  @@map("payments")
+}
+
+model Refund {
+  id                String       @id @default(uuid()) @db.Uuid
+  paymentId         String       @db.Uuid
+  amountPesewas     Int
+  status            RefundStatus @default(REQUESTED)
+  reason            String?
+  providerReference String?      @db.VarChar(120)
+  requestedById     String?      @db.Uuid
+  processedById     String?      @db.Uuid
+  processedAt       DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  payment     Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  requestedBy User?   @relation("RefundRequester", fields: [requestedById], references: [id], onDelete: SetNull)
+  processedBy User?   @relation("RefundProcessor", fields: [processedById], references: [id], onDelete: SetNull)
+
+  @@index([paymentId, status])
+  @@map("refunds")
+}
+
+model LedgerEntry {
+  id            String            @id @default(uuid()) @db.Uuid
+  vendorId      String            @db.Uuid
+  vendorOrderId String?           @db.Uuid
+  type          LedgerEntryType
+  grossPesewas  Int
+  feePesewas    Int               @default(0)
+  netPesewas    Int
+  status        LedgerEntryStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  vendorOrder VendorOrder?  @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+
+  @@index([vendorId, createdAt])
+  @@index([vendorOrderId])
+  @@map("ledger_entries")
+}
+
+model Payout {
+  id                String       @id @default(uuid()) @db.Uuid
+  vendorId          String       @db.Uuid
+  periodStart       DateTime
+  periodEnd         DateTime
+  amountPesewas     Int
+  status            PayoutStatus @default(SCHEDULED)
+  providerReference String?      @db.VarChar(120)
+  processedAt       DateTime?
+  createdAt         DateTime     @default(now())
+
+  vendor VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+
+  @@index([vendorId, status])
+  @@map("payouts")
+}
+
+model Delivery {
+  id            String         @id @default(uuid()) @db.Uuid
+  vendorOrderId String         @db.Uuid
+  courierType   CourierType    @default(CAMPUS_RIDER)
+  courierUserId String?        @db.Uuid
+  status        DeliveryStatus @default(PENDING)
+  trackingCode  String?        @db.VarChar(64)
+  proofUrl      String?
+  deliveredAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  vendorOrder VendorOrder @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+  courier     User?       @relation(fields: [courierUserId], references: [id], onDelete: SetNull)
+
+  @@index([vendorOrderId, status])
+  @@map("deliveries")
+}
+
+model PickupLocation {
+  id           String   @id @default(uuid()) @db.Uuid
+  campusId     String   @db.Uuid
+  name         String   @db.VarChar(120)
+  address      String
+  instructions String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campus       Campus        @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  vendorOrders VendorOrder[]
+
+  @@index([campusId, isActive])
+  @@map("pickup_locations")
+}
+
+// ---------------------------------------------------------------------------
+// Trust, communication, administration
+// ---------------------------------------------------------------------------
+
+model Review {
+  id               String       @id @default(uuid()) @db.Uuid
+  orderItemId      String       @unique @db.Uuid
+  productId        String?      @db.Uuid
+  buyerId          String       @db.Uuid
+  vendorId         String       @db.Uuid
+  rating           Int
+  comment          String?
+  status           ReviewStatus @default(PENDING)
+  verifiedPurchase Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
+
+  orderItem OrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  product   Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  buyer     User          @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+  vendor    VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+
+  @@index([productId, status, createdAt])
+  @@index([vendorId, status])
+  @@map("reviews")
+}
+
+model Conversation {
+  id            String   @id @default(uuid()) @db.Uuid
+  buyerId       String   @db.Uuid
+  vendorId      String   @db.Uuid
+  productId     String?  @db.Uuid
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  buyer    User          @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  vendor   VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  product  Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  messages Message[]
+
+  @@unique([buyerId, vendorId, productId])
+  @@index([buyerId, lastMessageAt])
+  @@index([vendorId, lastMessageAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String    @id @default(uuid()) @db.Uuid
+  conversationId String    @db.Uuid
+  senderId       String    @db.Uuid
+  body           String
+  readAt         DateTime?
+  flagged        Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  type      NotificationType
+  title     String           @db.VarChar(160)
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+model Report {
+  id           String           @id @default(uuid()) @db.Uuid
+  reporterId   String           @db.Uuid
+  targetType   ReportTargetType
+  targetId     String           @db.Uuid
+  reason       String           @db.VarChar(120)
+  details      String?
+  status       ReportStatus     @default(OPEN)
+  assignedToId String?          @db.Uuid
+  resolution   String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  reporter User  @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Restrict)
+  assignee User? @relation("ReportAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@map("reports")
+}
+
+model Dispute {
+  id            String          @id @default(uuid()) @db.Uuid
+  orderId       String          @db.Uuid
+  raisedById    String          @db.Uuid
+  againstUserId String?         @db.Uuid
+  category      DisputeCategory
+  description   String
+  status        DisputeStatus   @default(OPEN)
+  resolution    String?
+  assignedToId  String?         @db.Uuid
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  order       Order             @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  raisedBy    User              @relation("DisputeRaisedBy", fields: [raisedById], references: [id], onDelete: Restrict)
+  againstUser User?             @relation("DisputeAgainst", fields: [againstUserId], references: [id], onDelete: SetNull)
+  assignee    User?             @relation("DisputeAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  evidence    DisputeEvidence[]
+
+  @@index([status, createdAt])
+  @@index([orderId])
+  @@map("disputes")
+}
+
+model DisputeEvidence {
+  id         String   @id @default(uuid()) @db.Uuid
+  disputeId  String   @db.Uuid
+  uploaderId String   @db.Uuid
+  fileUrl    String
+  note       String?
+  createdAt  DateTime @default(now())
+
+  dispute  Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  uploader User    @relation(fields: [uploaderId], references: [id], onDelete: Restrict)
+
+  @@index([disputeId])
+  @@map("dispute_evidence")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String   @db.VarChar(96)
+  entityType String   @db.VarChar(64)
+  entityId   String   @db.VarChar(64)
+  beforeJson Json?
+  afterJson  Json?
+  ipAddress  String?  @db.VarChar(64)
+  userAgent  String?  @db.VarChar(512)
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model PlatformSetting {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique @db.VarChar(96)
+  valueJson   Json
+  updatedById String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  updatedBy User? @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@map("platform_settings")
+}
+
+model Announcement {
+  id          String               @id @default(uuid()) @db.Uuid
+  title       String               @db.VarChar(160)
+  body        String
+  audience    AnnouncementAudience @default(ALL)
+  status      AnnouncementStatus   @default(DRAFT)
+  publishedAt DateTime?
+  createdById String?              @db.Uuid
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([status, publishedAt])
+  @@map("announcements")
+}
+
+model SupportTicket {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String              @db.Uuid
+  subject      String              @db.VarChar(180)
+  body         String
+  status       SupportTicketStatus @default(OPEN)
+  assignedToId String?             @db.Uuid
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  user     User  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  assignee User? @relation("TicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("support_tickets")
+}
+
+model SearchHistory {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String?  @db.Uuid
+  query       String   @db.VarChar(200)
+  filtersJson Json?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("search_history")
+}
+
+model WebhookEvent {
+  id          String        @id @default(uuid()) @db.Uuid
+  provider    String        @db.VarChar(48)
+  eventId     String        @db.VarChar(160)
+  payloadJson Json
+  status      WebhookStatus @default(RECEIVED)
+  processedAt DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@unique([provider, eventId])
+  @@index([status, createdAt])
+  @@map("webhook_events")
+}
