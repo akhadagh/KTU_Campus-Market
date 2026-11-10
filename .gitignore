@@ -56,3 +56,4 @@ google-services.json
 *.hprof
 
 /lib/generated/prisma
+.neon

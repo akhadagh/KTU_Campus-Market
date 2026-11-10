@@ -13,8 +13,12 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    // Migrations run against the direct (non-pooled) URL when provided
-    // (Neon pooled connections do not support transactional migrations).
-    url: process.env["DIRECT_URL"] || process.env["DATABASE_URL"],
+    // Migrations run against the direct (non-pooled) connection:
+    // Neon exposes it as DATABASE_URL_UNPOOLED; other hosts may use DIRECT_URL.
+    // Pooled (PgBouncer) connections do not support transactional migrations.
+    url:
+      process.env["DATABASE_URL_UNPOOLED"] ||
+      process.env["DIRECT_URL"] ||
+      process.env["DATABASE_URL"],
   },
 });
