@@ -13,7 +13,7 @@
 | M0-01 | Install Node.js 22 LTS and pnpm | — | D |
 | M0-02 | Scaffold Next.js + TypeScript + Tailwind | M0-01 | D |
 | M0-03 | Configure ESLint, Prettier, strict TypeScript | M0-02 | D |
-| M0-04 | Provision PostgreSQL and configure Prisma | M0-02 | IP |
+| M0-04 | Provision PostgreSQL and configure Prisma | M0-02 | D |
 | M0-05 | Create `.env.example` and environment validation | M0-02 | D |
 | M0-06 | Add GitHub Actions lint/typecheck/test/build | M0-02 | D |
 | M0-07 | Rewrite README to approved architecture | — | D |
@@ -48,8 +48,8 @@
 
 | ID | Task | Depends on | Status |
 |---|---|---|---|
-| M3-01 | Auth/user/role/permission schema and migrations | M0-04 | IP |
-| M3-02 | Seed universities, campuses, roles, permissions | M3-01 | IP |
+| M3-01 | Auth/user/role/permission schema and migrations | M0-04 | D |
+| M3-02 | Seed universities, campuses, roles, permissions | M3-01 | D |
 | M3-03 | Registration and server validation | M3-02 | NS |
 | M3-04 | Email verification | M3-03 | NS |
 | M3-05 | Login, logout, session management | M3-03 | NS |
@@ -179,8 +179,10 @@
 
 | Item | Impact | Resolution needed |
 |---|---|---|
-| GitHub remote requires credentials | Cannot push from this machine (no SSH key, token, or credential helper configured) | Provide a Personal Access Token, register an SSH key, or push manually |
-| PostgreSQL not installed | Cannot run migrations locally (no sudo access, no container runtime) | Provide a database URL, install with sudo, or run a managed PostgreSQL |
-| Payment/storage/AI credentials | Cannot enable external integrations | Provide keys or run with features disabled |
+| Payment/storage/AI/email credentials | Cannot enable external integrations | Provide keys or run with features disabled |
 
-**Resolved:** Node.js 22.23.4 and pnpm 10.34.9 are installed; Prisma 7.10.1 is configured with schema, offline migration SQL, and seed script (not yet applied — no database).
+**Resolved:**
+- Node.js 22.23.4 and pnpm 10.34.9 installed locally.
+- Prisma 7.10.1 configured; migration `0001_init` (46 tables) applied to Neon branch `production`; seed applied and connectivity verified (`pnpm db:verify`).
+- GitHub SSH access configured; pushes to `akhadagh/KTU_Campus-Market` confirmed.
+- Deployed to Vercel with Neon wired; `https://campus-market-teal.vercel.app/api/health` reports `database: ok`.

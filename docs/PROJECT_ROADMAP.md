@@ -10,7 +10,7 @@ This roadmap is the approved implementation plan for Campus Market. Work proceed
 
 | Milestone | Name | Status |
 |---|---|---|
-| M0 | Environment and repository foundation | In Progress |
+| M0 | Environment and repository foundation | Completed |
 | M1 | Documentation and architecture approval | Completed |
 | M2 | Design system and UI foundation | In Progress |
 | M3 | Database, authentication, and users | In Progress |
