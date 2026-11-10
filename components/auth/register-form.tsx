@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,6 +31,7 @@ const schema = z
 type Values = z.infer<typeof schema>;
 
 export function RegisterForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -47,12 +49,36 @@ export function RegisterForm() {
     },
   });
 
-  async function onSubmit() {
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    toast.info("Registration is not connected yet", {
-      description:
-        "The account database and email verification are implemented in Milestone 3. No account was created.",
-    });
+  async function onSubmit(values: Values) {
+    try {
+      const res = await fetch("/api/v1/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          password: values.password,
+        }),
+      });
+      const json = (await res.json()) as {
+        data?: { user: { fullName: string } };
+        error?: { message?: string; fields?: Record<string, string> };
+      };
+      if (!res.ok) {
+        toast.error(json.error?.message ?? "Could not create your account", {
+          description: json.error?.fields?.email ?? "Fix the highlighted fields and try again.",
+        });
+        return;
+      }
+      toast.success(`Account created. Welcome, ${json.data?.user.fullName ?? "student"}!`);
+      router.push("/account");
+      router.refresh();
+    } catch {
+      toast.error("Could not reach the server", {
+        description: "Check your connection and try again.",
+      });
+    }
   }
 
   return (

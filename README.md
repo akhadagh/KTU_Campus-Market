@@ -4,7 +4,7 @@
 
 Campus Market is a mobile-first, multi-vendor marketplace for university communities, launching at Koforidua Technical University (KTU), Ghana. Students can discover products, buy from verified campus vendors, open their own stores, manage orders, and get help from an AI shopping assistant grounded in real marketplace listings.
 
-> **Project status:** Milestone 0 — environment and foundation. The repository currently contains documentation only. No production features are implemented yet. This README will be updated as milestones complete.
+> **Project status:** Milestone 3 — database, authentication, and users. The UI foundation is complete and real registration, login, sessions, and logout run against the Neon PostgreSQL database. Email verification and password reset await an email provider.
 
 ---
 
@@ -70,8 +70,10 @@ The application will be available at `http://localhost:3000`.
 ### Current status
 
 - Working: full marketing/shop/auth UI, 26 routes, health endpoint, lint/typecheck/build green.
-- Database: Prisma schema (46 tables), initial migration SQL, and seed script are committed; migrations have **not** been applied because no PostgreSQL database is reachable in this environment.
-- Not yet implemented: real authentication, payments, messaging, AI, admin. Auth screens validate input but do not create accounts.
+- Database: Prisma schema (46 tables), migration `0001_init`, and seed applied to Neon PostgreSQL; `pnpm db:verify` and `/api/health` prove connectivity.
+- Auth: registration, login, logout, session cookies, route protection, and rate limiting verified end to end against Neon.
+- Deployed: https://campus-market-teal.vercel.app
+- Not yet implemented: email verification/password reset (needs email provider), payments, messaging, AI, admin dashboards.
 
 ### Required environment
 

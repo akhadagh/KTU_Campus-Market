@@ -17,8 +17,9 @@ export default function ForgotPasswordPage() {
         Enter the email address associated with your account.
       </p>
 
-      <Alert variant="info" title="Recovery preview" className="mt-6">
-        Password recovery is implemented in Milestone 3. No reset email is sent yet.
+      <Alert variant="info" title="Email delivery pending" className="mt-6">
+        Password recovery needs an email provider. No reset email is sent yet — this form will go
+        live as soon as one is connected.
       </Alert>
 
       <div className="mt-6">

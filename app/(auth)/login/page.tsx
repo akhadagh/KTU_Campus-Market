@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Alert } from "@/components/ui/alert";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
@@ -14,11 +13,6 @@ export default function LoginPage() {
       <p className="mt-2 text-sm leading-6 text-neutral-600">
         Log in to manage orders, messages, your store, and your account.
       </p>
-
-      <Alert variant="info" title="Authentication preview" className="mt-6">
-        The account backend is implemented in Milestone 3. Form validation is active, but no login
-        is performed yet.
-      </Alert>
 
       <div className="mt-6">
         <LoginForm />

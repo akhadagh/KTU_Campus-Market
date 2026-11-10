@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,6 +18,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export function LoginForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -26,12 +28,33 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
   });
 
-  async function onSubmit() {
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    toast.info("Authentication is not connected yet", {
-      description:
-        "The account backend is implemented in Milestone 3. No login was performed and no credentials were stored.",
-    });
+  async function onSubmit(values: Values) {
+    try {
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const json = (await res.json()) as {
+        data?: { user: { fullName: string } };
+        error?: { message?: string };
+      };
+      if (!res.ok) {
+        toast.error(json.error?.message ?? "Unable to log in", {
+          description: "Check your email and password and try again.",
+        });
+        return;
+      }
+      const next = new URLSearchParams(window.location.search).get("next");
+      const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/account";
+      toast.success(`Welcome back, ${json.data?.user.fullName ?? "student"}`);
+      router.push(target);
+      router.refresh();
+    } catch {
+      toast.error("Could not reach the server", {
+        description: "Check your connection and try again.",
+      });
+    }
   }
 
   return (

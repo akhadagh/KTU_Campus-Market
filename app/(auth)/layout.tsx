@@ -13,6 +13,12 @@ const points = [
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
+      <a
+        href="#main-content"
+        className="focus:bg-brand-900 sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:px-4 focus:py-2 focus:text-white"
+      >
+        Skip to content
+      </a>
       <aside className="bg-brand-900 hidden flex-col justify-between p-10 text-white lg:flex">
         <Link href="/" className="flex items-center gap-2" aria-label="Campus Market home">
           <BrandMark />
@@ -26,9 +32,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <p className="text-brand-100 text-sm font-medium">
             Everything you need. Right around campus.
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+          <p className="mt-3 text-3xl font-semibold tracking-tight">
             Buy and sell with the campus community.
-          </h1>
+          </p>
           <ul className="mt-8 space-y-4">
             {points.map((point) => {
               const Icon = point.icon;
@@ -48,12 +54,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex items-center justify-center px-4 py-10 sm:px-6">
-        <div className="w-full max-w-md">
+        <main id="main-content" className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
             <Logo />
           </div>
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

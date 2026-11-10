@@ -78,16 +78,18 @@ The server stores the key with a unique constraint and returns the original resu
 
 ## 2. Authentication
 
-| Method | Path | Description |
-|---|---|---|
-| POST | `/auth/register` | Create an account |
-| POST | `/auth/login` | Log in |
-| POST | `/auth/logout` | Revoke session |
-| GET | `/auth/session` | Current session and user |
-| POST | `/auth/verify-email` | Verify email with token |
-| POST | `/auth/resend-verification` | Resend verification |
-| POST | `/auth/forgot-password` | Request reset |
-| POST | `/auth/reset-password` | Reset with token |
+Session cookie: `cm_session` — `HttpOnly`, `SameSite=Lax`, `Secure` in production, 30-day expiry. Tokens are random 256-bit values; only their SHA-256 hash is stored in `sessions`.
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| POST | `/auth/register` | Implemented | Create an account and start a session |
+| POST | `/auth/login` | Implemented | Log in |
+| POST | `/auth/logout` | Implemented | Revoke session and clear cookie |
+| GET | `/auth/session` | Implemented | Current session and user |
+| POST | `/auth/verify-email` | Blocked (email provider) | Verify email with token |
+| POST | `/auth/resend-verification` | Blocked (email provider) | Resend verification |
+| POST | `/auth/forgot-password` | Blocked (email provider) | Request reset |
+| POST | `/auth/reset-password` | Blocked (email provider) | Reset with token |
 
 Example registration body:
 
@@ -96,11 +98,43 @@ Example registration body:
   "fullName": "Ama Mensah",
   "email": "ama@example.com",
   "phone": "+233200000000",
-  "password": "strong-password",
-  "universityId": "uuid",
-  "campusId": "uuid"
+  "password": "strong-password"
 }
 ```
+
+Register response (`201`, sets cookie):
+
+```json
+{
+  "data": {
+    "user": {
+      "id": "uuid",
+      "fullName": "Ama Mensah",
+      "email": "ama@example.com",
+      "phone": "+233200000000",
+      "status": "ACTIVE",
+      "emailVerifiedAt": null,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  },
+  "error": null,
+  "meta": null
+}
+```
+
+Login body: `{ "email": "...", "password": "..." }` → `200` with the same `user` shape. Logout returns `{ "data": { "loggedOut": true } }`. Session returns `{ "data": { "user": ... } }` or `{ "data": { "user": null } }`.
+
+Auth error behaviour:
+
+| Case | Status | Code |
+|---|---|---|
+| Invalid input | 422 | `VALIDATION_ERROR` (with `fields`) |
+| Duplicate email | 409 | `CONFLICT` |
+| Wrong email/password | 401 | `AUTH_REQUIRED` (generic message) |
+| Suspended/banned account | 403 | `FORBIDDEN` |
+| Too many attempts (10/min/IP) | 429 | `RATE_LIMITED` |
+
+Protected routes (`/account`, `/orders`, `/messages`, `/notifications`, `/sell`, `/wishlist`) redirect guests to `/login?next=<path>` and re-check the session server-side.
 
 ---
 

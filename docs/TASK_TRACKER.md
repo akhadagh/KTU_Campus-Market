@@ -42,7 +42,7 @@
 | M2-05 | Build loading, empty, error, and toast states | M2-04 | D |
 | M2-06 | Build homepage sections | M2-03, M2-04 | D |
 | M2-07 | Build auth screens visually | M2-04 | D |
-| M2-08 | Accessibility baseline audit | M2-06 | IP |
+| M2-08 | Accessibility baseline audit | M2-06 | D |
 
 ## Milestone 3 — Database, auth, users
 
@@ -50,10 +50,10 @@
 |---|---|---|---|
 | M3-01 | Auth/user/role/permission schema and migrations | M0-04 | D |
 | M3-02 | Seed universities, campuses, roles, permissions | M3-01 | D |
-| M3-03 | Registration and server validation | M3-02 | NS |
-| M3-04 | Email verification | M3-03 | NS |
-| M3-05 | Login, logout, session management | M3-03 | NS |
-| M3-06 | Password reset | M3-05 | NS |
+| M3-03 | Registration and server validation | M3-02 | D |
+| M3-04 | Email verification | M3-03 | BL |
+| M3-05 | Login, logout, session management | M3-03 | D |
+| M3-06 | Password reset | M3-05 | BL |
 | M3-07 | Profile, preferences, account settings | M3-05 | NS |
 | M3-08 | RBAC guards and tests | M3-02 | NS |
 | M3-09 | Student verification submission and review | M3-07 | NS |
@@ -179,10 +179,13 @@
 
 | Item | Impact | Resolution needed |
 |---|---|---|
-| Payment/storage/AI/email credentials | Cannot enable external integrations | Provide keys or run with features disabled |
+| Email provider credentials | Email verification (M3-04) and password reset (M3-06) cannot deliver tokens | Provide SMTP/Resend keys; endpoints and tokens already exist in the schema |
+| Payment/storage/AI credentials | Cannot enable external integrations | Provide keys or run with features disabled |
 
 **Resolved:**
 - Node.js 22.23.4 and pnpm 10.34.9 installed locally.
 - Prisma 7.10.1 configured; migration `0001_init` (46 tables) applied to Neon branch `production`; seed applied and connectivity verified (`pnpm db:verify`).
 - GitHub SSH access configured; pushes to `akhadagh/KTU_Campus-Market` confirmed.
 - Deployed to Vercel with Neon wired; `https://campus-market-teal.vercel.app/api/health` reports `database: ok`.
+- Real auth verified end to end against Neon: register → session → protected `/account` → logout → login, duplicate registration (409), wrong password (401), rate limiting (429), and unauthenticated redirects.
+- Accessibility baseline applied: skip links and `<main>` landmarks on all shells, focus-visible outlines, reduced-motion support, labeled icon controls, single `h1` per page.

@@ -17,9 +17,9 @@ export default function ResetPasswordPage() {
         Use a strong password you do not reuse on another site.
       </p>
 
-      <Alert variant="info" title="Reset preview" className="mt-6">
-        Password reset tokens and session revocation are implemented in Milestone 3. No password is
-        changed yet.
+      <Alert variant="info" title="Email delivery pending" className="mt-6">
+        Reset links are delivered by email. Until an email provider is connected, no reset link is
+        issued and no password is changed.
       </Alert>
 
       <div className="mt-6">

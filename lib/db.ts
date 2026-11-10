@@ -1,5 +1,11 @@
+import net from "node:net";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/lib/generated/prisma/client";
+
+// High-RTT networks need more than Node's default 250ms happy-eyeballs attempt
+// window or fresh pool connections fail with sporadic ETIMEDOUT.
+net.setDefaultAutoSelectFamily(true);
+net.setDefaultAutoSelectFamilyAttemptTimeout(3_000);
 
 function resolveConnectionString(): string {
   const configured = process.env["DATABASE_URL"];

@@ -78,6 +78,8 @@ This roadmap is the approved implementation plan for Campus Market. Work proceed
 
 ## Milestone 2 — Design system and UI foundation
 
+**Status:** Completed — UI foundation and accessibility baseline in place.
+
 **Objective:** establish a professional, consistent, accessible visual foundation.
 
 **Tasks**
@@ -104,6 +106,8 @@ This roadmap is the approved implementation plan for Campus Market. Work proceed
 ---
 
 ## Milestone 3 — Database, authentication, and users
+
+**Status:** In progress — registration, login, logout, sessions verified end to end; email verification and password reset blocked on email provider.
 
 **Objective:** secure account and identity foundation.
 
