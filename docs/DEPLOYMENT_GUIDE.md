@@ -47,18 +47,22 @@ Copy `.env.example` and configure per environment. Never commit real values.
 
 ---
 
-## 3. Database setup
+## 3. Database setup (Neon)
 
-1. Create a PostgreSQL database.
-2. Set `DATABASE_URL` and `DIRECT_URL`.
-3. Run migrations:
+1. Create a Neon project and database (`campus_market`).
+2. Copy both connection strings from the Neon console:
+   - **Pooled** endpoint → `DATABASE_URL` (application runtime).
+   - **Direct** endpoint → `DIRECT_URL` (migrations).
+   - Both must include `sslmode=require`.
+3. Run migrations against the direct URL:
 
 ```bash
-pnpm prisma migrate deploy
+DIRECT_URL=... pnpm db:deploy
 ```
 
 4. Seed reference data (universities, campuses, roles, permissions, categories) using a production-safe seed command.
 5. Do not seed sample vendors/products in production unless explicitly labeled and approved.
+6. Recommended: connect Neon to Vercel with the Neon Vercel integration so each preview branch gets an isolated database.
 
 ### Backups
 
@@ -132,7 +136,7 @@ pnpm prisma migrate deploy
 
 ---
 
-## 8. Build and deploy
+## 8. Build and deploy (Vercel)
 
 ```bash
 pnpm install --frozen-lockfile
@@ -144,13 +148,22 @@ pnpm build
 
 Deploy to Vercel:
 
-1. Import the repository.
-2. Set environment variables for Preview and Production.
-3. Configure the build command (`pnpm build`) and install command.
+1. Import the GitHub repository (Vercel auto-detects Next.js and pnpm from `package.json`).
+2. Node version: 22 (from `engines`); install command `pnpm install --frozen-lockfile`;
+   build command `pnpm build`.
+3. Set environment variables for Preview and Production (`DATABASE_URL`, `DIRECT_URL`,
+   `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL`, plus optional integrations).
 4. Deploy to a preview environment first.
-5. Run database migrations against the preview database.
+5. Run `pnpm db:deploy` against the preview database (direct URL).
 6. Verify critical journeys.
 7. Promote to production.
+
+Notes:
+
+- The Prisma client is generated during `postinstall` (`pnpm install`), so no extra
+  build step is required on Vercel.
+- Migrations are never run automatically at build time; run them from CI or locally
+  with `pnpm db:deploy`.
 
 ---
 
