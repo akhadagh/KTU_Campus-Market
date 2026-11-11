@@ -17,6 +17,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       id: true,
       buyerId: true,
       vendorId: true,
+      kind: true,
+      subject: true,
       product: { select: { name: true, slug: true } },
       vendor: { select: { storeName: true, slug: true } },
     },
@@ -26,7 +28,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const isBuyer = conversation.buyerId === guard.auth.user.id;
   const isVendorOwner =
     conversation.vendorId === guard.auth.vendorId && guard.auth.vendorStatus === "ACTIVE";
-  if (!isBuyer && !isVendorOwner) {
+  const isStaff =
+    guard.auth.permissions.has("report.review") || guard.auth.permissions.has("user.manage");
+  const isSupportThread = conversation.kind === "SUPPORT";
+  if (!isBuyer && !isVendorOwner && !(isSupportThread && isStaff)) {
     return fail("FORBIDDEN", "You cannot read this conversation.", 403);
   }
 
@@ -51,8 +56,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   return ok({
     conversation: {
       id: conversation.id,
-      vendorName: conversation.vendor.storeName,
-      vendorSlug: conversation.vendor.slug,
+      kind: conversation.kind,
+      subject: conversation.subject,
+      vendorName:
+        conversation.kind === "SUPPORT"
+          ? "JUMART Support"
+          : (conversation.vendor?.storeName ?? "Marketplace seller"),
+      vendorSlug: conversation.vendor?.slug ?? null,
       productName: conversation.product?.name ?? null,
       productSlug: conversation.product?.slug ?? null,
     },
@@ -74,13 +84,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const conversation = await prisma.conversation.findUnique({
     where: { id },
-    select: { id: true, buyerId: true, vendorId: true },
+    select: { id: true, buyerId: true, vendorId: true, kind: true },
   });
   if (!conversation) return fail("NOT_FOUND", "Conversation not found.", 404);
 
   const isBuyer = conversation.buyerId === guard.auth.user.id;
   const isVendorOwner = conversation.vendorId === guard.auth.vendorId;
-  if (!isBuyer && !isVendorOwner) {
+  const isStaff =
+    guard.auth.permissions.has("report.review") || guard.auth.permissions.has("user.manage");
+  const isSupportThread = conversation.kind === "SUPPORT";
+  if (!isBuyer && !isVendorOwner && !(isSupportThread && isStaff)) {
     return fail("FORBIDDEN", "You cannot post in this conversation.", 403);
   }
 
@@ -100,12 +113,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   await prisma.conversation.update({ where: { id }, data: { lastMessageAt: new Date() } });
 
   const recipientId = isBuyer
-    ? (
-        await prisma.vendorProfile.findUnique({
-          where: { id: conversation.vendorId },
-          select: { userId: true },
-        })
-      )?.userId
+    ? conversation.vendorId
+      ? (
+          await prisma.vendorProfile.findUnique({
+            where: { id: conversation.vendorId },
+            select: { userId: true },
+          })
+        )?.userId
+      : undefined
     : conversation.buyerId;
   if (recipientId) {
     await createNotification({

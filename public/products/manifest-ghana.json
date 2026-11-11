@@ -1,0 +1,230 @@
+{
+  "a3-drawing-sheet-pack": {
+    "main": "public/products/a3-drawing-sheet-pack.jpg",
+    "second": "public/products/a3-drawing-sheet-pack-2.jpg",
+    "source": "https://images.pexels.com/photos/28452285/pexels-photo-28452285.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/7257156/pexels-photo-7257156.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "adinkra-tote-bag": {
+    "main": "public/products/adinkra-tote-bag.jpg",
+    "second": "public/products/adinkra-tote-bag-2.jpg",
+    "source": "https://images.pexels.com/photos/9393350/pexels-photo-9393350.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/16117894/pexels-photo-16117894.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "ankara-maxi-dress": {
+    "main": "public/products/ankara-maxi-dress.jpg",
+    "second": "public/products/ankara-maxi-dress-2.jpg",
+    "source": "https://images.pexels.com/photos/7616577/pexels-photo-7616577.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/30235258/pexels-photo-30235258.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "banku-groundnut-soup": {
+    "main": "public/products/banku-groundnut-soup.jpg",
+    "second": "public/products/banku-groundnut-soup-2.jpg",
+    "source": "https://images.pexels.com/photos/633627/pexels-photo-633627.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/37648018/pexels-photo-37648018.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "bottled-water-pack": {
+    "main": "public/products/bottled-water-pack.jpg",
+    "second": "public/products/bottled-water-pack-2.jpg",
+    "source": "https://images.pexels.com/photos/34506076/pexels-photo-34506076.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/15524063/pexels-photo-15524063.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "bread-loaf": {
+    "main": "public/products/bread-loaf.jpg",
+    "second": "public/products/bread-loaf-2.jpg",
+    "source": "https://images.pexels.com/photos/8599583/pexels-photo-8599583.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/8599596/pexels-photo-8599596.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "ceiling-fan-5-blade": {
+    "main": "public/products/ceiling-fan-5-blade.jpg",
+    "second": "public/products/ceiling-fan-5-blade-2.jpg",
+    "source": "https://images.pexels.com/photos/14715847/pexels-photo-14715847.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/38697833/pexels-photo-38697833.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "colour-pens-pack": {
+    "main": "public/products/colour-pens-pack.jpg",
+    "second": "public/products/colour-pens-pack-2.jpg",
+    "source": "https://images.pexels.com/photos/14197645/pexels-photo-14197645.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/2327071/pexels-photo-2327071.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "denim-skirt": {
+    "main": "public/products/denim-skirt.jpg",
+    "second": "public/products/denim-skirt-2.jpg",
+    "source": "https://images.pexels.com/photos/6368570/pexels-photo-6368570.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/17794429/pexels-photo-17794429.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "drawing-board-set": {
+    "main": "public/products/drawing-board-set.jpg",
+    "second": "public/products/drawing-board-set-2.jpg",
+    "source": "https://images.pexels.com/photos/36419261/pexels-photo-36419261.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/6615282/pexels-photo-6615282.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "eggs-carton-30": {
+    "main": "public/products/eggs-carton-30.jpg",
+    "second": "public/products/eggs-carton-30-2.jpg",
+    "source": "https://images.pexels.com/photos/18841584/pexels-photo-18841584.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/7034135/pexels-photo-7034135.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "gari-and-beans": {
+    "main": "public/products/gari-and-beans.jpg",
+    "second": "public/products/gari-and-beans-2.jpg",
+    "source": "https://images.pexels.com/photos/37100094/pexels-photo-37100094.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/37099771/pexels-photo-37099771.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "geometry-set": {
+    "main": "public/products/geometry-set.jpg",
+    "second": "public/products/geometry-set-2.jpg",
+    "source": "https://images.pexels.com/photos/29279367/pexels-photo-29279367.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/5412233/pexels-photo-5412233.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "ghanaian-ice-cream-tub": {
+    "main": "public/products/ghanaian-ice-cream-tub.jpg",
+    "second": "public/products/ghanaian-ice-cream-tub-2.jpg",
+    "source": "https://images.pexels.com/photos/11501480/pexels-photo-11501480.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/7407220/pexels-photo-7407220.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "ghanaian-sandals": {
+    "main": "public/products/ghanaian-sandals.jpg",
+    "second": "public/products/ghanaian-sandals-2.jpg",
+    "source": "https://images.pexels.com/photos/26925248/pexels-photo-26925248.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/31129841/pexels-photo-31129841.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "id-card-printing": {
+    "main": "public/products/id-card-printing.jpg",
+    "second": "public/products/id-card-printing-2.jpg",
+    "source": "https://images.pexels.com/photos/8761297/pexels-photo-8761297.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/7108126/pexels-photo-7108126.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "kankake-ghanaian-pancake": {
+    "main": "public/products/kankake-ghanaian-pancake.jpg",
+    "second": "public/products/kankake-ghanaian-pancake-2.jpg",
+    "source": "https://images.pexels.com/photos/20434742/pexels-photo-20434742.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/29023828/pexels-photo-29023828.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "kelewele": {
+    "main": "public/products/kelewele.jpg",
+    "second": "public/products/kelewele-2.jpg",
+    "source": "https://images.pexels.com/photos/27556971/pexels-photo-27556971.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/12362284/pexels-photo-12362284.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "kente-shirt-men": {
+    "main": "public/products/kente-shirt-men.jpg",
+    "second": "public/products/kente-shirt-men-2.jpg",
+    "source": "https://images.pexels.com/photos/19410932/pexels-photo-19410932.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/30929475/pexels-photo-30929475.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "laptop-backpack": {
+    "main": "public/products/laptop-backpack.jpg",
+    "second": "public/products/laptop-backpack-2.jpg",
+    "source": "https://images.pexels.com/photos/12743405/pexels-photo-12743405.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/18269634/pexels-photo-18269634.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "laptop-sleeve": {
+    "main": "public/products/laptop-sleeve.jpg",
+    "second": "public/products/laptop-sleeve-2.jpg",
+    "source": "https://images.pexels.com/photos/7742558/pexels-photo-7742558.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/21391557/pexels-photo-21391557.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "mattress-single-4x6": {
+    "main": "public/products/mattress-single-4x6.jpg",
+    "second": "public/products/mattress-single-4x6-2.jpg",
+    "source": "https://images.pexels.com/photos/10600089/pexels-photo-10600089.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/6489093/pexels-photo-6489093.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "milo-sachet-pack": {
+    "main": "public/products/milo-sachet-pack.jpg",
+    "second": "public/products/milo-sachet-pack-2.jpg",
+    "source": "https://images.pexels.com/photos/35285853/pexels-photo-35285853.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/30730012/pexels-photo-30730012.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "phone-holder-stand": {
+    "main": "public/products/phone-holder-stand.jpg",
+    "second": "public/products/phone-holder-stand-2.jpg",
+    "source": "https://images.pexels.com/photos/6373178/pexels-photo-6373178.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/16003939/pexels-photo-16003939.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "plantain-chips-pack": {
+    "main": "public/products/plantain-chips-pack.jpg",
+    "second": "public/products/plantain-chips-pack-2.jpg",
+    "source": "https://images.pexels.com/photos/1616036/pexels-photo-1616036.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/31775445/pexels-photo-31775445.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "plastic-basin-set": {
+    "main": "public/products/plastic-basin-set.jpg",
+    "second": "public/products/plastic-basin-set-2.jpg",
+    "source": "https://images.pexels.com/photos/5498232/pexels-photo-5498232.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/14808946/pexels-photo-14808946.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "poster-design": {
+    "main": "public/products/poster-design.jpg",
+    "second": "public/products/poster-design-2.jpg",
+    "source": "https://images.pexels.com/photos/3964758/pexels-photo-3964758.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/6619759/pexels-photo-6619759.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "project-soft-binding": {
+    "main": "public/products/project-soft-binding.jpg",
+    "second": "public/products/project-soft-binding-2.jpg",
+    "source": "https://images.pexels.com/photos/5861185/pexels-photo-5861185.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/8039752/pexels-photo-8039752.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "sobolo-hibiscus-bottle": {
+    "main": "public/products/sobolo-hibiscus-bottle.jpg",
+    "second": "public/products/sobolo-hibiscus-bottle-2.jpg",
+    "source": "https://images.pexels.com/photos/38644453/pexels-photo-38644453.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/38644455/pexels-photo-38644455.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "student-bed-frame-mattress": {
+    "main": "public/products/student-bed-frame-mattress.jpg",
+    "second": "public/products/student-bed-frame-mattress-2.jpg",
+    "source": "https://images.pexels.com/photos/27871999/pexels-photo-27871999.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/31145680/pexels-photo-31145680.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "study-planner": {
+    "main": "public/products/study-planner.jpg",
+    "second": "public/products/study-planner-2.jpg",
+    "source": "https://images.pexels.com/photos/29509452/pexels-photo-29509452.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/5712140/pexels-photo-5712140.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "sugar-1kg": {
+    "main": "public/products/sugar-1kg.jpg",
+    "second": "public/products/sugar-1kg-2.jpg",
+    "source": "https://images.pexels.com/photos/21582446/pexels-photo-21582446.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/40664694/pexels-photo-40664694.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "thesis-print-binding": {
+    "main": "public/products/thesis-print-binding.jpg",
+    "second": "public/products/thesis-print-binding-2.jpg",
+    "source": "https://images.pexels.com/photos/17018372/pexels-photo-17018372.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/357514/pexels-photo-357514.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "tws-earbuds": {
+    "main": "public/products/tws-earbuds.jpg",
+    "second": "public/products/tws-earbuds-2.jpg",
+    "source": "https://images.pexels.com/photos/3921817/pexels-photo-3921817.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/8858287/pexels-photo-8858287.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "type-c-cable-2m": {
+    "main": "public/products/type-c-cable-2m.jpg",
+    "second": "public/products/type-c-cable-2m-2.jpg",
+    "source": "https://images.pexels.com/photos/3921711/pexels-photo-3921711.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/3921633/pexels-photo-3921633.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "usb-flash-64gb": {
+    "main": "public/products/usb-flash-64gb.jpg",
+    "second": "public/products/usb-flash-64gb-2.jpg",
+    "source": "https://images.pexels.com/photos/10336136/pexels-photo-10336136.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/7054728/pexels-photo-7054728.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "waakye-shito-egg": {
+    "main": "public/products/waakye-shito-egg.jpg",
+    "second": "public/products/waakye-shito-egg-2.jpg",
+    "source": "https://images.pexels.com/photos/32612769/pexels-photo-32612769.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/34439450/pexels-photo-34439450.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  "white-sneakers": {
+    "main": "public/products/white-sneakers.jpg",
+    "second": "public/products/white-sneakers-2.jpg",
+    "source": "https://images.pexels.com/photos/11324518/pexels-photo-11324518.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "source_second": "https://images.pexels.com/photos/267326/pexels-photo-267326.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  }
+}

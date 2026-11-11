@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MessageSquare } from "lucide-react";
+import { LifeBuoy, MessageSquare } from "lucide-react";
 import { MessageThread } from "@/components/messaging/message-thread";
+import { SupportComposer } from "@/components/messaging/support-composer";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -24,12 +26,14 @@ export default async function MessagesPage({
   const conversations = await prisma.conversation.findMany({
     where: { buyerId: session.user.id },
     orderBy: { lastMessageAt: "desc" },
-    take: 50,
+    take: 60,
     select: {
       id: true,
+      kind: true,
+      subject: true,
       lastMessageAt: true,
-      vendor: { select: { storeName: true, slug: true } },
       product: { select: { name: true, slug: true } },
+      vendor: { select: { storeName: true, slug: true } },
       messages: { orderBy: { createdAt: "desc" }, take: 1, select: { body: true } },
     },
   });
@@ -51,11 +55,26 @@ export default async function MessagesPage({
       })
     : [];
 
+  const peerName =
+    active?.kind === "SUPPORT"
+      ? "JUMART Support"
+      : (active?.vendor?.storeName ?? "Marketplace seller");
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title="Messages"
-        description="Talk to sellers about products, pickup points, and delivery."
+        description="Talk to sellers, or reach the JUMART team when you need help with an order or your account."
+        actions={
+          <SupportComposer
+            trigger={
+              <Button variant="outline">
+                <LifeBuoy className="h-4 w-4" aria-hidden="true" />
+                Contact JUMART
+              </Button>
+            }
+          />
+        }
       />
 
       {conversations.length === 0 ? (
@@ -63,12 +82,9 @@ export default async function MessagesPage({
           <EmptyState
             icon={MessageSquare}
             title="No conversations yet"
-            description="Message a seller from any store page to start a conversation."
+            description="Message a seller from any store page, or contact the JUMART team for help."
             action={
-              <Link
-                href="/marketplace"
-                className="text-brand-700 text-sm font-medium hover:underline"
-              >
+              <Link href="/marketplace" className={buttonVariants()}>
                 Browse the marketplace
               </Link>
             }
@@ -88,9 +104,21 @@ export default async function MessagesPage({
                     : "border-neutral-200 hover:bg-neutral-50",
                 )}
               >
-                <p className="text-sm font-semibold text-neutral-900">
-                  {conversation.vendor.storeName}
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-neutral-900">
+                    {conversation.kind === "SUPPORT"
+                      ? "JUMART Support"
+                      : (conversation.vendor?.storeName ?? "Marketplace seller")}
+                  </p>
+                  {conversation.kind === "SUPPORT" ? (
+                    <span className="bg-brand-50 text-brand-700 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                      Support
+                    </span>
+                  ) : null}
+                </div>
+                {conversation.subject ? (
+                  <p className="text-brand-700 text-xs font-medium">{conversation.subject}</p>
+                ) : null}
                 {conversation.product ? (
                   <p className="text-xs text-neutral-500">About {conversation.product.name}</p>
                 ) : null}
@@ -106,21 +134,24 @@ export default async function MessagesPage({
           <Card className="flex min-h-[24rem] flex-col p-5">
             {active ? (
               <>
-                <p className="text-sm font-semibold text-neutral-900">{active.vendor.storeName}</p>
-                {active.product ? (
+                <p className="text-sm font-semibold text-neutral-900">{peerName}</p>
+                {active.subject ? (
+                  <p className="mb-3 text-xs text-neutral-500">{active.subject}</p>
+                ) : active.product ? (
                   <p className="mb-3 text-xs text-neutral-500">About {active.product.name}</p>
                 ) : (
                   <div className="mb-3" />
                 )}
                 <MessageThread
                   conversationId={active.id}
-                  peerName={active.vendor.storeName}
+                  peerName={peerName}
                   messages={messages.map((message) => ({
                     id: message.id,
                     body: message.body,
                     createdAt: message.createdAt.toISOString(),
                     mine: message.sender.id === session.user.id,
-                    senderName: message.sender.fullName,
+                    senderName:
+                      message.sender.id === session.user.id ? "You" : message.sender.fullName,
                   }))}
                 />
               </>

@@ -82,8 +82,17 @@ async function withRetry<T>(operation: () => Promise<T>, attempt = 0): Promise<T
   try {
     return await operation();
   } catch (error) {
-    if (attempt < 2 && isTransient(error)) {
+    if (attempt < 3 && isTransient(error)) {
       await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+      if (attempt === 1) {
+        try {
+          // The provider recycled the socket. Rebuild the pool before the next attempt.
+          await getClient().$disconnect();
+          await getClient().$connect();
+        } catch {
+          // Ignore reconnect failures and let the retry decide.
+        }
+      }
       return withRetry(operation, attempt + 1);
     }
     throw error;

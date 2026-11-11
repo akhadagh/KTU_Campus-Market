@@ -6,6 +6,9 @@ const links = [
   { href: "/admin/products", label: "Listings" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/reports", label: "Reports" },
+  { href: "/admin/messages", label: "Support" },
+  { href: "/admin/airtime", label: "Airtime links" },
+  { href: "/admin/resources", label: "Learning materials" },
 ];
 
 export function AdminNav() {

@@ -100,6 +100,12 @@ enum PurchaseMode {
   EXTERNAL
 }
 
+enum ExternalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ReservationStatus {
   HELD
   CONSUMED
@@ -395,6 +401,8 @@ model User {
   searchHistory         SearchHistory[]
   cart                  Cart?
   wishlist              Wishlist?
+  learningMaterials     LearningMaterial[] @relation("LearningMaterialUploader")
+  externalReviews       Product[]           @relation("ExternalProductReviewer")
 
   @@index([campusId, status])
   @@index([status, createdAt])
@@ -514,6 +522,38 @@ model StudentVerification {
   @@map("student_verifications")
 }
 
+enum LearningMaterialStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model LearningMaterial {
+  id           String                  @id @default(uuid()) @db.Uuid
+  title        String                  @db.VarChar(180)
+  description  String?
+  course       String?                 @db.VarChar(120)
+  level        String?                 @db.VarChar(80)
+  category     String                  @default("PAST_QUESTIONS")
+  fileUrl      String
+  fileName     String                  @db.VarChar(180)
+  fileType     String                  @db.VarChar(40)
+  sizeBytes    Int                     @default(0)
+  isFree       Boolean                 @default(true)
+  status       LearningMaterialStatus  @default(DRAFT)
+  downloadCount Int                    @default(0)
+  uploadedById String?                 @db.Uuid
+  publishedAt  DateTime?
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  uploadedBy User? @relation("LearningMaterialUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([status, category])
+  @@index([course])
+  @@map("learning_materials")
+}
+
 model UserPreference {
   userId                 String   @id @db.Uuid
   personalizationEnabled Boolean  @default(true)
@@ -602,6 +642,10 @@ model Product {
   status               ProductStatus    @default(DRAFT)
   purchaseMode         PurchaseMode     @default(INTERNAL)
   externalUrl          String?
+  externalStatus       ExternalStatus   @default(PENDING)
+  externalReviewedById String?          @db.Uuid
+  externalReviewedAt   DateTime?
+  externalNote         String?
   digitalDetails       Json?
   campusId             String?          @db.Uuid
   deliveryOptions      DeliveryOption[] @default([])
@@ -616,6 +660,7 @@ model Product {
   deletedAt            DateTime?
 
   vendor           VendorProfile          @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  externalReviewedBy User?                @relation("ExternalProductReviewer", fields: [externalReviewedById], references: [id], onDelete: SetNull)
   category         Category               @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   campus           Campus?                @relation(fields: [campusId], references: [id], onDelete: SetNull)
   images           ProductImage[]
@@ -1017,23 +1062,31 @@ model Review {
   @@map("reviews")
 }
 
-model Conversation {
-  id            String   @id @default(uuid()) @db.Uuid
-  buyerId       String   @db.Uuid
-  vendorId      String   @db.Uuid
-  productId     String?  @db.Uuid
-  lastMessageAt DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+enum ConversationKind {
+  SELLER
+  SUPPORT
+}
 
-  buyer    User          @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
-  vendor   VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  product  Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+model Conversation {
+  id            String           @id @default(uuid()) @db.Uuid
+  buyerId       String           @db.Uuid
+  vendorId      String?          @db.Uuid
+  productId     String?          @db.Uuid
+  kind          ConversationKind @default(SELLER)
+  subject       String?          @db.VarChar(160)
+  lastMessageAt DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  buyer    User           @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  vendor   VendorProfile? @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  product  Product?       @relation(fields: [productId], references: [id], onDelete: SetNull)
   messages Message[]
 
   @@unique([buyerId, vendorId, productId])
   @@index([buyerId, lastMessageAt])
   @@index([vendorId, lastMessageAt])
+  @@index([kind, lastMessageAt])
   @@map("conversations")
 }
 

@@ -102,7 +102,7 @@ export function LoginForm() {
       </Button>
 
       <p className="text-center text-sm text-neutral-600">
-        New to Campus Market?{" "}
+        New to JUMART?{" "}
         <Link href="/register" className="text-brand-700 hover:text-brand-900 font-medium">
           Create an account
         </Link>

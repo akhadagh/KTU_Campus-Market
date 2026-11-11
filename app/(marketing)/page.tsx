@@ -1,15 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
   BadgeCheck,
-  MessagesSquare,
+  BookOpen,
+  GraduationCap,
+  Headphones,
+  MessageSquare,
   PackageCheck,
   Search,
   ShieldCheck,
+  ShoppingBag,
   Smartphone,
   Sparkles,
   Store,
+  Tag,
   Truck,
+  Wallet,
 } from "lucide-react";
 import { CategoryCard } from "@/components/commerce/category-card";
 import { ProductCard } from "@/components/commerce/product-card";
@@ -18,113 +25,102 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { listMarketplaceCategories, listMarketplaceProducts } from "@/lib/marketplace";
-import { cn } from "@/lib/utils";
+import {
+  listMarketplaceCategories,
+  listMarketplaceProducts,
+  listMarketplaceVendors,
+} from "@/lib/marketplace";
+import { formatPesewas } from "@/lib/money";
 import { connection } from "next/server";
+
+export const metadata: Metadata = {
+  title: "JUMART — Your Campus. Your Marketplace.",
+  description:
+    "Shop laptops, sandals, Ghanaian food, past questions and airtime bundles from verified vendors on your campus. Buy and sell with JUMART.",
+};
+
+const valueProps = [
+  {
+    icon: ShoppingBag,
+    title: "Buy from campus vendors",
+    description: "Everything from laptops to jollof, listed by people around you.",
+  },
+  {
+    icon: Store,
+    title: "Sell with your store",
+    description: "Open a JUMART store, list your products and manage orders in one place.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Talk directly",
+    description: "Message a seller or the JUMART team before you pay.",
+  },
+  {
+    icon: Wallet,
+    title: "Pay securely",
+    description: "Server-verified Paystack payments. Nothing is marked paid until we confirm it.",
+  },
+];
 
 const trustPoints = [
   {
     icon: BadgeCheck,
-    title: "Verification states",
-    description:
-      "Registered users, verified students, and verified vendors are shown separately so buyers know who they are dealing with.",
+    title: "Admin-approved vendors",
+    description: "Every store and every external purchase link is reviewed before students see it.",
   },
   {
     icon: ShieldCheck,
-    title: "Server-verified payments",
+    title: "Verified payments",
     description:
-      "Payment status is confirmed on the server. A browser message alone never marks an order as paid.",
-  },
-  {
-    icon: Truck,
-    title: "Campus pickup & delivery",
-    description:
-      "Choose pickup at a campus location or vendor-arranged delivery, with instructions and order updates.",
-  },
-  {
-    icon: MessagesSquare,
-    title: "Reports & disputes",
-    description:
-      "Report suspicious listings and open a dispute with evidence if an order goes wrong.",
-  },
-];
-
-const steps = [
-  {
-    icon: Search,
-    title: "Discover",
-    description: "Search, browse categories, and filter by price, condition, and campus.",
-  },
-  {
-    icon: Store,
-    title: "Buy or sell",
-    description: "Shop from student vendors or open your own store from the same account.",
+      "Payments are confirmed server-side with Paystack, and sellers only see paid orders.",
   },
   {
     icon: PackageCheck,
-    title: "Receive",
-    description: "Choose pickup or delivery, track the order, and review the purchase.",
+    title: "Order tracking",
+    description: "Follow each order from accepted to delivered, with a history of every update.",
+  },
+  {
+    icon: BookOpen,
+    title: "Free study materials",
+    description: "Past questions, solutions and lecture notes uploaded by the JUMART team.",
   },
 ];
-
-function SectionHeading({
-  title,
-  description,
-  href,
-  linkLabel,
-}: {
-  title: string;
-  description?: string;
-  href?: string;
-  linkLabel?: string;
-}) {
-  return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">
-          {title}
-        </h2>
-        {description ? (
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-neutral-600">{description}</p>
-        ) : null}
-      </div>
-      {href && linkLabel ? (
-        <Link
-          href={href}
-          className="text-brand-700 hover:text-brand-900 inline-flex shrink-0 items-center gap-1 text-sm font-medium"
-        >
-          {linkLabel}
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
-      ) : null}
-    </div>
-  );
-}
 
 export default async function HomePage() {
   await connection();
 
-  const [categories, listings] = await Promise.all([
+  const [categories, listings, trending, vendors] = await Promise.all([
     listMarketplaceCategories(),
-    listMarketplaceProducts({ sort: "newest", pageSize: 12 }),
+    listMarketplaceProducts({ sort: "newest", pageSize: 24 }),
+    listMarketplaceProducts({ sort: "rating", pageSize: 8 }),
+    listMarketplaceVendors({ pageSize: 4 }),
   ]);
-  const featured = listings.items;
-  const trending = listings.items;
+
+  const featured = listings.items.slice(0, 8);
+  const deals = listings.items
+    .filter(
+      (product) =>
+        product.originalPricePesewas && product.originalPricePesewas > product.pricePesewas,
+    )
+    .slice(0, 4);
 
   return (
     <>
       <section className="hero-grid border-b border-neutral-200 bg-white">
-        <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-8 lg:py-20">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-8 lg:py-20">
           <div className="animate-[var(--animate-fade-up)]">
             <Badge variant="success" className="shadow-sm">
               Live at Koforidua Technical University
             </Badge>
             <h1 className="mt-5 max-w-2xl text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl">
-              Everything you need. Right around campus.
+              Everything you need.
+              <br />
+              <span className="text-brand-700">Right around campus.</span>
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-neutral-600 sm:text-lg">
-              Buy from verified campus vendors, top up your airtime in seconds, and turn your ideas
-              into a real business. Payments are held until you confirm your order.
+              Buy laptops, sneakers, Ghanaian food and study materials from verified vendors around
+              you. Sell your own products, top up your airtime, and reach the JUMART team when you
+              need help.
             </p>
 
             <form
@@ -136,10 +132,10 @@ export default async function HomePage() {
               <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
                 <div className="relative">
                   <label htmlFor="hero-search" className="sr-only">
-                    Search products
+                    Search products and services
                   </label>
                   <Search
-                    className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400"
+                    className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-neutral-400"
                     aria-hidden="true"
                   />
                   <Input
@@ -147,14 +143,19 @@ export default async function HomePage() {
                     name="q"
                     type="search"
                     placeholder="What are you looking for?"
-                    className="pl-9"
+                    className="h-12 rounded-xl border-0 pl-10 shadow-none"
                   />
                 </div>
                 <div>
                   <label htmlFor="hero-category" className="sr-only">
                     Category
                   </label>
-                  <Select id="hero-category" name="category" defaultValue="">
+                  <Select
+                    id="hero-category"
+                    name="category"
+                    defaultValue=""
+                    className="h-12 rounded-xl"
+                  >
                     <option value="">All categories</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.slug}>
@@ -163,30 +164,31 @@ export default async function HomePage() {
                     ))}
                   </Select>
                 </div>
-                <Button type="submit" size="lg" className="sm:px-8">
+                <Button type="submit" size="lg" className="h-12 rounded-xl px-6">
                   Search
                 </Button>
               </div>
             </form>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link href="/marketplace" className={buttonVariants({ size: "lg" })}>
-                Explore marketplace
+                Shop now
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
-              <Link href="/airtime" className={buttonVariants({ variant: "outline", size: "lg" })}>
+              <Link href="/sell" className={buttonVariants({ variant: "outline", size: "lg" })}>
+                <Store className="h-4 w-4" aria-hidden="true" />
+                Start selling
+              </Link>
+              <Link href="/airtime" className={buttonVariants({ variant: "ghost", size: "lg" })}>
                 <Smartphone className="h-4 w-4" aria-hidden="true" />
                 Buy airtime
               </Link>
-              <Link href="/sell" className={buttonVariants({ variant: "ghost", size: "lg" })}>
-                Sell on campus
-              </Link>
             </div>
 
-            <dl className="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-neutral-200 pt-6">
+            <dl className="mt-9 grid max-w-xl grid-cols-3 gap-4 border-t border-neutral-200 pt-6">
               {[
                 { label: "Live listings", value: String(listings.total) },
-                { label: "Campus vendors", value: "7" },
+                { label: "Campus stores", value: String(vendors.total) },
                 { label: "Pay with", value: "Paystack" },
               ].map((stat) => (
                 <div key={stat.label}>
@@ -199,46 +201,65 @@ export default async function HomePage() {
             </dl>
           </div>
 
-          <div className="mesh-panel rounded-2xl p-6 text-white shadow-[var(--shadow-glow)]">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-white">Why students can trust it</p>
-              <Badge variant="muted">Built for KTU</Badge>
-            </div>
-            <div className="mt-5 space-y-4">
-              {trustPoints.slice(0, 3).map((point) => {
-                const Icon = point.icon;
+          <div className="mesh-panel rounded-3xl p-7 text-white shadow-[var(--shadow-glow)]">
+            <Badge variant="accent" className="bg-accent-500 text-white">
+              Campus deals
+            </Badge>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight">
+              Shop smarter on <span className="text-accent-400">JUMART</span>
+            </h2>
+            <p className="text-brand-100 mt-2 text-sm leading-6">
+              Fresh listings from verified vendors around campus, updated every day.
+            </p>
+
+            <ul className="mt-6 space-y-4">
+              {valueProps.map((prop) => {
+                const Icon = prop.icon;
                 return (
-                  <div key={point.title} className="flex gap-3">
-                    <div className="text-brand-700 grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white shadow-sm">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
+                  <li key={prop.title} className="flex gap-3">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10">
+                      <Icon className="text-accent-400 h-5 w-5" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{point.title}</p>
-                      <p className="text-brand-100/90 mt-0.5 text-xs leading-5">
-                        {point.description}
+                      <p className="text-sm font-semibold">{prop.title}</p>
+                      <p className="text-brand-100/85 mt-0.5 text-xs leading-5">
+                        {prop.description}
                       </p>
                     </div>
-                  </div>
+                  </li>
                 );
               })}
+            </ul>
+
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href="/categories"
+                className="text-brand-700 hover:bg-brand-50 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold transition-colors"
+              >
+                Browse categories
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/resources"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                <GraduationCap className="h-4 w-4" aria-hidden="true" />
+                Free past questions
+              </Link>
             </div>
-            <p className="text-brand-100/80 mt-5 border-t border-white/15 pt-4 text-xs leading-5">
-              Payments are verified server-side. If a provider is not configured the platform says
-              so plainly instead of faking a successful payment.
-            </p>
           </div>
         </div>
       </section>
 
       <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <SectionHeading
-          title="Featured categories"
-          description="Find what you need by browsing the categories students use most."
+        <SectionHeader
+          title="Shop by category"
+          description="Everything a student needs, grouped so you can find it fast."
           href="/categories"
           linkLabel="All categories"
         />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {categories.map((category) => (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {categories.slice(0, 6).map((category) => (
             <CategoryCard
               key={category.id}
               category={{
@@ -253,7 +274,141 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="border-y border-neutral-200 bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <SectionHeader
+            title="Fresh on the marketplace"
+            description="The newest listings approved for students this week."
+            href="/marketplace"
+            linkLabel="See all"
+          />
+          {featured.length === 0 ? (
+            <EmptyPanel
+              title="No listings yet"
+              description="Approved vendor listings appear here as soon as they are published."
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {featured.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {deals.length > 0 ? (
+        <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <SectionHeader
+            title="Campus deals"
+            description="Reduced prices from vendors clearing stock around campus."
+            href="/marketplace?sort=price_asc"
+            linkLabel="All deals"
+          />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {deals.map((product) => (
+              <Link key={product.id} href={`/products/${product.slug}`} className="group block">
+                <Card className="group-hover:border-accent-300 h-full overflow-hidden border-neutral-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
+                    {product.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.imageUrl}
+                        alt={product.imageAlt ?? product.name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : null}
+                    <span className="bg-accent-500 absolute top-3 left-3 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white">
+                      <Tag className="h-3 w-3" aria-hidden="true" />
+                      Deal
+                    </span>
+                  </div>
+                  <div className="p-4">
+                    <p className="line-clamp-1 text-sm font-semibold text-neutral-900">
+                      {product.name}
+                    </p>
+                    <div className="mt-1 flex items-baseline gap-2">
+                      <span className="text-base font-bold text-neutral-900">
+                        {formatPesewas(product.pricePesewas)}
+                      </span>
+                      {product.originalPricePesewas ? (
+                        <span className="text-xs text-neutral-400 line-through">
+                          {formatPesewas(product.originalPricePesewas)}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1 truncate text-xs text-neutral-500">{product.vendorName}</p>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="border-y border-neutral-200 bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <SectionHeader
+            title="Trending near you"
+            description="Listings students keep coming back to."
+            href="/marketplace?sort=rating"
+            linkLabel="See all"
+          />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {trending.items.slice(0, 4).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <SectionHeader
+          title="Stores to know"
+          description="Verified campus vendors with fast responses and campus delivery."
+          href="/marketplace"
+          linkLabel="Explore stores"
+        />
+        {vendors.items.length === 0 ? (
+          <EmptyPanel
+            title="No stores yet"
+            description="Approved vendor stores appear here once an administrator approves them."
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {vendors.items.map((vendor) => (
+              <Link key={vendor.id} href={`/stores/${vendor.slug}`} className="group block">
+                <Card className="group-hover:border-brand-200 h-full border-neutral-200/80 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-brand-700 grid h-11 w-11 shrink-0 place-items-center rounded-xl text-white">
+                      <Store className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-neutral-900">
+                        {vendor.storeName}
+                      </p>
+                      <p className="text-xs text-neutral-500">{vendor.businessCategory}</p>
+                    </div>
+                  </div>
+                  {vendor.description ? (
+                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-neutral-600">
+                      {vendor.description}
+                    </p>
+                  ) : null}
+                  <p className="text-brand-700 mt-3 text-xs font-medium">
+                    {vendor.productCount} listing{vendor.productCount === 1 ? "" : "s"}
+                    {vendor.deliveryAvailable ? " · delivery" : ""}
+                    {vendor.pickupAvailable ? " · pickup" : ""}
+                  </p>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <div className="grid gap-4 lg:grid-cols-2">
           <Link
             href="/airtime"
@@ -266,8 +421,8 @@ export default async function HomePage() {
             <Smartphone className="h-7 w-7" aria-hidden="true" />
             <h3 className="mt-4 text-lg font-semibold">Airtime &amp; data bundles</h3>
             <p className="mt-1 max-w-sm text-sm leading-6 text-emerald-50/90">
-              Top up MTN, Telecel, Vodafone or AirtelTigo. Pay on Campus Market and the seller
-              credits your number, or continue straight to the provider&rsquo;s own site.
+              Top up MTN, Telecel, Vodafone and AirtelTigo through verified merchants. Every link is
+              checked by our team before students can use it.
             </p>
             <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold">
               Buy a bundle
@@ -279,21 +434,21 @@ export default async function HomePage() {
           </Link>
 
           <Link
-            href="/assistant"
-            className="group from-brand-500 to-brand-700 relative overflow-hidden rounded-2xl bg-gradient-to-br p-6 text-white shadow-[var(--shadow-lift)] transition-transform hover:-translate-y-0.5"
+            href="/sell"
+            className="group from-accent-500 to-accent-600 relative overflow-hidden rounded-2xl bg-gradient-to-br p-6 text-white shadow-[var(--shadow-lift)] transition-transform hover:-translate-y-0.5"
           >
             <div
               className="absolute -right-8 -bottom-10 h-40 w-40 rounded-full bg-white/10"
               aria-hidden="true"
             />
-            <Sparkles className="h-7 w-7" aria-hidden="true" />
-            <h3 className="mt-4 text-lg font-semibold">Ask the campus assistant</h3>
-            <p className="text-brand-50/90 mt-1 max-w-sm text-sm leading-6">
-              Describe what you need and get answers grounded in live listings — prices, stores and
-              stock that actually exist right now.
+            <Store className="h-7 w-7" aria-hidden="true" />
+            <h3 className="mt-4 text-lg font-semibold">Open a JUMART store</h3>
+            <p className="text-accent-50/90 mt-1 max-w-sm text-sm leading-6">
+              Turn your hustle into a real store. List products, take orders, manage fulfilment and
+              grow your customer base around campus.
             </p>
             <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold">
-              Ask a question
+              Start selling
               <ArrowRight
                 className="h-4 w-4 transition-transform group-hover:translate-x-1"
                 aria-hidden="true"
@@ -303,152 +458,103 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          title="Fresh on the marketplace"
-          description="A preview of how listings will appear once vendor data is connected."
-          href="/marketplace"
-          linkLabel="Browse marketplace"
-        />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.slice(0, 4).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <SectionHeading
-          title="Trending around campus"
-          description="Newest listings from approved campus vendors, including hostel essentials and student services."
-          href="/marketplace"
-          linkLabel="See all listings"
-        />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {trending.slice(0, 4).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Card className="border-brand-900 bg-brand-900 overflow-hidden text-white">
-          <div className="grid gap-8 p-8 sm:p-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+      <section className="border-t border-neutral-200 bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
-              <Badge variant="success">One account, both sides</Badge>
-              <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Turn your campus hustle into a storefront.
+              <Badge variant="default">Trust &amp; safety</Badge>
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
+                Built so students can shop with confidence
               </h2>
-              <p className="text-brand-100 mt-3 max-w-2xl text-sm leading-6">
-                Create a store, add products with clear photos, manage stock, and receive orders
-                from students around campus. Verification and moderation help buyers trust what they
-                see.
+              <p className="mt-3 text-sm leading-6 text-neutral-600">
+                JUMART is designed around the things that make campus marketplaces risky: unverified
+                sellers, fake payments and no support.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href="/sell" className={buttonVariants({ variant: "secondary", size: "lg" })}>
-                  Start selling
+                <Link href="/trust-safety" className={buttonVariants({ variant: "outline" })}>
+                  Read our safety guide
                 </Link>
-                <Link
-                  href="/how-it-works"
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "lg" }),
-                    "border-white/30 bg-transparent text-white hover:bg-white/10",
-                  )}
-                >
-                  How it works
+                <Link href="/help" className={buttonVariants({ variant: "ghost" })}>
+                  Visit the help centre
                 </Link>
               </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                "Create your store",
-                "Upload clear product photos",
-                "Set pickup or delivery",
-                "Manage orders in one dashboard",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="text-brand-50 rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-sm"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {trustPoints.map((point) => {
+                const Icon = point.icon;
+                return (
+                  <li key={point.title} className="rounded-2xl border border-neutral-200 p-5">
+                    <div className="bg-brand-50 text-brand-700 grid h-10 w-10 place-items-center rounded-xl">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <p className="mt-3 text-sm font-semibold text-neutral-900">{point.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-neutral-600">{point.description}</p>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-        </Card>
-      </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <SectionHeading
-          title="How it works"
-          description="Three simple steps from discovery to delivery."
-        />
-        <div className="grid gap-4 md:grid-cols-3">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <Card key={step.title} className="p-5">
-                <div className="flex items-center gap-3">
-                  <div className="bg-brand-50 text-brand-700 grid h-10 w-10 place-items-center rounded-lg">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <span className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                    Step {index + 1}
-                  </span>
-                </div>
-                <h3 className="mt-4 text-base font-semibold text-neutral-900">{step.title}</h3>
-                <p className="mt-1 text-sm leading-6 text-neutral-600">{step.description}</p>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <SectionHeading
-          title="Trust and safety"
-          description="Marketplace safety is a product feature, not an afterthought."
-          href="/trust-safety"
-          linkLabel="Read our approach"
-        />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {trustPoints.map((point) => {
-            const Icon = point.icon;
-            return (
-              <Card key={point.title} className="p-5">
-                <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-50 text-emerald-700">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <h3 className="mt-4 text-sm font-semibold text-neutral-900">{point.title}</h3>
-                <p className="mt-1 text-xs leading-5 text-neutral-600">{point.description}</p>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 pt-4 pb-16 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-center sm:p-12">
-          <h2 className="text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-            Ready to shop or sell around campus?
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-neutral-600">
-            Join the KTU campus marketplace. One account lets you buy from fellow students and grow
-            your own store.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/register" className={buttonVariants({ size: "lg" })}>
-              Create an account
-            </Link>
-            <Link
-              href="/marketplace"
-              className={buttonVariants({ variant: "outline", size: "lg" })}
-            >
-              Browse marketplace
-            </Link>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 border-t border-neutral-100 pt-8 text-center">
+            {[
+              { icon: Truck, label: "Campus delivery" },
+              { icon: Headphones, label: "Real support" },
+              { icon: Sparkles, label: "Grounded AI help" },
+              { icon: Wallet, label: "Paystack secured" },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <p
+                  key={item.label}
+                  className="flex items-center gap-2 text-sm font-medium text-neutral-600"
+                >
+                  <Icon className="text-brand-600 h-4 w-4" aria-hidden="true" />
+                  {item.label}
+                </p>
+              );
+            })}
           </div>
         </div>
       </section>
     </>
+  );
+}
+
+function SectionHeader({
+  title,
+  description,
+  href,
+  linkLabel,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  linkLabel: string;
+}) {
+  return (
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 className="text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">
+          {title}
+        </h2>
+        <p className="mt-1 text-sm text-neutral-600">{description}</p>
+      </div>
+      <Link
+        href={href}
+        className="text-brand-700 inline-flex items-center gap-1 text-sm font-semibold hover:underline"
+      >
+        {linkLabel}
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </Link>
+    </div>
+  );
+}
+
+function EmptyPanel({ title, description }: { title: string; description: string }) {
+  return (
+    <Card className="p-8 text-center">
+      <p className="text-sm font-semibold text-neutral-900">{title}</p>
+      <p className="mt-1 text-sm text-neutral-600">{description}</p>
+    </Card>
   );
 }

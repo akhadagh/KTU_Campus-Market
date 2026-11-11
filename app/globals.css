@@ -1,35 +1,52 @@
 @import "tailwindcss";
 
 @theme {
+  /* JUMART type stack: geometric, friendly, high legibility on mobile. */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Poppins", "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display:
+    "Poppins", "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Roboto,
     "Helvetica Neue", Arial, sans-serif;
 
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #dbe7ff;
-  --color-brand-200: #bfd3ff;
-  --color-brand-300: #93b4ff;
-  --color-brand-400: #4d84f5;
-  --color-brand-500: #1d4ed8;
-  --color-brand-600: #1740b4;
-  --color-brand-700: #132c52;
-  --color-brand-800: #0f2440;
-  --color-brand-900: #0b1f3a;
+  /* Primary brand — deep purple */
+  --color-brand-50: #f6f2fd;
+  --color-brand-100: #ece3fb;
+  --color-brand-200: #d9c8f7;
+  --color-brand-300: #bda2f0;
+  --color-brand-400: #9d74e6;
+  --color-brand-500: #6500d8;
+  --color-brand-600: #5600b8;
+  --color-brand-700: #3b087d;
+  --color-brand-800: #2c065f;
+  --color-brand-900: #1d0442;
 
-  --color-accent-50: #ecfdf3;
-  --color-accent-100: #d1fae5;
-  --color-accent-500: #16a34a;
-  --color-accent-600: #128a41;
-  --color-accent-700: #15803d;
+  /* Secondary brand — vibrant purple */
+  --color-secondary-400: #8b5cf6;
+  --color-secondary-500: #7c3aed;
+  --color-secondary-600: #6d28d9;
 
-  --color-sand-50: #fdf8f1;
-  --color-sand-100: #f7ecdb;
+  /* Action colour — orange */
+  --color-accent-50: #fff6ea;
+  --color-accent-100: #ffebcc;
+  --color-accent-200: #ffd699;
+  --color-accent-300: #ffbe5c;
+  --color-accent-400: #ffab2e;
+  --color-accent-500: #ff9200;
+  --color-accent-600: #e07d00;
+  --color-accent-700: #b86600;
 
-  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12);
-  --shadow-lift: 0 2px 4px rgb(15 23 42 / 0.05), 0 18px 40px -18px rgb(15 23 42 / 0.28);
-  --shadow-glow: 0 24px 60px -30px rgb(29 78 216 / 0.55);
+  /* Surfaces and text */
+  --color-canvas: #f8f5fc;
+  --color-ink: #20152f;
+  --color-ink-soft: #57456b;
+
+  --shadow-card: 0 1px 2px rgb(32 21 47 / 0.05), 0 10px 30px -14px rgb(59 8 125 / 0.22);
+  --shadow-lift: 0 2px 6px rgb(32 21 47 / 0.06), 0 22px 45px -20px rgb(59 8 125 / 0.35);
+  --shadow-glow: 0 26px 60px -28px rgb(101 0 216 / 0.55);
 
   --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-marquee: marquee 26s linear infinite;
 
   @keyframes fade-up {
     from {
@@ -39,6 +56,15 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
     }
   }
 }
@@ -68,8 +94,18 @@ html {
 
 body {
   font-family: var(--font-sans);
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
 }
 
 .surface-card {
@@ -79,14 +115,22 @@ body {
 
 .hero-grid {
   background-image:
-    radial-gradient(60rem 30rem at 85% -10%, rgb(29 78 216 / 0.28), transparent 60%),
-    radial-gradient(40rem 24rem at 5% 10%, rgb(22 163 74 / 0.18), transparent 55%);
+    radial-gradient(55rem 28rem at 88% -12%, rgb(101 0 216 / 0.22), transparent 62%),
+    radial-gradient(38rem 22rem at 2% 8%, rgb(255 146 0 / 0.14), transparent 58%);
 }
 
 .mesh-panel {
   background-image:
-    linear-gradient(135deg, rgb(19 44 82 / 0.98), rgb(11 31 58 / 0.96)),
-    radial-gradient(40rem 20rem at 100% 0%, rgb(77 132 245 / 0.35), transparent 60%);
+    linear-gradient(140deg, rgb(59 8 125 / 0.98), rgb(29 4 66 / 0.97)),
+    radial-gradient(38rem 20rem at 100% 0%, rgb(139 92 246 / 0.42), transparent 62%);
+}
+
+.jumart-underline {
+  background-image: linear-gradient(90deg, #ff9200, #ffb347);
+  background-repeat: no-repeat;
+  background-size: 100% 0.34em;
+  background-position: 0 88%;
+  padding-inline: 0.08em;
 }
 
 .skeleton {
@@ -116,6 +160,6 @@ body {
 }
 
 ::selection {
-  background-color: var(--color-brand-100);
+  background-color: var(--color-brand-200);
   color: var(--color-brand-900);
 }

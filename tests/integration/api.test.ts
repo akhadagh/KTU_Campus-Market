@@ -204,6 +204,64 @@ describe.skipIf(!reachable)("airtime and digital delivery", () => {
   });
 });
 
+describe.skipIf(!reachable)("JUMART support messaging", () => {
+  it("lets a student message the JUMART team", async () => {
+    const session = new Session();
+    const email = `smoke.support.${Date.now()}@ktu.edu.gh`;
+    const created = await session.fetch("/api/v1/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fullName: "Smoke Support", email, password: "Password123" }),
+    });
+    expect(created.status).toBe(201);
+
+    const sent = await session.fetch("/api/v1/conversations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: "SUPPORT",
+        subject: "Order not delivered",
+        body: "My order has not arrived after three days.",
+      }),
+    });
+    expect(sent.status).toBe(201);
+    const payload = (await sent.json()) as { data: { conversationId: string } };
+    expect(payload.data.conversationId).toBeTruthy();
+
+    const list = await session.fetch("/api/v1/conversations");
+    const listPayload = (await list.json()) as {
+      data: { conversations: { kind: string; peerName: string }[] };
+    };
+    const support = listPayload.data.conversations.find((item) => item.kind === "SUPPORT");
+    expect(support?.peerName).toBe("JUMART Support");
+  });
+});
+
+describe.skipIf(!reachable)("free learning materials", () => {
+  it("exposes the public materials library", async () => {
+    const res = await fetch(`${BASE_URL}/api/v1/resources`);
+    expect(res.status).toBe(200);
+    const payload = (await res.json()) as { data: { materials: unknown[] } };
+    expect(Array.isArray(payload.data.materials)).toBe(true);
+  });
+});
+
+describe.skipIf(!reachable)("vendor link approval gate", () => {
+  it("keeps unapproved external links hidden and exposes approved ones", async () => {
+    const pending = await fetch(`${BASE_URL}/api/v1/products/airteltigo-20gb-monthly`);
+    expect(pending.status).toBe(404);
+
+    const approved = await fetch(`${BASE_URL}/api/v1/products/mtn-10gb-weekly`);
+    expect(approved.status).toBe(200);
+    const payload = (await approved.json()) as {
+      data: { product: { purchaseMode: string; externalStatus: string; externalUrl: string } };
+    };
+    expect(payload.data.product.purchaseMode).toBe("EXTERNAL");
+    expect(payload.data.product.externalStatus).toBe("APPROVED");
+    expect(payload.data.product.externalUrl).toMatch(/^https?:\/\//);
+  });
+});
+
 describe.skipIf(!reachable)("cart and checkout", () => {
   it("adds a live listing to a guest cart and returns the summary", async () => {
     const session = new Session();

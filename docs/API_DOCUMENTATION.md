@@ -3,6 +3,7 @@
 **Base path:** `/api/v1`
 **Format:** JSON
 **Authentication:** Secure session cookie (`cm_session`)
+**Platform:** JUMART — Your Campus. Your Marketplace.
 
 > Status legend: **Implemented** — live and verified against the database · **Planned** — specified but not built.
 
@@ -318,10 +319,11 @@ If Paystack is not configured the endpoint returns `503 PROVIDER_UNAVAILABLE` �
 
 | Method | Path | Status | Description |
 |---|---|---|---|
-| GET | `/airtime` | Implemented | Bundle catalogue with network filters (page) |
-| GET | `/api/v1/products/:slug` | Implemented | Bundle details including `purchaseMode` and `digitalDetails` |
+| GET | `/airtime` | Implemented | Verified merchant catalogue with their packages (page) |
+| GET | `/api/v1/products/:slug` | Implemented | Bundle details including `purchaseMode`, `externalStatus` and `digitalDetails` |
+| POST | `/api/v1/admin/products/:id/external-review` | Implemented | Approve or reject a vendor purchase link |
 
-Two purchase paths are supported. `INTERNAL` bundles are added to the cart, paid for with Paystack and credited by the seller to the MSISDN captured at checkout. `EXTERNAL` bundles link to the seller's own site or app (for example a network's bundle page) and the buyer is redirected there, with the platform stating plainly that it does not handle that payment.
+Vendors register airtime and data packages as `purchaseMode: EXTERNAL` with `externalUrl` pointing at their own site or app. Every new link starts as `externalStatus: PENDING` and is hidden from students until an administrator approves it; the public catalogue, marketplace queries and product endpoint all filter on `purchaseMode = INTERNAL` **or** `externalStatus = APPROVED`. Rejecting a link notifies the vendor and records the decision in the audit log.
 
 ---
 
@@ -347,18 +349,34 @@ Only items whose vendor order is `DELIVERED` can be reviewed, one review per ord
 
 ---
 
+## 12b. Free learning materials — Implemented
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/resources` | Implemented | Free materials library (page) |
+| GET | `/api/v1/resources` | Implemented | Published materials, filter by `q`, `course`, `category` |
+| POST | `/api/v1/resources/:id/download` | Implemented | Count the download and redirect to the file |
+| GET | `/api/v1/admin/resources` | Implemented | All materials with status and download counts |
+| POST | `/api/v1/admin/resources` | Implemented | Upload a file to Vercel Blob and publish it |
+| PATCH | `/api/v1/admin/resources/:id` | Implemented | `DRAFT`, `PUBLISHED` or `ARCHIVED` |
+
+Materials are uploaded by administrators as multipart form data (`file`, plus `title`, `course`, `level`, `category`, `description`). Files are stored in Vercel Blob and every published material is downloadable free by students.
+
+---
+
 ## 13. Messaging and notifications — Implemented
 
 | Method | Path | Status | Description |
 |---|---|---|---|
-| GET | `/conversations` | Implemented | Buyer conversations with the last message |
+| GET | `/conversations` | Implemented | Buyer conversations (seller and JUMART support) with the last message |
 | POST | `/conversations` | Implemented | Start (or reuse) a conversation and send a message |
+| POST | `/conversations` (kind `SUPPORT`) | Implemented | Open a support thread with the JUMART team (`subject` + `body`) |
 | GET | `/conversations/:id/messages` | Implemented | Message history (marks the other side read) |
 | POST | `/conversations/:id/messages` | Implemented | Reply in a conversation |
 | GET | `/notifications` | Implemented | Notifications with unread count |
 | POST | `/notifications` | Implemented | Mark notifications as read (all or by id) |
 
-Messages are restricted to the buyer and the store owner; the other party receives a notification.
+Messages are restricted to the buyer, the store owner and staff on support threads; the other party receives a notification. Support threads have `kind = SUPPORT`, no store attached, and are answered in the admin inbox at `/admin/messages`.
 
 ---
 
@@ -420,6 +438,8 @@ Request: `{ "message": "I need a charger under GH₵100" }` →
 | PATCH | `/admin/reports/:id` | Implemented | Report decisions |
 | GET | `/admin/users` | Planned | User management |
 | GET | `/admin/analytics` | Planned | Platform analytics |
+| GET | `/admin/messages` | Implemented | Support inbox (page) |
+| GET | `/admin/airtime` | Implemented | Vendor purchase-link approval queue (page) |
 
 Admin pages (`/admin`, `/admin/vendors`, `/admin/products`, `/admin/orders`, `/admin/reports`, `/admin/reviews`) render from the database and are permission-gated server-side.
 

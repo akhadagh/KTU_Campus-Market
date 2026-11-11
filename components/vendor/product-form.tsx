@@ -124,8 +124,8 @@ export function ProductForm({
         setUploadError(json.error?.message ?? "The image could not be uploaded.");
         return;
       }
-      setImagePreviews((current) => [...current, json.data!.url!].slice(0, 4));
-      setValue("imageUrlsText", [...imagePreviews, json.data.url].slice(0, 4).join("\n"), {
+      setImagePreviews((current) => [...current, json.data!.url!].slice(0, 8));
+      setValue("imageUrlsText", [...imagePreviews, json.data.url].slice(0, 8).join("\n"), {
         shouldValidate: true,
       });
     } catch {
@@ -345,7 +345,7 @@ export function ProductForm({
               className="accent-brand-700 mt-0.5 h-4 w-4"
             />
             <span>
-              <span className="font-medium text-neutral-900">Sell on Campus Market</span>
+              <span className="font-medium text-neutral-900">Sell on JUMART</span>
               <span className="block text-xs text-neutral-600">
                 Buyers pay here and you fulfil the order from your dashboard.
               </span>
@@ -362,7 +362,8 @@ export function ProductForm({
             <span>
               <span className="font-medium text-neutral-900">Send buyers to my own link</span>
               <span className="block text-xs text-neutral-600">
-                Useful for airtime and bundles sold on your own site, app or a provider page.
+                Useful for airtime and bundles sold on your own site, app or a provider page. An
+                administrator reviews the link before students can see it.
               </span>
             </span>
           </label>
@@ -451,8 +452,8 @@ export function ProductForm({
       <div className="rounded-xl border border-neutral-200 bg-neutral-50/60 p-4">
         <p className="text-sm font-medium text-neutral-900">Product photos</p>
         <p className="mt-1 text-xs leading-5 text-neutral-600">
-          Upload up to four photos, or paste image links from anywhere. Listings with a clear photo
-          sell much faster.
+          Upload up to eight photos so buyers can see every angle, or paste image links from
+          anywhere. Listings with a clear photo sell much faster.
         </p>
         <div className="mt-3 flex flex-wrap gap-3">
           {imagePreviews.map((preview, index) => (
@@ -473,7 +474,7 @@ export function ProductForm({
               </button>
             </div>
           ))}
-          {imagePreviews.length < 4 ? (
+          {imagePreviews.length < 8 ? (
             <label className="hover:border-brand-400 hover:text-brand-700 grid h-20 w-20 cursor-pointer place-items-center rounded-lg border border-dashed border-neutral-300 bg-white text-xs font-medium text-neutral-500 transition-colors">
               {uploading ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

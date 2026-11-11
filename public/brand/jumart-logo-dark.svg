@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" role="img" aria-label="JUMART — Your Campus. Your Marketplace.">
+  <defs>
+    <linearGradient id="jumartLogoBagDark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5B21B6" />
+      <stop offset="55%" stop-color="#3B087D" />
+      <stop offset="100%" stop-color="#2A0560" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(8 8)">
+    <path d="M14 14h30a5 5 0 0 1 5 5.2l-2.2 21.7A7.5 7.5 0 0 1 39.3 48H18.7a7.5 7.5 0 0 1-7.5-6.9L9 19.2A5 5 0 0 1 14 14Z" fill="url(#jumartLogoBagDark)" />
+    <path d="M21 14c0-7.5 3.9-12.5 8.8-12.5S38.5 6.5 38.5 14" fill="none" stroke="#FF9200" stroke-width="5" stroke-linecap="round" />
+    <path d="M37 20.5c-3.3 0-5.8 2.4-5.8 5.3v6.7c0 4.5-2.9 7.5-6.8 7.5-3 0-5.4-1.9-5.9-4.5" fill="none" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round" />
+    <g stroke="#FF9200" stroke-width="3.8" stroke-linecap="round">
+      <path d="M0 25h12" />
+      <path d="M-5 34h15" />
+      <path d="M0 43h11" />
+    </g>
+  </g>
+
+  <text
+    x="86"
+    y="46"
+    font-family="Poppins, Montserrat, 'Segoe UI', system-ui, sans-serif"
+    font-size="38"
+    font-weight="800"
+    font-style="italic"
+    letter-spacing="-0.5"
+  >
+    <tspan fill="#FFFFFF">JUM</tspan><tspan fill="#FF9200">ART</tspan>
+  </text>
+  <text
+    x="88"
+    y="66"
+    font-family="Poppins, Montserrat, 'Segoe UI', system-ui, sans-serif"
+    font-size="13"
+    font-weight="600"
+    fill="#C9B6EA"
+  >
+    Your Campus. Your Marketplace.
+  </text>
+</svg>

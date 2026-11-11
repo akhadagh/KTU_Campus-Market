@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Package, ShieldCheck, Star, Truck, Wallet } from "lucide-react";
+import { MapPin, ShieldCheck, Star, Truck, Wallet } from "lucide-react";
+import { ProductGallery } from "@/components/commerce/product-gallery";
 import { PurchasePanel } from "@/components/commerce/purchase-panel";
 import { ReportListingButton } from "@/components/commerce/report-listing-button";
 import { AddToWishlistButton } from "@/components/commerce/add-to-wishlist-button";
@@ -78,18 +79,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
       <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-          <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 shadow-[var(--shadow-card)]">
-            {product.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={product.imageUrl}
-                alt={product.imageAlt ?? product.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Package className="h-20 w-20 text-neutral-400" aria-hidden="true" />
-            )}
-          </div>
+          <ProductGallery images={product.images} productName={product.name} />
 
           <ul className="mt-4 grid grid-cols-3 gap-3">
             {[

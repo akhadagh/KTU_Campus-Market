@@ -57,8 +57,8 @@ export function VerifyEmailStatus({ token }: { token?: string }) {
           <p className="font-medium">Email verified</p>
         </div>
         <p className="mt-2 text-sm text-emerald-800">
-          Your account is now verified. You can use every part of Campus Market that does not
-          require vendor approval.
+          Your account is now verified. You can use every part of JUMART that does not require
+          vendor approval.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link href="/account" className={buttonVariants()}>

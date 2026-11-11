@@ -1,10 +1,10 @@
-# Campus Market
+# JUMART
 
-**Everything You Need. Right Around Campus.**
+**Your Campus. Your Marketplace.**
 
-Campus Market is a mobile-first, multi-vendor marketplace for university communities, launching at Koforidua Technical University (KTU), Ghana. Students can discover products, buy from verified campus vendors, open their own stores, manage orders, and get help from an AI shopping assistant grounded in real marketplace listings.
+JUMART is a mobile-first, multi-vendor marketplace for university communities, launching at Koforidua Technical University (KTU), Ghana. Students can discover products, buy from verified campus vendors, open their own stores, manage orders, download free past questions and lecture notes, top up airtime through approved merchants, and get help from an AI shopping assistant grounded in real listings.
 
-> **Project status:** Milestone 8 of 12 — the marketplace core is live with a realistic catalogue (7 campus stores, 49 listings, real photography), airtime and data bundle purchases, and live image uploads. Vendors apply and get approved, listings are published and moderated, buyers can search, add to cart, check out and pay with Paystack, sellers fulfil orders, and buyers can review, message and report. Email delivery and image uploads still need provider credentials; refunds, disputes and payouts are not built yet. See [CAMPUS_MARKET_FUNCTIONALITY_AUDIT.md](./CAMPUS_MARKET_FUNCTIONALITY_AUDIT.md) for the evidence-backed status of every module.
+> **Project status:** Milestone 9 of 12 — the JUMART brand is live across every surface, with 8 campus stores, 90 listings, 76 real photographs, admin-approved vendor purchase links, a free learning-materials library and support messaging. Vendors apply and get approved, listings are published and moderated, buyers can search, add to cart, check out and pay with Paystack, sellers fulfil orders, and buyers can review, message and report. Refunds, disputes and payouts are not built yet. See [CAMPUS_MARKET_FUNCTIONALITY_AUDIT.md](./CAMPUS_MARKET_FUNCTIONALITY_AUDIT.md) for the evidence-backed status of every module.
 
 ---
 
@@ -74,7 +74,8 @@ The application will be available at `http://localhost:3000`.
 ### Current status
 
 - Working: marketing + shop + admin UI, auth with email verification and password reset, vendor onboarding and approval, product CRUD with moderation and real image uploads to Vercel Blob, database-backed marketplace with search/filters/pagination, cart, wishlist, multi-vendor checkout and orders, Paystack payments, seller fulfilment, airtime and data bundle purchase (in-site with MSISDN capture, or redirect to the seller's own link), reviews, reports, messaging, notifications, admin console and a grounded AI assistant.
-- Catalogue: 7 realistic campus stores (Adum Tech Point, Campus Book Hub, Hostel Nest Store, Adum Fresh Mart, Kente & Co. Threads, KTU Print & Graphics, TeleLink Data Point), 49 live listings priced in Ghana cedis, 56 real product photographs, 11 category images and 8 published verified-purchase reviews.
+- Catalogue: 8 campus stores (Adum Tech Point, Campus Book Hub, Hostel Nest Store, Adum Fresh Mart, Kente & Co. Threads, KTU Print & Graphics, TeleLink Data Point, Kwame's Data Spot), 90 live listings priced in Ghana cedis — sandals, sneakers, ankara dresses, student beds, waakye, kelewele, banku, ice cream, study gear and services — with 76 real product photographs, 11 category images and 8 published verified-purchase reviews.
+- New JUMART modules: free past-questions and lecture-materials library (admin uploads to Vercel Blob, students download free), admin-approved vendor purchase links for airtime and data packages, and support messaging so students can message the JUMART team directly.
 - Database: Prisma schema (46 tables), migration `0001_init`, and seed applied to Neon PostgreSQL; `pnpm db:verify` and `/api/health` prove connectivity.
 - Verification: auth, email, vendor approval, moderation, cart → checkout → Paystack → fulfilment, RBAC denials, the AI assistant and the 21-test Vitest suite were all exercised against the live database.
 - Deployed: https://campus-market-teal.vercel.app

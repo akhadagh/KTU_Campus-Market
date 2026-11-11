@@ -1,11 +1,25 @@
-# Campus Market — Functionality Audit
+# JUMART — Functionality Audit & Brand Implementation Report
 
-**Audit date:** 2026-11-10 (baseline) · **Re-audited:** 2026-11-11 after implementation
+**Audit date:** 2026-11-10 (baseline) · **Re-audited:** 2026-11-11 (commerce build) · **JUMART brand pass:** 2026-11-11
 **Auditor role:** Senior architect / QA / security review
 **Scope:** Whole application vs. the Campus Market master specification and audit prompt.
 **Rule:** A feature is only "VERIFIED WORKING" with observed evidence (UI → API → DB → auth). No assumption from page existence.
 
 Status key: `VW` Verified Working · `PW` Partially Working · `NI` Not Implemented · `BR` Broken · `BC` Blocked by Credentials · `BS` Blocked by External Service · `MV` Needs Manual Verification
+
+---
+
+## 0. JUMART brand transformation (2026-11-11)
+
+**Identity.** The platform is now **JUMART — Your Campus. Your Marketplace.** Deep purple `#3B087D`, vibrant purple `#6500D8`, action orange `#FF9200`, canvas `#F8F5FC`, ink `#20152F`. The logo is an original vector mark (a purple shopping bag with a white "J" and orange speed lines) built from the supplied reference rather than cropped from it.
+
+**Assets created** (all in `public/brand/`): `jumart-logo.svg` (primary), `jumart-logo-light.svg`, `jumart-logo-dark.svg`, `jumart-symbol.svg`, `jumart-icon.svg`, `jumart-favicon.svg`, `jumart-favicon-32.png`, `jumart-app-icon.png` (512×512), `jumart-og.png` (1200×630), plus the supplied reference copies.
+
+**System.** Poppins type stack, refreshed colour tokens, a new button scale (primary/accent/secondary/outline/ghost/danger), card shadows, focus rings, skeleton and empty states, and a shared `JumartLogo`/`JumartMark`/`JumartWordmark` component used by the header, footer, auth screens and marketing pages.
+
+**Navigation.** The top bar was slimmed to logo, search, cart badge, account and a single "Sell" action. Secondary links moved into a slide-out drawer (shop, account, support). The Ask AI button was removed from the top bar and now lives only in the drawer. A live cart badge shows the number of items on every page.
+
+**New modules.** Free learning materials (admin uploads, students download), admin-approved vendor purchase links for airtime, and student-to-JUMART support messaging.
 
 ---
 
@@ -164,4 +178,4 @@ Secrets are stored only in `.env` (gitignored) and Vercel environment variables,
 
 **Production status:** deployed and live at https://campus-market-teal.vercel.app with Paystack and Gemini enabled in the Vercel environment. Email delivery is the only configured integration still missing (add `RESEND_API_KEY` to enable it).
 
-**Readiness estimate:** Milestone 8 of 12 (marketplace core, payments and moderation complete; refunds, disputes, delivery tracking, student verification and analytics remain).
+**Readiness estimate:** Milestone 9 of 12 (JUMART brand, marketplace core, payments, moderation, trust and support complete; refunds, disputes, delivery tracking, student verification and analytics remain).

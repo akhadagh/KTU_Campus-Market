@@ -6,7 +6,7 @@ import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Categories",
-  description: "Browse all Campus Market categories and subcategories.",
+  description: "Browse all JUMART categories and subcategories.",
 };
 
 export default async function CategoriesPage() {

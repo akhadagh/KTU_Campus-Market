@@ -137,10 +137,22 @@ const vendors = [
     slug: "telelink-data-point",
     email: "telelinkdatapoint@campusmarket.gh",
     description:
-      "Airtime and data bundles for MTN, Telecel, Vodafone and AirtelTigo. Buy on Campus Market and we credit your number, or continue to the network's own page.",
+      "Airtime and data bundles for MTN, Telecel, Vodafone and AirtelTigo. Buy on JUMART and we credit your number, or continue to the network's own page.",
     businessCategory: "Airtime & Data",
     phone: "+233245551207",
     whatsapp: "+233245551207",
+    deliveryAvailable: true,
+    pickupAvailable: true,
+  },
+  {
+    storeName: "Kwame's Data Spot",
+    slug: "kwames-data-spot",
+    email: "kwamesdatagotpoint@campusmarket.gh",
+    description:
+      "Data bundles for every network, bought from the nearest point. Send us your number on WhatsApp and we top it up while you wait.",
+    businessCategory: "Airtime & Data",
+    phone: "+233245551208",
+    whatsapp: "+233245551208",
     deliveryAvailable: true,
     pickupAvailable: true,
   },
@@ -160,7 +172,9 @@ type ProductSeed = {
   delivery?: DeliveryOption[];
   purchaseMode?: PurchaseMode;
   externalUrl?: string;
+  externalStatus?: "PENDING" | "APPROVED" | "REJECTED";
   digital?: { network: string; dataAmount: string; validity: string };
+  images?: string[];
 };
 
 const products: ProductSeed[] = [
@@ -725,7 +739,7 @@ const products: ProductSeed[] = [
     slug: "telecel-2gb-daily-data",
     name: "Telecel 2GB Daily Data",
     description:
-      "Two gigabytes of Telecel data that renews every day. Bought on Campus Market and credited straight to your number.",
+      "Two gigabytes of Telecel data that renews every day. Bought on JUMART and credited straight to your number.",
     pricePesewas: 1200,
     condition: "New",
     categorySlug: "airtime-bundles",
@@ -762,7 +776,561 @@ const products: ProductSeed[] = [
     tags: ["vodafone", "data", "calls"],
     delivery: [DeliveryOption.DIGITAL],
     purchaseMode: PurchaseMode.EXTERNAL,
+    externalStatus: "APPROVED",
     externalUrl: "https://www.vodafone.com.gh/data-bundles",
+  },
+];
+
+const ghanaianProducts: ProductSeed[] = [
+  {
+    slug: "ghanaian-sandals",
+    name: "Ghanaian Leather Sandals (Size 42)",
+    description:
+      "Hand-finished leather sandals with a cushioned insole, made for long days on campus. Available in sizes 39 to 45, and we can resize before delivery.",
+    pricePesewas: 12000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 14,
+    tags: ["sandals", "leather", "footwear"],
+    images: ["ghanaian-sandals", "ghanaian-sandals-2"],
+  },
+  {
+    slug: "white-sneakers",
+    name: "White Canvas Sneakers (Size 42)",
+    description:
+      "Clean white canvas sneakers with a padded insole and a rubber sole for daily campus use. True to size, brand new in the box.",
+    pricePesewas: 18000,
+    originalPricePesewas: 22000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 11,
+    tags: ["sneakers", "shoes", "white"],
+    images: ["white-sneakers", "white-sneakers-2"],
+  },
+  {
+    slug: "ankara-maxi-dress",
+    name: "Ankara Maxi Dress",
+    description:
+      "Full-length ankara dress with a fitted waist and side pockets. Made to order in your size, and it takes two days.",
+    pricePesewas: 22000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 8,
+    tags: ["ankara", "dress", "women"],
+    images: ["ankara-maxi-dress", "ankara-maxi-dress-2"],
+  },
+  {
+    slug: "kente-shirt-men",
+    name: "Men's Kente Shirt",
+    description:
+      "Short-sleeve kente shirt with a tailored collar, cut from our house fabric. Sizes S to XXL, and we can swap the size free of charge.",
+    pricePesewas: 16000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 12,
+    tags: ["kente", "shirt", "men"],
+    images: ["kente-shirt-men", "kente-shirt-men-2"],
+  },
+  {
+    slug: "adinkra-tote-bag",
+    name: "Adinkra Print Tote Bag",
+    description:
+      "Sturdy cotton tote with Adinkra symbol prints and a reinforced base. Fits a laptop, notes and a lunch box.",
+    pricePesewas: 9500,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 15,
+    tags: ["tote", "bag", "adinkra"],
+    images: ["adinkra-tote-bag", "adinkra-tote-bag-2"],
+  },
+  {
+    slug: "denim-skirt",
+    name: "Denim Mini Skirt",
+    description:
+      "High-waisted denim skirt with a short zip, worn once and washed. Sizes S and M available now.",
+    pricePesewas: 9000,
+    condition: "Like new",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 7,
+    tags: ["denim", "skirt"],
+    images: ["denim-skirt", "denim-skirt-2"],
+  },
+  {
+    slug: "student-bed-frame-mattress",
+    name: "Student Bed Frame with Mattress",
+    description:
+      "Powder-coated metal single bed with a matching 4 by 6 foot mattress. Delivered and assembled in your hostel room.",
+    pricePesewas: 65000,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 5,
+    tags: ["bed", "mattress", "hostel"],
+    delivery: ["PICKUP", "CAMPUS_DELIVERY"],
+    images: ["student-bed-frame-mattress", "student-bed-frame-mattress-2"],
+  },
+  {
+    slug: "mattress-single-4x6",
+    name: "Single Mattress (4 x 6 ft)",
+    description:
+      "Spring mattress with a cotton cover, firm enough for study and soft enough to sleep on. Vacuum-packed for delivery.",
+    pricePesewas: 35000,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 9,
+    tags: ["mattress", "bed", "hostel"],
+    images: ["mattress-single-4x6", "mattress-single-4x6-2"],
+  },
+  {
+    slug: "ceiling-fan-5-blade",
+    name: "5-Blade Ceiling Fan",
+    description:
+      "Five-blade ceiling fan with a three-speed pull switch. Installed by our technician when you buy the fitting service.",
+    pricePesewas: 32000,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 4,
+    tags: ["fan", "ceiling", "hostel"],
+    images: ["ceiling-fan-5-blade", "ceiling-fan-5-blade-2"],
+  },
+  {
+    slug: "plastic-basin-set",
+    name: "Plastic Basin & Bucket Set",
+    description:
+      "Two wash basins and a matching bucket, all food-grade plastic. The set every first-year hostel room needs.",
+    pricePesewas: 4500,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 20,
+    tags: ["basin", "bucket", "hostel"],
+    images: ["plastic-basin-set", "plastic-basin-set-2"],
+  },
+  {
+    slug: "waakye-shito-egg",
+    name: "Waakye with Shito and Egg",
+    description:
+      "Proper Ghanaian waakye with shito, wele, boiled egg and spaghetti. Served hot with a wrapped Ghana choppie.",
+    pricePesewas: 2000,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 30,
+    tags: ["waakye", "food", "breakfast"],
+    images: ["waakye-shito-egg", "waakye-shito-egg-2"],
+  },
+  {
+    slug: "gari-and-beans",
+    name: "Gari and Beans with Pepper",
+    description:
+      "Gari cooked the Ghanaian way with beans and shito. Cheap, filling and the standard lunch for most students on campus.",
+    pricePesewas: 1500,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 40,
+    tags: ["gari", "beans", "food"],
+    images: ["gari-and-beans", "gari-and-beans-2"],
+  },
+  {
+    slug: "kelewele",
+    name: "Kelewele (Fried Ripe Plantain)",
+    description:
+      "Ripe plantain fried with ginger, pepper and spices, served in a paper cone with roasted groundnuts.",
+    pricePesewas: 1200,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 35,
+    tags: ["kelewele", "plantain", "snack"],
+    images: ["kelewele", "kelewele-2"],
+  },
+  {
+    slug: "banku-groundnut-soup",
+    name: "Banku with Groundnut Soup",
+    description:
+      "Smooth banku served with a rich groundnut soup, spinach and boiled egg. Comes with a spoon and a wrapper.",
+    pricePesewas: 2200,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 25,
+    tags: ["banku", "soup", "food"],
+    images: ["banku-groundnut-soup", "banku-groundnut-soup-2"],
+  },
+  {
+    slug: "ghanaian-ice-cream-tub",
+    name: "Ghanaian Ice Cream (1L Tub)",
+    description:
+      "Locally made ice cream in a one-litre tub, the coconut and vanilla flavours students queue for. Keep it in the freezer.",
+    pricePesewas: 3500,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 18,
+    tags: ["ice cream", "dessert", "cold"],
+    images: ["ghanaian-ice-cream-tub", "ghanaian-ice-cream-tub-2"],
+  },
+  {
+    slug: "sobolo-hibiscus-bottle",
+    name: "Sobolo Hibiscus Drink",
+    description:
+      "Chilled hibiscus drink with ginger and pineapple, sold by the bottle at every corner of campus.",
+    pricePesewas: 800,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 60,
+    tags: ["sobolo", "drink", "beverage"],
+    images: ["sobolo-hibiscus-bottle", "sobolo-hibiscus-bottle-2"],
+  },
+  {
+    slug: "kankake-ghanaian-pancake",
+    name: "Kankake (Ghanaian Pancake)",
+    description:
+      "Soft rice pancake with ripe plantain and ginger sauce, made fresh every morning. Two pieces per order.",
+    pricePesewas: 1000,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 45,
+    tags: ["kankake", "pancake", "breakfast"],
+    images: ["kankake-ghanaian-pancake", "kankake-ghanaian-pancake-2"],
+  },
+  {
+    slug: "plantain-chips-pack",
+    name: "Plantain Chips Pack",
+    description:
+      "Crunchy plantain chips seasoned with pepper and salt. The study-session snack that sells out by Friday.",
+    pricePesewas: 1200,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 50,
+    tags: ["plantain chips", "snack"],
+    images: ["plantain-chips-pack", "plantain-chips-pack-2"],
+  },
+  {
+    slug: "milo-sachet-pack",
+    name: "Milo 3-in-1 Sachets (Pack of 20)",
+    description:
+      "Twenty sachets of Milo 3-in-1 for late-night study sessions. The single most requested item at exam time.",
+    pricePesewas: 2500,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 22,
+    tags: ["milo", "beverage", "study"],
+    images: ["milo-sachet-pack", "milo-sachet-pack-2"],
+  },
+  {
+    slug: "bread-loaf",
+    name: "Fresh Bread Loaf",
+    description:
+      "Soft sliced bread baked this morning. Bought in the afternoon means you get the last few slices, so order early.",
+    pricePesewas: 1800,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 24,
+    tags: ["bread", "groceries"],
+    images: ["bread-loaf", "bread-loaf-2"],
+  },
+  {
+    slug: "sugar-1kg",
+    name: "Sugar (1kg)",
+    description:
+      "One kilogram bag of granulated sugar. We sell it loose from the sack, so it is always fresh.",
+    pricePesewas: 2000,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 40,
+    tags: ["sugar", "groceries"],
+    images: ["sugar-1kg", "sugar-1kg-2"],
+  },
+  {
+    slug: "bottled-water-pack",
+    name: "Bottled Water (Pack of 12)",
+    description:
+      "Shrink-wrapped pack of twelve 75cl bottles. Perfect for a group project meeting or a hostel floor.",
+    pricePesewas: 2500,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 30,
+    tags: ["water", "drink"],
+    images: ["bottled-water-pack", "bottled-water-pack-2"],
+  },
+  {
+    slug: "eggs-carton-30",
+    name: "Eggs (Carton of 30)",
+    description:
+      "Full carton of fresh eggs, collected from our supplier each morning. Checked for breakage before delivery.",
+    pricePesewas: 4500,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 16,
+    tags: ["eggs", "groceries", "protein"],
+    images: ["eggs-carton-30", "eggs-carton-30-2"],
+  },
+  {
+    slug: "type-c-cable-2m",
+    name: "USB-C Cable (2 metres)",
+    description:
+      "Braided USB-C to USB-C cable rated for 60W charging. The cable everyone in the hostel hall is looking for.",
+    pricePesewas: 2500,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 40,
+    tags: ["cable", "usb-c", "charger"],
+    images: ["type-c-cable-2m", "type-c-cable-2m-2"],
+  },
+  {
+    slug: "laptop-backpack",
+    name: '15.6" Laptop Backpack',
+    description:
+      "Water-resistant backpack with a padded laptop compartment, USB charging port and a side water-bottle pocket. Built for a full day of lectures.",
+    pricePesewas: 15000,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 16,
+    tags: ["backpack", "bag", "laptop"],
+    images: ["laptop-backpack", "laptop-backpack-2"],
+  },
+  {
+    slug: "laptop-sleeve",
+    name: 'Laptop Sleeve (14")',
+    description:
+      "Slim felt sleeve with a soft lining that protects your laptop from hostel knocks. Slim enough to fit inside a backpack.",
+    pricePesewas: 6000,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 24,
+    tags: ["laptop", "sleeve", "accessories"],
+    images: ["laptop-sleeve", "laptop-sleeve-2"],
+  },
+  {
+    slug: "phone-holder-stand",
+    name: "Adjustable Phone Stand",
+    description:
+      "Foldable aluminium phone stand that holds a phone upright for video calls or watching lectures.",
+    pricePesewas: 2000,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 30,
+    tags: ["phone stand", "accessories"],
+    images: ["phone-holder-stand", "phone-holder-stand-2"],
+  },
+  {
+    slug: "tws-earbuds",
+    name: "TWS Wireless Earbuds",
+    description:
+      "Bluetooth earbuds with a charging case, 24 hours of playback and low-latency mode for video lectures.",
+    pricePesewas: 12000,
+    originalPricePesewas: 15000,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 18,
+    tags: ["earbuds", "audio", "bluetooth"],
+    images: ["tws-earbuds", "tws-earbuds-2"],
+  },
+  {
+    slug: "usb-flash-64gb",
+    name: "64GB USB Flash Drive",
+    description:
+      "USB 3.1 flash drive for project submissions and notes. Comes in a hard case with a lanyard.",
+    pricePesewas: 4500,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 28,
+    tags: ["usb", "storage", "accessories"],
+    images: ["usb-flash-64gb", "usb-flash-64gb-2"],
+  },
+  {
+    slug: "drawing-board-set",
+    name: "Drawing Board & Set (A3)",
+    description:
+      "A3 drawing board with a set square, ruler and compass in a carry bag. Everything the technical drawing course asks for.",
+    pricePesewas: 4000,
+    condition: "New",
+    categorySlug: "books-academics",
+    vendorSlug: "campus-book-hub",
+    quantity: 20,
+    tags: ["drawing", "technical", "art"],
+    images: ["drawing-board-set", "drawing-board-set-2"],
+  },
+  {
+    slug: "geometry-set",
+    name: "Geometry Set",
+    description:
+      "Complete geometry set with compass, protractor, set square and rulers in a transparent case.",
+    pricePesewas: 2500,
+    condition: "New",
+    categorySlug: "books-academics",
+    vendorSlug: "campus-book-hub",
+    quantity: 26,
+    tags: ["geometry", "maths", "stationery"],
+    images: ["geometry-set", "geometry-set-2"],
+  },
+  {
+    slug: "colour-pens-pack",
+    name: "Colour Pens Pack (12)",
+    description: "Twelve assorted colour pens with fine tips that do not blot through exam paper.",
+    pricePesewas: 2000,
+    condition: "New",
+    categorySlug: "books-academics",
+    vendorSlug: "campus-book-hub",
+    quantity: 35,
+    tags: ["pens", "colour", "stationery"],
+    images: ["colour-pens-pack", "colour-pens-pack-2"],
+  },
+  {
+    slug: "a3-drawing-sheet-pack",
+    name: "A3 Drawing Sheets (Pack of 10)",
+    description:
+      "Ten A3 cartridge drawing sheets with a border printed. Order early, they disappear before the second semester.",
+    pricePesewas: 3500,
+    condition: "New",
+    categorySlug: "books-academics",
+    vendorSlug: "campus-book-hub",
+    quantity: 30,
+    tags: ["drawing sheet", "a3", "stationery"],
+    images: ["a3-drawing-sheet-pack", "a3-drawing-sheet-pack-2"],
+  },
+  {
+    slug: "study-planner",
+    name: "Academic Year Planner",
+    description:
+      "Weekly planner with a full academic year of pages, exam countdown and a notes section. Printed on thick paper.",
+    pricePesewas: 2500,
+    condition: "New",
+    categorySlug: "books-academics",
+    vendorSlug: "campus-book-hub",
+    quantity: 40,
+    tags: ["planner", "stationery", "study"],
+    images: ["study-planner", "study-planner-2"],
+  },
+  {
+    slug: "project-soft-binding",
+    name: "Project Soft Binding (per copy)",
+    description:
+      "Soft-cover binding with a printed colour cover and a clear spine label. We collect from the department or you drop it off.",
+    pricePesewas: 6000,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 99,
+    tags: ["binding", "project", "printing"],
+    images: ["project-soft-binding", "project-soft-binding-2"],
+  },
+  {
+    slug: "id-card-printing",
+    name: "Campus ID Card Printing",
+    description:
+      "Printed and laminated campus ID card, ready in ten minutes. Bring your passport photo.",
+    pricePesewas: 1500,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 99,
+    tags: ["id card", "printing", "campus"],
+    images: ["id-card-printing", "id-card-printing-2"],
+  },
+  {
+    slug: "thesis-print-binding",
+    name: "Thesis Printing & Binding",
+    description:
+      "Spiral or hard binding for a full project, printed single-sided on A4 with a margin for binding.",
+    pricePesewas: 12000,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 99,
+    tags: ["thesis", "printing", "binding"],
+    images: ["thesis-print-binding", "thesis-print-binding-2"],
+  },
+  {
+    slug: "poster-design",
+    name: "Poster & Flyer Design",
+    description:
+      "Design for a poster, flyer or event banner, delivered as a print-ready PDF and a high-resolution image.",
+    pricePesewas: 8000,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 99,
+    tags: ["design", "poster", "flyer"],
+    images: ["poster-design", "poster-design-2"],
+  },
+  {
+    slug: "mtn-10gb-weekly",
+    name: "MTN 10GB Weekly Data",
+    description:
+      "Ten gigabytes of MTN data valid for seven days. Buy directly from MTN through our partner link.",
+    pricePesewas: 4500,
+    condition: "New",
+    categorySlug: "airtime-bundles",
+    vendorSlug: "telelink-data-point",
+    quantity: 99,
+    tags: ["mtn", "data", "weekly"],
+    delivery: ["DIGITAL"],
+    purchaseMode: "EXTERNAL",
+    externalStatus: "APPROVED",
+    externalUrl: "https://www.mtn.com.gh/products/data-bundles",
+    digital: { network: "MTN", dataAmount: "10GB", validity: "7 days" },
+    images: ["mtn-data-bundle-5gb", "mtn-data-bundle-5gb-2"],
+  },
+  {
+    slug: "telecel-5gb-monthly",
+    name: "Telecel 5GB Monthly Data",
+    description:
+      "Five gigabytes of Telecel data with a thirty-day validity, ordered directly from Telecel.",
+    pricePesewas: 3000,
+    condition: "New",
+    categorySlug: "airtime-bundles",
+    vendorSlug: "kwames-data-spot",
+    quantity: 99,
+    tags: ["telecel", "data", "monthly"],
+    delivery: ["DIGITAL"],
+    purchaseMode: "EXTERNAL",
+    externalStatus: "APPROVED",
+    externalUrl: "https://telecel.com.gh/data",
+    digital: { network: "Telecel", dataAmount: "5GB", validity: "30 days" },
+    images: ["telecel-2gb-daily-data", "telecel-2gb-daily-data-2"],
+  },
+  {
+    slug: "airteltigo-20gb-monthly",
+    name: "AirtelTigo 20GB Monthly",
+    description:
+      "Twenty gigabytes of AirtelTigo data for the month, bought straight from the network's own page.",
+    pricePesewas: 6000,
+    condition: "New",
+    categorySlug: "airtime-bundles",
+    vendorSlug: "kwames-data-spot",
+    quantity: 99,
+    tags: ["airteltigo", "data", "monthly"],
+    delivery: ["DIGITAL"],
+    purchaseMode: "EXTERNAL",
+    externalStatus: "PENDING",
+    externalUrl: "https://www.airteltigo.com.gh/data-bundles",
+    digital: { network: "AirtelTigo", dataAmount: "20GB", validity: "30 days" },
+    images: ["airteltigo-10gb-monthly", "airteltigo-10gb-monthly-2"],
   },
 ];
 
@@ -1046,15 +1614,22 @@ async function main() {
       });
     }
 
-    for (const product of products.filter((item) => item.vendorSlug === vendor.slug)) {
+    const vendorProducts = [...products, ...ghanaianProducts].filter(
+      (item) => item.vendorSlug === vendor.slug,
+    );
+    let seededCount = 0;
+    for (const product of vendorProducts) {
+      seededCount += 1;
+      if (seededCount % 25 === 0) {
+        // Neon closes long-lived sessions; reconnect periodically to keep the seed stable.
+        await prisma.$disconnect();
+      }
       const categoryId = categoryRows.get(product.categorySlug);
       if (!categoryId) continue;
       const deliveryOptions = product.delivery ?? [
         DeliveryOption.PICKUP,
         DeliveryOption.CAMPUS_DELIVERY,
       ];
-      const imageUrl = `/products/${product.slug}.jpg`;
-
       const created = await prisma.product.upsert({
         where: { slug: product.slug },
         update: {
@@ -1069,6 +1644,7 @@ async function main() {
           pickupAvailable: vendor.pickupAvailable,
           purchaseMode: product.purchaseMode ?? PurchaseMode.INTERNAL,
           externalUrl: product.externalUrl ?? null,
+          externalStatus: product.externalStatus ?? "PENDING",
           digitalDetails: product.digital
             ? {
                 network: product.digital.network,
@@ -1097,6 +1673,7 @@ async function main() {
           pickupAvailable: vendor.pickupAvailable,
           purchaseMode: product.purchaseMode ?? PurchaseMode.INTERNAL,
           externalUrl: product.externalUrl ?? null,
+          externalStatus: product.externalStatus ?? "PENDING",
           digitalDetails: product.digital
             ? {
                 network: product.digital.network,
@@ -1111,13 +1688,14 @@ async function main() {
       });
 
       await prisma.productImage.deleteMany({ where: { productId: created.id } });
-      await prisma.productImage.create({
-        data: {
+      const imageFiles = product.images ?? [product.slug];
+      await prisma.productImage.createMany({
+        data: imageFiles.map((file, index) => ({
           productId: created.id,
-          url: imageUrl,
-          altText: `${product.name} on Campus Market`,
-          sortOrder: 0,
-        },
+          url: `/products/${file}.jpg`,
+          altText: `${product.name} on JUMART`,
+          sortOrder: index,
+        })),
       });
     }
   }

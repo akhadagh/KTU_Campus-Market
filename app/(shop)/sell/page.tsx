@@ -12,7 +12,7 @@ import { statusBadgeVariant, vendorStatusLabels } from "@/lib/labels";
 import { formatPesewas } from "@/lib/money";
 
 export const metadata: Metadata = {
-  title: "Sell on Campus Market",
+  title: "Sell on JUMART",
   description: "Open a campus store, list products, and manage orders.",
 };
 
@@ -51,7 +51,7 @@ function Marketing() {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
-        title="Sell on Campus Market"
+        title="Sell on JUMART"
         description="Turn your campus hustle into a storefront. One account lets you buy and sell."
         actions={
           <Link href="/register" className={buttonVariants({ size: "lg" })}>
@@ -87,7 +87,7 @@ function Marketing() {
           <Badge variant="success">What you will need</Badge>
           <ul className="mt-4 space-y-3 text-sm text-neutral-700">
             {[
-              "A Campus Market account",
+              "A JUMART account",
               "A store name and description",
               "Accurate product photos and prices",
               "Pickup or delivery preferences",

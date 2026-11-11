@@ -3,7 +3,7 @@ import { ContentPage } from "@/components/marketing/content-page";
 
 export const metadata: Metadata = {
   title: "Help & support",
-  description: "Answers to common Campus Market questions.",
+  description: "Answers to common JUMART questions.",
 };
 
 export default function HelpPage() {
@@ -50,7 +50,7 @@ export default function HelpPage() {
         {
           heading: "Current status",
           paragraphs: [
-            "Campus Market is under active development. Account, marketplace, cart, payment, and AI features are being delivered in the milestones documented in the project roadmap. Help content will expand as those features go live.",
+            "JUMART is under active development. Account, marketplace, cart, payment, and AI features are being delivered in the milestones documented in the project roadmap. Help content will expand as those features go live.",
           ],
         },
       ]}

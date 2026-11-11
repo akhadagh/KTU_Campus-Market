@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Apply to sell",
-  description: "Apply for a vendor store on Campus Market.",
+  description: "Apply for a vendor store on JUMART.",
 };
 
 export default async function VendorApplyPage() {

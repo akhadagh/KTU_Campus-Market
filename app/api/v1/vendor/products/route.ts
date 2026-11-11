@@ -84,6 +84,7 @@ export async function POST(request: Request) {
       pickupAvailable: values.pickupAvailable,
       purchaseMode: values.purchaseMode,
       externalUrl: values.purchaseMode === "EXTERNAL" ? values.externalUrl : null,
+      externalStatus: values.purchaseMode === "EXTERNAL" ? "PENDING" : "PENDING",
       digitalDetails: buildDigitalDetails(values) ?? Prisma.DbNull,
       images: {
         create: values.imageUrls.map((url, index) => ({

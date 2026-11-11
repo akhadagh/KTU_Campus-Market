@@ -4,7 +4,7 @@ import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 export const metadata: Metadata = {
   title: "Forgot password",
-  description: "Request a Campus Market password reset.",
+  description: "Request a JUMART password reset.",
 };
 
 export default function ForgotPasswordPage() {

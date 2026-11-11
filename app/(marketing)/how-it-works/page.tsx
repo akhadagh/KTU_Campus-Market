@@ -66,7 +66,7 @@ export default function HowItWorksPage() {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
-        title="How Campus Market works"
+        title="How JUMART works"
         description="A marketplace designed around student budgets, campus logistics, and trust."
       />
 

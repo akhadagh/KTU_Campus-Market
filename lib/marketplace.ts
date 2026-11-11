@@ -12,6 +12,7 @@ export interface MarketplaceProduct {
   quantity: number;
   imageUrl: string | null;
   imageAlt: string | null;
+  images: { url: string; altText: string | null }[];
   categoryName: string;
   categorySlug: string;
   vendorName: string;
@@ -22,6 +23,7 @@ export interface MarketplaceProduct {
   deliveryOptions: string[];
   pickupAvailable: boolean;
   purchaseMode: "INTERNAL" | "EXTERNAL";
+  externalStatus: "PENDING" | "APPROVED" | "REJECTED";
   externalUrl: string | null;
   digitalDetails: { network?: string; dataAmount?: string; validity?: string } | null;
   createdAt: Date;
@@ -49,6 +51,7 @@ const productSelect = {
   deliveryOptions: true,
   pickupAvailable: true,
   purchaseMode: true,
+  externalStatus: true,
   externalUrl: true,
   digitalDetails: true,
   ratingAvg: true,
@@ -73,6 +76,7 @@ function toProduct(row: ProductRow): MarketplaceProduct {
     quantity: row.quantity,
     imageUrl: row.images[0]?.url ?? null,
     imageAlt: row.images[0]?.altText ?? null,
+    images: row.images.map((image) => ({ url: image.url, altText: image.altText })),
     categoryName: row.category.name,
     categorySlug: row.category.slug,
     vendorName: row.vendor.storeName,
@@ -83,6 +87,7 @@ function toProduct(row: ProductRow): MarketplaceProduct {
     deliveryOptions: row.deliveryOptions,
     pickupAvailable: row.pickupAvailable,
     purchaseMode: row.purchaseMode,
+    externalStatus: row.externalStatus,
     externalUrl: row.externalUrl,
     digitalDetails: (row.digitalDetails ?? null) as {
       network?: string;
@@ -107,6 +112,7 @@ export async function listMarketplaceProducts(query: MarketplaceQuery): Promise<
   const where: Prisma.ProductWhereInput = {
     status: "ACTIVE",
     deletedAt: null,
+    OR: [{ purchaseMode: "INTERNAL" }, { externalStatus: "APPROVED" }],
     ...(query.vendorSlug
       ? { vendor: { slug: query.vendorSlug, status: "ACTIVE" } }
       : { vendor: { status: "ACTIVE" } }),
@@ -172,7 +178,13 @@ export async function getMarketplaceProduct(slug: string): Promise<
   | null
 > {
   const row = await prisma.product.findFirst({
-    where: { slug, status: "ACTIVE", deletedAt: null, vendor: { status: "ACTIVE" } },
+    where: {
+      slug,
+      status: "ACTIVE",
+      deletedAt: null,
+      vendor: { status: "ACTIVE" },
+      OR: [{ purchaseMode: "INTERNAL" }, { externalStatus: "APPROVED" }],
+    },
     select: {
       ...productSelect,
       variants: {

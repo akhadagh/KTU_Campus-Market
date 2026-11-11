@@ -3,22 +3,22 @@ import { ContentPage } from "@/components/marketing/content-page";
 
 export const metadata: Metadata = {
   title: "Terms & conditions",
-  description: "Draft terms governing the use of Campus Market.",
+  description: "Draft terms governing the use of JUMART.",
 };
 
 export default function TermsPage() {
   return (
     <ContentPage
       title="Terms & conditions"
-      description="Draft terms governing the use of Campus Market."
+      description="Draft terms governing the use of JUMART."
       updated="2 November 2026"
       draftNotice="This is a working draft for product development. It must be reviewed and approved by a qualified legal professional before the marketplace opens to real users or processes real payments."
       sections={[
         {
-          heading: "1. About Campus Market",
+          heading: "1. About JUMART",
           paragraphs: [
-            "Campus Market is a marketplace that connects students and campus businesses with buyers in a university community. The platform is launching at Koforidua Technical University and is designed to support additional campuses.",
-            "Campus Market provides the marketplace infrastructure. Unless expressly stated, it is not the seller of products listed by vendors.",
+            "JUMART is a marketplace that connects students and campus businesses with buyers in a university community. The platform is launching at Koforidua Technical University and is designed to support additional campuses.",
+            "JUMART provides the marketplace infrastructure. Unless expressly stated, it is not the seller of products listed by vendors.",
           ],
         },
         {
@@ -51,7 +51,7 @@ export default function TermsPage() {
         {
           heading: "5. Payments and refunds",
           paragraphs: [
-            "Payments are processed by configured third-party providers. Campus Market does not store raw card details. A payment is considered successful only after server-side verification.",
+            "Payments are processed by configured third-party providers. JUMART does not store raw card details. A payment is considered successful only after server-side verification.",
             "Refunds and disputes are handled according to marketplace policy, provider capabilities, and applicable law. The platform must not advertise escrow protection unless a compliant arrangement is in place.",
           ],
         },

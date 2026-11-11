@@ -145,7 +145,7 @@ export async function askAssistant(message: string): Promise<AssistantReply> {
   const apiKey = process.env["AI_API_KEY"]!;
 
   const prompt = [
-    "You are the Campus Market shopping assistant for a university marketplace in Ghana.",
+    "You are the JUMART shopping assistant for a university marketplace in Ghana.",
     "Answer using ONLY the live listings below. If the listings do not cover the question, say so plainly and suggest a different search term. Do not invent products, prices, or sellers.",
     "Keep answers under 120 words, use Ghana cedis (GH₵) for prices, and be practical for students.",
     "",

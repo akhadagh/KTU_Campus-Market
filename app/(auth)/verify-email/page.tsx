@@ -3,7 +3,7 @@ import { VerifyEmailStatus } from "@/components/auth/verify-email-status";
 
 export const metadata: Metadata = {
   title: "Verify email",
-  description: "Confirm your Campus Market email address.",
+  description: "Confirm your JUMART email address.",
 };
 
 export default async function VerifyEmailPage({

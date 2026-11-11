@@ -13,7 +13,7 @@ export interface EmailMessage {
 }
 
 function fromAddress(): string {
-  return process.env["EMAIL_FROM"] ?? "Campus Market <no-reply@campusmarket.local>";
+  return process.env["EMAIL_FROM"] ?? "JUMART <no-reply@jumart.market>";
 }
 
 export function appUrl(): string {

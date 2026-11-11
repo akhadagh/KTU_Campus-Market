@@ -3,14 +3,14 @@ import { ContentPage } from "@/components/marketing/content-page";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
-  description: "Draft privacy policy for Campus Market.",
+  description: "Draft privacy policy for JUMART.",
 };
 
 export default function PrivacyPage() {
   return (
     <ContentPage
       title="Privacy policy"
-      description="How Campus Market intends to collect, use, and protect personal information."
+      description="How JUMART intends to collect, use, and protect personal information."
       updated="2 November 2026"
       draftNotice="This is a working draft. It must be reviewed against Ghana's Data Protection Act 2012 (Act 843) and applicable payment requirements before launch. This page is not a claim of legal compliance."
       sections={[
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
             "With payment, storage, email, SMS, and infrastructure providers strictly as needed to operate the service.",
             "With vendors and buyers as necessary to fulfil an order or resolve a dispute.",
             "With authorities where required by law or to protect safety and legal rights.",
-            "Campus Market does not sell personal information.",
+            "JUMART does not sell personal information.",
           ],
         },
         {

@@ -4,7 +4,7 @@ import { hashPassword } from "../lib/auth/password";
 async function main() {
   const email = process.env["ADMIN_BOOTSTRAP_EMAIL"]?.trim().toLowerCase();
   const password = process.env["ADMIN_BOOTSTRAP_PASSWORD"];
-  const fullName = process.env["ADMIN_BOOTSTRAP_NAME"]?.trim() || "Campus Market Admin";
+  const fullName = process.env["ADMIN_BOOTSTRAP_NAME"]?.trim() || "JUMART Admin";
 
   if (!email || !password) {
     console.error(

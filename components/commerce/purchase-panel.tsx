@@ -34,7 +34,7 @@ export function PurchasePanel({ target }: { target: PurchaseTarget }) {
         <p className="flex items-start gap-2 text-xs leading-5 text-neutral-500">
           <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           This bundle is sold on the seller&rsquo;s own site or app. You will be redirected there to
-          complete the purchase, and Campus Market does not handle that payment.
+          complete the purchase, and JUMART does not handle that payment.
         </p>
       </div>
     );

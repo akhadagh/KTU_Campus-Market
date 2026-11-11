@@ -9,8 +9,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Trust & safety",
-  description:
-    "How Campus Market approaches verification, payments, reviews, reports, and disputes.",
+  description: "How JUMART approaches verification, payments, reviews, reports, and disputes.",
 };
 
 const controls = [
