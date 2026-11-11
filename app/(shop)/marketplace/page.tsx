@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
 import { listMarketplaceCategories, listMarketplaceProducts } from "@/lib/marketplace";
+import { cn } from "@/lib/utils";
 import { conditionLabels } from "@/lib/labels";
 import { connection } from "next/server";
 
@@ -70,67 +71,97 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
         description="Browse live listings from approved campus vendors. New listings appear after administrator review."
       />
 
-      <form
-        action="/marketplace"
-        method="get"
-        className="mt-6 grid gap-3 rounded-xl border border-neutral-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5"
-      >
-        <div className="lg:col-span-2">
-          <label htmlFor="search" className="mb-1 block text-xs font-medium text-neutral-700">
-            Search
-          </label>
-          <Input
-            id="search"
-            name="q"
-            type="search"
-            defaultValue={query}
-            placeholder="Search products and services"
-          />
-        </div>
-        <div>
-          <label htmlFor="category" className="mb-1 block text-xs font-medium text-neutral-700">
-            Category
-          </label>
-          <Select id="category" name="category" defaultValue={category}>
-            <option value="">All categories</option>
-            {categories.map((item) => (
-              <option key={item.slug} value={item.slug}>
-                {item.name}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <label htmlFor="condition" className="mb-1 block text-xs font-medium text-neutral-700">
-            Condition
-          </label>
-          <Select id="condition" name="condition" defaultValue={condition}>
-            <option value="">Any condition</option>
-            {conditionOptions.map((option) => (
-              <option key={option} value={option}>
-                {conditionLabels[option]}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <label htmlFor="sort" className="mb-1 block text-xs font-medium text-neutral-700">
-            Sort
-          </label>
-          <div className="flex gap-2">
-            <Select id="sort" name="sort" defaultValue={sort}>
-              <option value="newest">Newest</option>
-              <option value="price_asc">Price: low to high</option>
-              <option value="price_desc">Price: high to low</option>
-              <option value="name">Name</option>
-              <option value="rating">Highest rated</option>
-            </Select>
-            <Button type="submit" className="shrink-0">
-              Apply
-            </Button>
+      <div className="sticky top-16 z-30 -mx-4 mt-6 border-y border-neutral-200 bg-white/90 px-4 py-3 backdrop-blur-lg sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <form
+          action="/marketplace"
+          method="get"
+          className="grid gap-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-[var(--shadow-card)] sm:grid-cols-2 lg:grid-cols-5"
+        >
+          <div className="lg:col-span-2">
+            <label htmlFor="search" className="mb-1 block text-xs font-medium text-neutral-700">
+              Search
+            </label>
+            <Input
+              id="search"
+              name="q"
+              type="search"
+              defaultValue={query}
+              placeholder="Search products and services"
+            />
           </div>
-        </div>
-      </form>
+          <div>
+            <label htmlFor="category" className="mb-1 block text-xs font-medium text-neutral-700">
+              Category
+            </label>
+            <Select id="category" name="category" defaultValue={category}>
+              <option value="">All categories</option>
+              {categories.map((item) => (
+                <option key={item.slug} value={item.slug}>
+                  {item.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <label htmlFor="condition" className="mb-1 block text-xs font-medium text-neutral-700">
+              Condition
+            </label>
+            <Select id="condition" name="condition" defaultValue={condition}>
+              <option value="">Any condition</option>
+              {conditionOptions.map((option) => (
+                <option key={option} value={option}>
+                  {conditionLabels[option]}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <label htmlFor="sort" className="mb-1 block text-xs font-medium text-neutral-700">
+              Sort
+            </label>
+            <div className="flex gap-2">
+              <Select id="sort" name="sort" defaultValue={sort}>
+                <option value="newest">Newest</option>
+                <option value="price_asc">Price: low to high</option>
+                <option value="price_desc">Price: high to low</option>
+                <option value="name">Name</option>
+                <option value="rating">Highest rated</option>
+              </Select>
+              <Button type="submit" className="shrink-0">
+                Apply
+              </Button>
+            </div>
+          </div>
+        </form>
+
+        <nav aria-label="Categories" className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <Link
+            href="/marketplace"
+            className={cn(
+              "shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+              !category
+                ? "border-brand-700 bg-brand-700 text-white"
+                : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
+            )}
+          >
+            All
+          </Link>
+          {categories.map((item) => (
+            <Link
+              key={item.id}
+              href={`/marketplace?category=${item.slug}`}
+              className={cn(
+                "shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                category === item.slug
+                  ? "border-brand-700 bg-brand-700 text-white"
+                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
+              )}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+      </div>
 
       <div className="mt-6 flex items-center justify-between text-sm text-neutral-600">
         <p>
@@ -156,7 +187,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
           />
         </div>
       ) : (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {results.items.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

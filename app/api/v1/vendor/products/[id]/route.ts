@@ -3,8 +3,9 @@ import { requireApiAuth, requireApiPermission } from "@/lib/auth/api-guards";
 import { PERMISSION } from "@/lib/auth/rbac";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { cedisToPesewas } from "@/lib/money";
-import { productUpdateSchema } from "@/lib/validation";
+import { buildDigitalDetails, productUpdateSchema } from "@/lib/validation";
 
 const vendorTransitions = new Set(["DRAFT", "PENDING_REVIEW", "ARCHIVED"]);
 
@@ -71,6 +72,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
   }
 
+  if (values.purchaseMode === "EXTERNAL" && !values.externalUrl) {
+    return fail("VALIDATION_ERROR", "Add the link buyers should be sent to.", 422, {
+      externalUrl: "Add the link buyers should be sent to",
+    });
+  }
+
   const pricePesewas =
     values.priceCedis !== undefined ? cedisToPesewas(values.priceCedis) : undefined;
   const originalPricePesewas =
@@ -121,26 +128,35 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         });
       }
     }
+    const updateData: Prisma.ProductUncheckedUpdateInput = {
+      ...(values.name !== undefined ? { name: values.name } : {}),
+      ...(values.categoryId !== undefined ? { categoryId: values.categoryId } : {}),
+      ...(values.description !== undefined ? { description: values.description } : {}),
+      ...(pricePesewas !== undefined ? { pricePesewas } : {}),
+      ...(originalPricePesewas !== undefined ? { originalPricePesewas } : {}),
+      ...(values.condition !== undefined ? { condition: values.condition } : {}),
+      ...(values.quantity !== undefined ? { quantity: values.quantity } : {}),
+      ...(values.deliveryOptions !== undefined ? { deliveryOptions: values.deliveryOptions } : {}),
+      ...(values.pickupAvailable !== undefined ? { pickupAvailable: values.pickupAvailable } : {}),
+      ...(values.purchaseMode !== undefined ? { purchaseMode: values.purchaseMode } : {}),
+      ...(values.purchaseMode === "EXTERNAL"
+        ? { externalUrl: values.externalUrl || null }
+        : values.purchaseMode === "INTERNAL"
+          ? { externalUrl: null }
+          : {}),
+      ...(values.network !== undefined ||
+      values.dataAmount !== undefined ||
+      values.validity !== undefined
+        ? { digitalDetails: buildDigitalDetails({ ...values }) ?? Prisma.DbNull }
+        : {}),
+      ...(values.tags !== undefined ? { tags: values.tags } : {}),
+      ...(nextStatus !== undefined ? { status: nextStatus } : {}),
+      ...(nextStatus === "PENDING_REVIEW" ? { publishedAt: null } : {}),
+    };
+
     return tx.product.update({
       where: { id },
-      data: {
-        ...(values.name !== undefined ? { name: values.name } : {}),
-        ...(values.categoryId !== undefined ? { categoryId: values.categoryId } : {}),
-        ...(values.description !== undefined ? { description: values.description } : {}),
-        ...(pricePesewas !== undefined ? { pricePesewas } : {}),
-        ...(originalPricePesewas !== undefined ? { originalPricePesewas } : {}),
-        ...(values.condition !== undefined ? { condition: values.condition } : {}),
-        ...(values.quantity !== undefined ? { quantity: values.quantity } : {}),
-        ...(values.deliveryOptions !== undefined
-          ? { deliveryOptions: values.deliveryOptions }
-          : {}),
-        ...(values.pickupAvailable !== undefined
-          ? { pickupAvailable: values.pickupAvailable }
-          : {}),
-        ...(values.tags !== undefined ? { tags: values.tags } : {}),
-        ...(nextStatus !== undefined ? { status: nextStatus } : {}),
-        ...(nextStatus === "PENDING_REVIEW" ? { publishedAt: null } : {}),
-      },
+      data: updateData,
       select: { id: true, name: true, slug: true, status: true, updatedAt: true },
     });
   });

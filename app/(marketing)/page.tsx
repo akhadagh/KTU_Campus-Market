@@ -6,6 +6,8 @@ import {
   PackageCheck,
   Search,
   ShieldCheck,
+  Smartphone,
+  Sparkles,
   Store,
   Truck,
 } from "lucide-react";
@@ -111,23 +113,25 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="border-b border-neutral-200 bg-white">
+      <section className="hero-grid border-b border-neutral-200 bg-white">
         <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-8 lg:py-20">
-          <div>
-            <Badge variant="success">Launching at Koforidua Technical University</Badge>
+          <div className="animate-[var(--animate-fade-up)]">
+            <Badge variant="success" className="shadow-sm">
+              Live at Koforidua Technical University
+            </Badge>
             <h1 className="mt-5 max-w-2xl text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl">
               Everything you need. Right around campus.
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-neutral-600 sm:text-lg">
-              Discover amazing deals, shop from fellow students, and turn your ideas into a
-              business. Your campus marketplace starts here.
+              Buy from verified campus vendors, top up your airtime in seconds, and turn your ideas
+              into a real business. Payments are held until you confirm your order.
             </p>
 
             <form
               action="/marketplace"
               method="get"
               role="search"
-              className="mt-8 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm"
+              className="mt-8 rounded-2xl border border-neutral-200 bg-white p-2.5 shadow-[var(--shadow-card)]"
             >
               <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
                 <div className="relative">
@@ -168,16 +172,36 @@ export default async function HomePage() {
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Link href="/marketplace" className={buttonVariants({ size: "lg" })}>
                 Explore marketplace
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
-              <Link href="/sell" className={buttonVariants({ variant: "outline", size: "lg" })}>
+              <Link href="/airtime" className={buttonVariants({ variant: "outline", size: "lg" })}>
+                <Smartphone className="h-4 w-4" aria-hidden="true" />
+                Buy airtime
+              </Link>
+              <Link href="/sell" className={buttonVariants({ variant: "ghost", size: "lg" })}>
                 Sell on campus
               </Link>
             </div>
+
+            <dl className="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-neutral-200 pt-6">
+              {[
+                { label: "Live listings", value: String(listings.total) },
+                { label: "Campus vendors", value: "7" },
+                { label: "Pay with", value: "Paystack" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <dt className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+                    {stat.label}
+                  </dt>
+                  <dd className="mt-1 text-lg font-semibold text-neutral-900">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
 
-          <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
+          <div className="mesh-panel rounded-2xl p-6 text-white shadow-[var(--shadow-glow)]">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-neutral-900">Why students can trust it</p>
+              <p className="text-sm font-semibold text-white">Why students can trust it</p>
               <Badge variant="muted">Built for KTU</Badge>
             </div>
             <div className="mt-5 space-y-4">
@@ -189,8 +213,8 @@ export default async function HomePage() {
                       <Icon className="h-5 w-5" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-900">{point.title}</p>
-                      <p className="mt-0.5 text-xs leading-5 text-neutral-600">
+                      <p className="text-sm font-medium text-white">{point.title}</p>
+                      <p className="text-brand-100/90 mt-0.5 text-xs leading-5">
                         {point.description}
                       </p>
                     </div>
@@ -198,9 +222,9 @@ export default async function HomePage() {
                 );
               })}
             </div>
-            <p className="mt-5 border-t border-neutral-200 pt-4 text-xs leading-5 text-neutral-500">
-              Payments, verification, and AI features are enabled only when their providers are
-              configured. The platform never fakes a successful payment.
+            <p className="text-brand-100/80 mt-5 border-t border-white/15 pt-4 text-xs leading-5">
+              Payments are verified server-side. If a provider is not configured the platform says
+              so plainly instead of faking a successful payment.
             </p>
           </div>
         </div>
@@ -222,15 +246,66 @@ export default async function HomePage() {
                 slug: category.slug,
                 type: category.type,
                 productCount: category.productCount,
+                iconUrl: category.iconUrl,
               }}
             />
           ))}
         </div>
       </section>
 
+      <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Link
+            href="/airtime"
+            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 text-white shadow-[var(--shadow-lift)] transition-transform hover:-translate-y-0.5"
+          >
+            <div
+              className="absolute -right-8 -bottom-10 h-40 w-40 rounded-full bg-white/10"
+              aria-hidden="true"
+            />
+            <Smartphone className="h-7 w-7" aria-hidden="true" />
+            <h3 className="mt-4 text-lg font-semibold">Airtime &amp; data bundles</h3>
+            <p className="mt-1 max-w-sm text-sm leading-6 text-emerald-50/90">
+              Top up MTN, Telecel, Vodafone or AirtelTigo. Pay on Campus Market and the seller
+              credits your number, or continue straight to the provider&rsquo;s own site.
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold">
+              Buy a bundle
+              <ArrowRight
+                className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              />
+            </span>
+          </Link>
+
+          <Link
+            href="/assistant"
+            className="group from-brand-500 to-brand-700 relative overflow-hidden rounded-2xl bg-gradient-to-br p-6 text-white shadow-[var(--shadow-lift)] transition-transform hover:-translate-y-0.5"
+          >
+            <div
+              className="absolute -right-8 -bottom-10 h-40 w-40 rounded-full bg-white/10"
+              aria-hidden="true"
+            />
+            <Sparkles className="h-7 w-7" aria-hidden="true" />
+            <h3 className="mt-4 text-lg font-semibold">Ask the campus assistant</h3>
+            <p className="text-brand-50/90 mt-1 max-w-sm text-sm leading-6">
+              Describe what you need and get answers grounded in live listings — prices, stores and
+              stock that actually exist right now.
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold">
+              Ask a question
+              <ArrowRight
+                className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              />
+            </span>
+          </Link>
+        </div>
+      </section>
+
       <section className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <SectionHeading
-          title="Featured products"
+          title="Fresh on the marketplace"
           description="A preview of how listings will appear once vendor data is connected."
           href="/marketplace"
           linkLabel="Browse marketplace"

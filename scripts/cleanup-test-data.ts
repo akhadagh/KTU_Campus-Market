@@ -1,10 +1,9 @@
 import { prisma } from "../lib/db";
 
+// Only test accounts are removed. Seeded demo accounts live on @campusmarket.gh and are kept.
 const TEST_EMAIL_PARTS = [
   "verify.test.",
   "reset.test.",
-  "vendor.",
-  "buyer.",
   "smoke.",
   "lat1.",
   "lat2.",
@@ -17,10 +16,17 @@ const TEST_EMAIL_PARTS = [
   "prod.smoke.",
   "prod.buyer.",
   "prod.vendor.",
+  "airtime.test.",
+  "upload.test.",
 ];
+
+const TEST_EMAIL_SUFFIXES = ["vendor.", "buyer."];
 
 async function deleteOrders(orderIds: string[]) {
   if (orderIds.length === 0) return 0;
+  await prisma.review.deleteMany({
+    where: { orderItem: { vendorOrder: { orderId: { in: orderIds } } } },
+  });
   await prisma.orderItem.deleteMany({ where: { vendorOrder: { orderId: { in: orderIds } } } });
   await prisma.inventoryReservation.deleteMany({ where: { orderId: { in: orderIds } } });
   await prisma.orderStatusHistory.deleteMany({ where: { orderId: { in: orderIds } } });
@@ -69,9 +75,18 @@ async function main() {
 
   const testUsers = await prisma.user.findMany({
     where: {
-      OR: TEST_EMAIL_PARTS.map((part) => ({
-        email: { contains: part, mode: "insensitive" as const },
-      })),
+      OR: [
+        ...TEST_EMAIL_PARTS.map((part) => ({
+          email: { contains: part, mode: "insensitive" as const },
+        })),
+        ...TEST_EMAIL_SUFFIXES.map((prefix) => ({
+          email: {
+            startsWith: prefix,
+            endsWith: "@ktu.edu.gh",
+            mode: "insensitive" as const,
+          },
+        })),
+      ],
     },
     select: { id: true, email: true },
   });

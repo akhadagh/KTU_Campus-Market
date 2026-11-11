@@ -5,6 +5,7 @@ export const DELIVERY_FEES_PESEWAS: Record<DeliveryOption, number> = {
   PICKUP: 0,
   CAMPUS_DELIVERY: 500,
   COURIER: 1500,
+  DIGITAL: 0,
 };
 
 export const RESERVATION_MINUTES = 30;

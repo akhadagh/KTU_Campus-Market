@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Package, ShieldCheck, Star, Truck } from "lucide-react";
-import { AddToCartButton } from "@/components/commerce/add-to-cart-button";
+import { MapPin, Package, ShieldCheck, Star, Truck, Wallet } from "lucide-react";
+import { PurchasePanel } from "@/components/commerce/purchase-panel";
 import { ReportListingButton } from "@/components/commerce/report-listing-button";
 import { AddToWishlistButton } from "@/components/commerce/add-to-wishlist-button";
 import { ProductCard } from "@/components/commerce/product-card";
@@ -76,9 +76,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </ol>
       </nav>
 
-      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-          <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100">
+          <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 shadow-[var(--shadow-card)]">
             {product.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -90,20 +90,48 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <Package className="h-20 w-20 text-neutral-400" aria-hidden="true" />
             )}
           </div>
+
+          <ul className="mt-4 grid grid-cols-3 gap-3">
+            {[
+              { icon: ShieldCheck, label: "Verified seller" },
+              { icon: Truck, label: "Campus delivery" },
+              { icon: Wallet, label: "Paystack secured" },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <li
+                  key={item.label}
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-2 py-3 text-center text-[11px] font-medium text-neutral-600"
+                >
+                  <Icon className="text-brand-600 h-4 w-4" aria-hidden="true" />
+                  {item.label}
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
-        <div>
+        <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="muted">{conditionLabels[product.condition] ?? product.condition}</Badge>
             <Badge variant="default">{product.categoryName}</Badge>
             {product.deliveryOptions.length > 0 ? (
-              <Badge variant="success">{product.deliveryOptions.length} delivery option(s)</Badge>
+              <Badge variant="success">
+                {product.deliveryOptions.length} delivery option
+                {product.deliveryOptions.length === 1 ? "" : "s"}
+              </Badge>
+            ) : null}
+            {product.purchaseMode === "EXTERNAL" ? (
+              <Badge variant="warning">Sold on the seller&rsquo;s site</Badge>
             ) : null}
           </div>
 
           <h1 className="mt-4 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
             {product.name}
           </h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            Listed by {product.vendor.storeName} · {product.categoryName}
+          </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-neutral-600">
             <span className="flex items-center gap-1">
@@ -121,7 +149,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           <div className="mt-5 flex items-baseline gap-3">
-            <span className="text-3xl font-semibold text-neutral-900">
+            <span className="text-3xl font-bold tracking-tight text-neutral-900">
               {formatPesewas(product.pricePesewas)}
             </span>
             {product.originalPricePesewas ? (
@@ -134,17 +162,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <p className="mt-5 text-sm leading-7 text-neutral-700">{product.description}</p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <AddToCartButton
-              productId={product.id}
-              productName={product.name}
-              pricePesewas={product.pricePesewas}
-              quantity={product.quantity}
-              vendorName={product.vendor.storeName}
+            <PurchasePanel
+              target={{
+                productId: product.id,
+                productName: product.name,
+                pricePesewas: product.pricePesewas,
+                quantity: product.quantity,
+                vendorName: product.vendor.storeName,
+                purchaseMode: product.purchaseMode,
+                externalUrl: product.externalUrl,
+                isDigital: product.deliveryOptions.includes("DIGITAL"),
+                network: product.digitalDetails?.network ?? null,
+                dataAmount: product.digitalDetails?.dataAmount ?? null,
+                validity: product.digitalDetails?.validity ?? null,
+              }}
             />
             <AddToWishlistButton productId={product.id} productName={product.name} />
           </div>
 
-          <Card className="mt-6 p-4">
+          <Card className="mt-6 border-neutral-200/80 p-5 shadow-[var(--shadow-card)]">
             <div className="flex items-start gap-3">
               <div className="bg-brand-50 text-brand-700 grid h-10 w-10 shrink-0 place-items-center rounded-lg">
                 <ShieldCheck className="h-5 w-5" aria-hidden="true" />

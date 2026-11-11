@@ -181,6 +181,7 @@ Category pages and marketplace filters already read the seeded `categories` tabl
 |---|---|---|---|
 | GET | `/products/:slug` | Implemented | Live product detail (public) |
 | POST | `/vendor/products` | Implemented | Create product (vendor, `product.create`) |
+| POST | `/vendor/products/images` | Implemented | Upload a product photo to Vercel Blob |
 | PATCH | `/vendor/products/:id` | Implemented | Update own product, change status, replace images |
 | DELETE | `/vendor/products/:id` | Implemented | Archive own product |
 | GET | `/products` | Planned | JSON list endpoint (marketplace page filters live) |
@@ -203,9 +204,16 @@ Create body (prices in cedis; the server converts to pesewas):
   "pickupAvailable": true,
   "tags": ["laptop", "dell"],
   "imageUrls": ["https://example.com/photo.jpg"],
-  "status": "PENDING_REVIEW"
+  "status": "PENDING_REVIEW",
+  "purchaseMode": "INTERNAL",
+  "externalUrl": "",
+  "network": "",
+  "dataAmount": "",
+  "validity": ""
 }
 ```
+
+`purchaseMode` is `INTERNAL` (sold and fulfilled on Campus Market) or `EXTERNAL` (buyers are redirected to the seller's own site or app, where `externalUrl` is required). Digital products use the `DIGITAL` delivery option and carry `digitalDetails` with `network`, `dataAmount` and `validity`. Images are uploaded through `POST /vendor/products/images` as multipart form data (`file`, JPEG/PNG/WebP/AVIF, 5MB max) and stored in Vercel Blob, so no storage secret ever reaches the browser.
 
 Vendors can only set `DRAFT`, `PENDING_REVIEW` or `ARCHIVED`. Editing a live listing sends it back to `PENDING_REVIEW` for moderation. Marketplace query parameters (`q`, `category`, `condition`, `sort`, `page`) are supported by the marketplace page; sort values are `newest`, `price_asc`, `price_desc`, `name`, `rating`.
 
@@ -248,6 +256,7 @@ Guests get a cart identified by the `cm_guest` cookie; signed-in users get one c
 | GET | `/orders/:id` | Implemented | Buyer order detail (page) |
 | GET | `/vendor/orders` | Implemented | Vendor order list (page) |
 | PATCH | `/vendor/orders/:id/status` | Implemented | Advance fulfilment status |
+| GET | `/airtime` | Implemented | Airtime and data bundle catalogue (page) |
 | POST | `/checkout` | Planned | Combined checkout + payment endpoint |
 | POST | `/orders/:id/cancel` | Planned | Buyer cancellation request |
 
@@ -264,9 +273,12 @@ Checkout body:
     "instructions": "Near the main gate"
   },
   "notes": "Please call on arrival",
+  "msisdn": "0241234567",
   "idempotencyKey": "9f0c…"
 }
 ```
+
+`msisdn` is required when the cart contains a digital bundle (airtime or data). Digital orders are created with `deliveryMethod: "DIGITAL"`, the number is stored on the vendor order as `Credit to <number>` and on the order item snapshot, so the seller knows exactly which line to credit.
 
 The server recalculates the subtotal, applies per-seller delivery fees (campus delivery GH₵5.00, courier GH₵15.00, pickup free), splits the order per vendor, creates `OrderItem` snapshots, holds inventory (`InventoryReservation`, 30 minutes) and writes the first `OrderStatusHistory` row. It never accepts client-supplied prices or totals.
 
@@ -299,6 +311,17 @@ Vendor fulfilment transitions: `PENDING → ACCEPTED → PREPARING → READY_FOR
 ```
 
 If Paystack is not configured the endpoint returns `503 PROVIDER_UNAVAILABLE` — the platform never fakes a payment. The webhook validates the `x-paystack-signature` HMAC-SHA512 signature against `PAYSTACK_WEBHOOK_SECRET` and de-duplicates on `(PAYSTACK, eventId)` before marking the order `PAID`, consuming reservations and decrementing stock.
+
+---
+
+## 10b. Airtime and data bundles — Implemented
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/airtime` | Implemented | Bundle catalogue with network filters (page) |
+| GET | `/api/v1/products/:slug` | Implemented | Bundle details including `purchaseMode` and `digitalDetails` |
+
+Two purchase paths are supported. `INTERNAL` bundles are added to the cart, paid for with Paystack and credited by the seller to the MSISDN captured at checkout. `EXTERNAL` bundles link to the seller's own site or app (for example a network's bundle page) and the buyer is redirected there, with the platform stating plainly that it does not handle that payment.
 
 ---
 

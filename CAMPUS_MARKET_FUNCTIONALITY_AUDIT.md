@@ -160,7 +160,7 @@ Secrets are stored only in `.env` (gitignored) and Vercel environment variables,
 
 **Core commerce is verified working.** Register → verify → apply as vendor → admin approval → publish a listing → moderation → discovery → cart → checkout → Paystack payment → seller fulfilment → verified-purchase review, plus messaging, notifications, reports and an AI assistant that answers from live listings.
 
-**Not yet production-complete**, by explicit design decision and documented scope: transactional email delivery, image upload storage, refunds/disputes/payouts and delivery tracking, student-verification records, vendor analytics charts, and product variants. Each of these is listed as an open defect in §3 with its cause, so no gap is hidden behind a green status.
+**Not yet production-complete**, by explicit design decision and documented scope: transactional email delivery, refunds/disputes/payouts and delivery tracking, student-verification records, vendor analytics charts, and product variants. Each of these is listed as an open defect in §3 with its cause, so no gap is hidden behind a green status.
 
 **Production status:** deployed and live at https://campus-market-teal.vercel.app with Paystack and Gemini enabled in the Vercel environment. Email delivery is the only configured integration still missing (add `RESEND_API_KEY` to enable it).
 

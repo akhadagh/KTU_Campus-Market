@@ -2,8 +2,9 @@ import { fieldsFromZod, fail, ok } from "@/lib/api-response";
 import { requireApiAuth, requireApiPermission } from "@/lib/auth/api-guards";
 import { PERMISSION } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { cedisToPesewas } from "@/lib/money";
-import { productSchema } from "@/lib/validation";
+import { buildDigitalDetails, productSchema } from "@/lib/validation";
 import { availableProductSlug } from "@/lib/vendors";
 import { writeAuditLog } from "@/lib/audit";
 
@@ -44,6 +45,17 @@ export async function POST(request: Request) {
     });
   }
 
+  if (values.purchaseMode === "EXTERNAL" && !values.externalUrl) {
+    return fail("VALIDATION_ERROR", "Add the link buyers should be sent to.", 422, {
+      externalUrl: "Add the link buyers should be sent to",
+    });
+  }
+  if (values.purchaseMode === "EXTERNAL" && values.deliveryOptions.includes("DIGITAL")) {
+    return fail("VALIDATION_ERROR", "Digital bundles cannot use an external link.", 422, {
+      deliveryOptions: "Choose how the bundle is delivered",
+    });
+  }
+
   const pricePesewas = cedisToPesewas(values.priceCedis);
   const originalPricePesewas = values.originalPriceCedis
     ? cedisToPesewas(values.originalPriceCedis)
@@ -70,7 +82,9 @@ export async function POST(request: Request) {
       campusId: auth.user.campusId,
       deliveryOptions: values.deliveryOptions,
       pickupAvailable: values.pickupAvailable,
-      tags: values.tags,
+      purchaseMode: values.purchaseMode,
+      externalUrl: values.purchaseMode === "EXTERNAL" ? values.externalUrl : null,
+      digitalDetails: buildDigitalDetails(values) ?? Prisma.DbNull,
       images: {
         create: values.imageUrls.map((url, index) => ({
           url,

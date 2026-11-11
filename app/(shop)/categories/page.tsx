@@ -30,6 +30,7 @@ export default async function CategoriesPage() {
               slug: category.slug,
               type: category.type,
               productCount: category.productCount,
+              iconUrl: category.iconUrl,
             }}
           />
         ))}

@@ -27,6 +27,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         pickupAvailable: true,
         tags: true,
         status: true,
+        purchaseMode: true,
+        externalUrl: true,
+        digitalDetails: true,
         images: { select: { url: true }, orderBy: { sortOrder: "asc" } },
       },
     }),
@@ -61,6 +64,13 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
             tags: product.tags,
             imageUrls: product.images.map((image) => image.url),
             status: product.status,
+            purchaseMode: product.purchaseMode,
+            externalUrl: product.externalUrl,
+            digitalDetails: product.digitalDetails as {
+              network?: string;
+              dataAmount?: string;
+              validity?: string;
+            } | null,
           }}
         />
       </Card>

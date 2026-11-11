@@ -1,8 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ImagePlus, Loader2, X } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,11 @@ const schema = z.object({
   quantity: z.coerce.number().int().min(0).max(100000),
   deliveryOptions: z.array(z.enum(DELIVERY_OPTIONS)).min(1, "Choose at least one delivery option"),
   pickupAvailable: z.boolean(),
+  purchaseMode: z.enum(["INTERNAL", "EXTERNAL"]),
+  externalUrl: z.string().optional(),
+  network: z.string().optional(),
+  dataAmount: z.string().optional(),
+  validity: z.string().optional(),
   tagsText: z.string().max(300).optional(),
   imageUrlsText: z.string().max(4000).optional(),
   status: z.enum(["DRAFT", "PENDING_REVIEW"]),
@@ -49,6 +56,9 @@ export interface ProductFormData {
   tags: string[];
   imageUrls: string[];
   status: string;
+  purchaseMode?: string;
+  externalUrl?: string | null;
+  digitalDetails?: { network?: string; dataAmount?: string; validity?: string } | null;
 }
 
 export function ProductForm({
@@ -78,13 +88,59 @@ export function ProductForm({
       quantity: product?.quantity ?? 1,
       deliveryOptions: (product?.deliveryOptions as FormInput["deliveryOptions"]) ?? ["PICKUP"],
       pickupAvailable: product?.pickupAvailable ?? true,
+      purchaseMode: (product?.purchaseMode as "INTERNAL" | "EXTERNAL") ?? "INTERNAL",
+      externalUrl: product?.externalUrl ?? "",
+      network: product?.digitalDetails?.network ?? "",
+      dataAmount: product?.digitalDetails?.dataAmount ?? "",
+      validity: product?.digitalDetails?.validity ?? "",
       tagsText: product?.tags.join(", ") ?? "",
       imageUrlsText: product?.imageUrls.join("\n") ?? "",
       status: product?.status === "DRAFT" ? "DRAFT" : "PENDING_REVIEW",
     },
   });
 
+  const [imagePreviews, setImagePreviews] = useState<string[]>(product?.imageUrls ?? []);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
   const selectedDelivery = useWatch({ control, name: "deliveryOptions" });
+  const purchaseMode = useWatch({ control, name: "purchaseMode" });
+  const isDigital = selectedDelivery.includes("DIGITAL");
+
+  async function uploadImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploadError("");
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/v1/vendor/products/images", { method: "POST", body });
+      const json = (await res.json()) as {
+        data?: { url?: string };
+        error?: { message?: string };
+      };
+      if (!res.ok || !json.data?.url) {
+        setUploadError(json.error?.message ?? "The image could not be uploaded.");
+        return;
+      }
+      setImagePreviews((current) => [...current, json.data!.url!].slice(0, 4));
+      setValue("imageUrlsText", [...imagePreviews, json.data.url].slice(0, 4).join("\n"), {
+        shouldValidate: true,
+      });
+    } catch {
+      setUploadError("Could not reach the server.");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  }
+
+  function removeImage(index: number) {
+    const next = imagePreviews.filter((_, position) => position !== index);
+    setImagePreviews(next);
+    setValue("imageUrlsText", next.join("\n"), { shouldValidate: true });
+  }
 
   function toggleDelivery(option: (typeof DELIVERY_OPTIONS)[number]) {
     const selected = selectedDelivery as (typeof DELIVERY_OPTIONS)[number][];
@@ -109,6 +165,11 @@ export function ProductForm({
       quantity: values.quantity,
       deliveryOptions: values.deliveryOptions,
       pickupAvailable: values.pickupAvailable,
+      purchaseMode: values.purchaseMode,
+      externalUrl: values.purchaseMode === "EXTERNAL" ? (values.externalUrl ?? "") : "",
+      network: values.network ?? "",
+      dataAmount: values.dataAmount ?? "",
+      validity: values.validity ?? "",
       tags: (values.tagsText ?? "")
         .split(",")
         .map((tag) => tag.trim())
@@ -273,6 +334,61 @@ export function ProductForm({
       </div>
 
       <fieldset className="rounded-lg border border-neutral-200 p-4">
+        <legend className="px-1 text-sm font-medium text-neutral-900">How buyers get it</legend>
+        <div className="mt-2 space-y-2">
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="radio"
+              value="INTERNAL"
+              checked={purchaseMode === "INTERNAL"}
+              onChange={() => setValue("purchaseMode", "INTERNAL")}
+              className="accent-brand-700 mt-0.5 h-4 w-4"
+            />
+            <span>
+              <span className="font-medium text-neutral-900">Sell on Campus Market</span>
+              <span className="block text-xs text-neutral-600">
+                Buyers pay here and you fulfil the order from your dashboard.
+              </span>
+            </span>
+          </label>
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="radio"
+              value="EXTERNAL"
+              checked={purchaseMode === "EXTERNAL"}
+              onChange={() => setValue("purchaseMode", "EXTERNAL")}
+              className="accent-brand-700 mt-0.5 h-4 w-4"
+            />
+            <span>
+              <span className="font-medium text-neutral-900">Send buyers to my own link</span>
+              <span className="block text-xs text-neutral-600">
+                Useful for airtime and bundles sold on your own site, app or a provider page.
+              </span>
+            </span>
+          </label>
+        </div>
+        {purchaseMode === "EXTERNAL" ? (
+          <div className="mt-4">
+            <FormField
+              label="Purchase link"
+              htmlFor="product-external-url"
+              required
+              error={errors.externalUrl?.message}
+              hint="Buyers are redirected to this link to complete the purchase."
+            >
+              <Input
+                id="product-external-url"
+                type="url"
+                placeholder="https://your-site.com/airtime"
+                aria-invalid={Boolean(errors.externalUrl)}
+                {...register("externalUrl")}
+              />
+            </FormField>
+          </div>
+        ) : null}
+      </fieldset>
+
+      <fieldset className="rounded-lg border border-neutral-200 p-4">
         <legend className="px-1 text-sm font-medium text-neutral-900">Delivery options</legend>
         <div className="mt-2 flex flex-wrap gap-4">
           {DELIVERY_OPTIONS.map((option) => (
@@ -298,6 +414,30 @@ export function ProductForm({
           />
           Pickup available
         </label>
+        {isDigital ? (
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <FormField label="Network" htmlFor="product-network" error={errors.network?.message}>
+              <Select id="product-network" {...register("network")}>
+                <option value="">Choose</option>
+                {["MTN", "Telecel", "Vodafone", "AirtelTigo", "Glo"].map((network) => (
+                  <option key={network} value={network}>
+                    {network}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField
+              label="Data / bundle"
+              htmlFor="product-data"
+              error={errors.dataAmount?.message}
+            >
+              <Input id="product-data" placeholder="5GB" {...register("dataAmount")} />
+            </FormField>
+            <FormField label="Validity" htmlFor="product-validity" error={errors.validity?.message}>
+              <Input id="product-validity" placeholder="30 days" {...register("validity")} />
+            </FormField>
+          </div>
+        ) : null}
       </fieldset>
 
       <FormField
@@ -308,18 +448,58 @@ export function ProductForm({
         <Input id="product-tags" placeholder="laptop, hp, student" {...register("tagsText")} />
       </FormField>
 
-      <FormField
-        label="Image URLs (optional)"
-        htmlFor="product-images"
-        hint="One URL per line. Image uploads require configured object storage; direct URLs work today."
-      >
-        <Textarea
-          id="product-images"
-          className="min-h-24"
-          placeholder="https://example.com/photo-1.jpg"
-          {...register("imageUrlsText")}
-        />
-      </FormField>
+      <div className="rounded-xl border border-neutral-200 bg-neutral-50/60 p-4">
+        <p className="text-sm font-medium text-neutral-900">Product photos</p>
+        <p className="mt-1 text-xs leading-5 text-neutral-600">
+          Upload up to four photos, or paste image links from anywhere. Listings with a clear photo
+          sell much faster.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          {imagePreviews.map((preview, index) => (
+            <div key={`${preview}-${index}`} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={preview}
+                alt={`Preview ${index + 1}`}
+                className="h-20 w-20 rounded-lg border border-neutral-200 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => removeImage(index)}
+                aria-label={`Remove photo ${index + 1}`}
+                className="absolute -top-2 -right-2 grid h-6 w-6 place-items-center rounded-full bg-neutral-900 text-white shadow-sm transition-colors hover:bg-red-600"
+              >
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          ))}
+          {imagePreviews.length < 4 ? (
+            <label className="hover:border-brand-400 hover:text-brand-700 grid h-20 w-20 cursor-pointer place-items-center rounded-lg border border-dashed border-neutral-300 bg-white text-xs font-medium text-neutral-500 transition-colors">
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <>
+                  <ImagePlus className="h-5 w-5" aria-hidden="true" />
+                  <span className="sr-only">Upload photo</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/avif"
+                className="sr-only"
+                onChange={(event) => void uploadImage(event)}
+                disabled={uploading}
+              />
+            </label>
+          ) : null}
+        </div>
+        {uploadError ? (
+          <p role="alert" className="mt-2 text-xs text-red-600">
+            {uploadError}
+          </p>
+        ) : null}
+        <input type="hidden" {...register("imageUrlsText")} />
+      </div>
 
       <div className="flex gap-3">
         <Button type="submit" size="lg" disabled={isSubmitting}>

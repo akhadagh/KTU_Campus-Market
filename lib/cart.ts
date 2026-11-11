@@ -75,6 +75,8 @@ export interface CartLine {
   vendorId: string;
   vendorName: string;
   vendorSlug: string;
+  deliveryOptions: string[];
+  isDigital: boolean;
 }
 
 export interface CartSummary {
@@ -99,6 +101,10 @@ export async function getCartSummary(cartId: string): Promise<CartSummary> {
           pricePesewas: true,
           quantity: true,
           status: true,
+          deliveryOptions: true,
+          purchaseMode: true,
+          externalUrl: true,
+          digitalDetails: true,
           images: { select: { url: true }, orderBy: { sortOrder: "asc" }, take: 1 },
           vendor: { select: { id: true, storeName: true, slug: true, status: true } },
         },
@@ -121,6 +127,8 @@ export async function getCartSummary(cartId: string): Promise<CartSummary> {
       vendorId: item.product.vendor.id,
       vendorName: item.product.vendor.storeName,
       vendorSlug: item.product.vendor.slug,
+      deliveryOptions: item.product.deliveryOptions,
+      isDigital: item.product.deliveryOptions.includes("DIGITAL"),
     }));
 
   return {

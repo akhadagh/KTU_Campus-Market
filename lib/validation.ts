@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const DELIVERY_OPTIONS = ["PICKUP", "CAMPUS_DELIVERY", "COURIER"] as const;
+export const DELIVERY_OPTIONS = ["PICKUP", "CAMPUS_DELIVERY", "COURIER", "DIGITAL"] as const;
 export const PRODUCT_CONDITIONS = [
   "NEW",
   "LIKE_NEW",
@@ -54,6 +54,11 @@ export const productSchema = z.object({
   quantity: z.coerce.number().int().min(0).max(100000),
   deliveryOptions: z.array(z.enum(DELIVERY_OPTIONS)).min(1, "Choose at least one delivery option"),
   pickupAvailable: z.boolean().default(true),
+  purchaseMode: z.enum(["INTERNAL", "EXTERNAL"]).default("INTERNAL"),
+  externalUrl: z.string().trim().max(600).optional().or(z.literal("")),
+  network: z.string().trim().max(40).optional().or(z.literal("")),
+  dataAmount: z.string().trim().max(40).optional().or(z.literal("")),
+  validity: z.string().trim().max(40).optional().or(z.literal("")),
   tags: z.array(z.string().trim().min(1).max(30)).max(10).default([]),
   imageUrls: z.array(z.string().url("Image URL must be valid").max(600)).max(8).default([]),
   status: z.enum(["DRAFT", "PENDING_REVIEW"]).default("PENDING_REVIEW"),
@@ -76,6 +81,12 @@ export const checkoutSchema = z.object({
   pickupLocationId: z.string().uuid().optional(),
   deliveryAddress: addressSchema.optional(),
   notes: z.string().trim().max(1000).optional(),
+  msisdn: z
+    .string()
+    .trim()
+    .regex(/^(\+?233)?[0-9]{9,10}$/, "Enter a valid phone number, e.g. 0241234567")
+    .optional()
+    .or(z.literal("")),
   idempotencyKey: z.string().min(8).max(128),
 });
 
@@ -128,3 +139,18 @@ export const studentVerificationSchema = z.object({
     .or(z.literal("")),
   documentUrl: z.string().url("Provide a document link").max(600).optional().or(z.literal("")),
 });
+
+export function buildDigitalDetails(values: {
+  network?: string | undefined;
+  dataAmount?: string | undefined;
+  validity?: string | undefined;
+  deliveryOptions?: readonly string[] | undefined;
+}): Record<string, string> | null {
+  const isDigital = values.deliveryOptions?.includes("DIGITAL");
+  if (!isDigital && !values.network && !values.dataAmount) return null;
+  return {
+    network: values.network || "",
+    dataAmount: values.dataAmount || "",
+    validity: values.validity || "",
+  };
+}

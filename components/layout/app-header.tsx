@@ -2,7 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Heart, Menu, MessageCircle, Search, ShoppingCart, User } from "lucide-react";
+import {
+  Bell,
+  Heart,
+  Menu,
+  MessageCircle,
+  Search,
+  ShoppingCart,
+  Sparkles,
+  Smartphone,
+  Store,
+  User,
+} from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -20,12 +31,16 @@ import { cn } from "@/lib/utils";
 const primaryNav = [
   { href: "/marketplace", label: "Explore" },
   { href: "/categories", label: "Categories" },
+  { href: "/airtime", label: "Airtime" },
+  { href: "/assistant", label: "Ask AI" },
   { href: "/sell", label: "Sell" },
 ];
 
 const mobileNav = [
   { href: "/marketplace", label: "Explore marketplace" },
   { href: "/categories", label: "Categories" },
+  { href: "/airtime", label: "Airtime & data bundles" },
+  { href: "/assistant", label: "Ask the campus assistant" },
   { href: "/sell", label: "Sell on Campus Market" },
   { href: "/orders", label: "My orders" },
   { href: "/messages", label: "Messages" },
@@ -43,6 +58,12 @@ const actionLinks = [
   { href: "/account", label: "Account", icon: User, desktopOnly: true },
 ];
 
+const quickLinks = [
+  { href: "/airtime", label: "Airtime", icon: Smartphone },
+  { href: "/assistant", label: "Ask AI", icon: Sparkles },
+  { href: "/sell", label: "Sell", icon: Store },
+];
+
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -51,9 +72,12 @@ export function AppHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+    <header className="sticky top-0 z-40 border-b border-neutral-200/80 bg-white/85 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
         <Logo className="shrink-0" />
+        <span className="bg-brand-50 text-brand-700 hidden rounded-full px-2 py-0.5 text-[11px] font-semibold xl:inline-flex">
+          KTU
+        </span>
 
         <form
           action="/marketplace"
@@ -64,7 +88,7 @@ export function AppHeader() {
           <label htmlFor="header-search" className="sr-only">
             Search products
           </label>
-          <div className="relative w-full max-w-xl">
+          <div className="relative w-full max-w-xl rounded-full">
             <Search
               className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400"
               aria-hidden="true"
@@ -73,8 +97,8 @@ export function AppHeader() {
               id="header-search"
               name="q"
               type="search"
-              placeholder="Search products, stores, or services"
-              className="h-10 pl-9"
+              placeholder="Search laptops, textbooks, bundles…"
+              className="h-10 rounded-full border-neutral-200 bg-neutral-50/70 pl-9 shadow-none transition-colors focus:bg-white"
               autoComplete="off"
             />
           </div>
@@ -99,6 +123,24 @@ export function AppHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          <nav aria-label="Quick links" className="mr-1 hidden items-center gap-1 xl:flex">
+            {quickLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "hover:bg-brand-50 hover:text-brand-800 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors",
+                    isActive(pathname, item.href) && "bg-brand-50 text-brand-800",
+                  )}
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
           {actionLinks.map((item) => {
             const Icon = item.icon;
             return (

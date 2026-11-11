@@ -36,6 +36,7 @@ export default async function CheckoutPage() {
             vendorName: item.vendorName,
             quantity: item.quantity,
             lineTotalPesewas: item.lineTotalPesewas,
+            isDigital: item.isDigital,
           }))}
           subtotalPesewas={summary.subtotalPesewas}
           pickupLocations={pickupLocations}

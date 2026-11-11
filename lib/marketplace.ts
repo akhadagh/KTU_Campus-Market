@@ -21,6 +21,9 @@ export interface MarketplaceProduct {
   ratingCount: number;
   deliveryOptions: string[];
   pickupAvailable: boolean;
+  purchaseMode: "INTERNAL" | "EXTERNAL";
+  externalUrl: string | null;
+  digitalDetails: { network?: string; dataAmount?: string; validity?: string } | null;
   createdAt: Date;
 }
 
@@ -45,6 +48,9 @@ const productSelect = {
   quantity: true,
   deliveryOptions: true,
   pickupAvailable: true,
+  purchaseMode: true,
+  externalUrl: true,
+  digitalDetails: true,
   ratingAvg: true,
   ratingCount: true,
   createdAt: true,
@@ -76,6 +82,13 @@ function toProduct(row: ProductRow): MarketplaceProduct {
     ratingCount: row.ratingCount,
     deliveryOptions: row.deliveryOptions,
     pickupAvailable: row.pickupAvailable,
+    purchaseMode: row.purchaseMode,
+    externalUrl: row.externalUrl,
+    digitalDetails: (row.digitalDetails ?? null) as {
+      network?: string;
+      dataAmount?: string;
+      validity?: string;
+    } | null,
     createdAt: row.createdAt,
   };
 }
@@ -218,6 +231,7 @@ export async function listMarketplaceCategories() {
     name: category.name,
     slug: category.slug,
     type: category.type,
+    iconUrl: category.iconUrl,
     productCount: category._count.products,
   }));
 }

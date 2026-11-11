@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, Star } from "lucide-react";
+import { ImageOff, Package, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { MarketplaceProduct } from "@/lib/marketplace";
@@ -24,57 +24,70 @@ const conditionLabels: Record<string, string> = {
 };
 
 export function ProductCard({ product }: { product: MarketplaceProduct }) {
-  const isDemo = product.vendorName.toLowerCase().startsWith("sample");
+  const isDigital = product.deliveryOptions.includes("DIGITAL");
 
   return (
-    <Card className="group overflow-hidden transition-shadow hover:shadow-md">
+    <Card className="group hover:border-brand-200 overflow-hidden border-neutral-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]">
       <Link href={`/products/${product.slug}`} className="block">
-        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-neutral-100">
+        <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
           {product.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.imageUrl}
               alt={product.imageAlt ?? product.name}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <Package className="h-12 w-12 text-neutral-400" aria-hidden="true" />
+            <div className="grid h-full w-full place-items-center">
+              <ImageOff className="h-8 w-8 text-neutral-300" aria-hidden="true" />
+            </div>
           )}
-          {isDemo ? (
-            <Badge variant="sample" className="absolute top-3 left-3">
-              Demo
-            </Badge>
-          ) : null}
-        </div>
-        <div className="space-y-2 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <Badge variant={conditionVariants[product.condition] ?? "muted"}>
+
+          <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+            <Badge variant={conditionVariants[product.condition] ?? "muted"} className="shadow-sm">
               {conditionLabels[product.condition] ?? product.condition}
             </Badge>
-            <span className="truncate text-xs text-neutral-500">{product.categoryName}</span>
+            {isDigital ? (
+              <Badge variant="default" className="bg-white/90 shadow-sm backdrop-blur">
+                Instant delivery
+              </Badge>
+            ) : null}
           </div>
-          <h3 className="group-hover:text-brand-700 line-clamp-2 text-sm leading-5 font-semibold text-neutral-900">
+        </div>
+
+        <div className="space-y-2.5 p-4">
+          <p className="text-[11px] font-medium tracking-wide text-neutral-500 uppercase">
+            {product.categoryName}
+          </p>
+          <h3 className="group-hover:text-brand-700 line-clamp-2 min-h-10 text-sm leading-5 font-semibold text-neutral-900 transition-colors">
             {product.name}
           </h3>
+
           <div className="flex items-baseline gap-2">
-            <span className="text-base font-semibold text-neutral-900">
+            <span className="text-lg font-bold text-neutral-900">
               {formatPesewas(product.pricePesewas)}
             </span>
             {product.originalPricePesewas ? (
-              <span className="text-xs text-neutral-500 line-through">
+              <span className="text-xs text-neutral-400 line-through">
                 {formatPesewas(product.originalPricePesewas)}
               </span>
             ) : null}
           </div>
-          <div className="flex items-center justify-between gap-2 text-xs text-neutral-500">
-            <span className="truncate">{product.vendorName}</span>
-            <span className="flex shrink-0 items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-              {product.ratingCount > 0
-                ? `${product.ratingAvg.toFixed(1)} (${product.ratingCount})`
-                : "No reviews"}
-            </span>
+
+          <div className="flex items-center justify-between gap-2 border-t border-neutral-100 pt-2.5 text-xs text-neutral-500">
+            <span className="truncate font-medium text-neutral-600">{product.vendorName}</span>
+            {product.ratingCount > 0 ? (
+              <span className="flex shrink-0 items-center gap-1">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+                {product.ratingAvg.toFixed(1)} ({product.ratingCount})
+              </span>
+            ) : (
+              <span className="flex shrink-0 items-center gap-1 text-neutral-400">
+                <Package className="h-3.5 w-3.5" aria-hidden="true" />
+                {product.quantity > 0 ? `${product.quantity} left` : "Sold out"}
+              </span>
+            )}
           </div>
         </div>
       </Link>

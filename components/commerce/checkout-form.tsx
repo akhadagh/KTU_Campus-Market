@@ -15,6 +15,7 @@ export interface CheckoutLine {
   vendorName: string;
   quantity: number;
   lineTotalPesewas: number;
+  isDigital?: boolean;
 }
 
 export function CheckoutForm({
@@ -28,6 +29,7 @@ export function CheckoutForm({
   pickupLocations: { id: string; name: string; address: string }[];
   deliveryFeePesewas: number;
 }) {
+  const hasDigital = lines.some((line) => line.isDigital);
   const router = useRouter();
   const [method, setMethod] = useState<"PICKUP" | "CAMPUS_DELIVERY" | "COURIER">("PICKUP");
   const [pickupLocationId, setPickupLocationId] = useState(pickupLocations[0]?.id ?? "");
@@ -36,6 +38,7 @@ export function CheckoutForm({
   const [address, setAddress] = useState("");
   const [instructions, setInstructions] = useState("");
   const [notes, setNotes] = useState("");
+  const [msisdn, setMsisdn] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,6 +50,10 @@ export function CheckoutForm({
     }
     if (method === "PICKUP" && !pickupLocationId) {
       setError("Choose a pickup point.");
+      return;
+    }
+    if (hasDigital && !msisdn.trim()) {
+      setError("Enter the phone number that should receive the digital bundle.");
       return;
     }
 
@@ -73,6 +80,7 @@ export function CheckoutForm({
                   instructions: instructions.trim() || undefined,
                 },
           notes: notes.trim() || undefined,
+          msisdn: hasDigital ? msisdn.trim() : undefined,
           idempotencyKey,
         }),
       });
@@ -241,6 +249,28 @@ export function CheckoutForm({
             </div>
           </fieldset>
         )}
+
+        {hasDigital ? (
+          <fieldset className="border-brand-200 bg-brand-50/50 rounded-xl border p-5">
+            <legend className="px-1 text-sm font-semibold text-neutral-900">
+              Digital delivery number
+            </legend>
+            <p className="mt-1 text-sm text-neutral-600">
+              The seller credits the airtime or data bundle to this number.
+            </p>
+            <div className="mt-3 max-w-xs">
+              <FormField label="Phone number" htmlFor="checkout-msisdn" required>
+                <Input
+                  id="checkout-msisdn"
+                  value={msisdn}
+                  onChange={(event) => setMsisdn(event.target.value)}
+                  inputMode="tel"
+                  placeholder="0241234567"
+                />
+              </FormField>
+            </div>
+          </fieldset>
+        ) : null}
 
         <fieldset className="rounded-xl border border-neutral-200 bg-white p-5">
           <legend className="px-1 text-sm font-semibold text-neutral-900">Order note</legend>

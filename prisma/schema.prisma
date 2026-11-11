@@ -92,6 +92,12 @@ enum DeliveryOption {
   PICKUP
   CAMPUS_DELIVERY
   COURIER
+  DIGITAL
+}
+
+enum PurchaseMode {
+  INTERNAL
+  EXTERNAL
 }
 
 enum ReservationStatus {
@@ -131,6 +137,7 @@ enum VendorOrderStatus {
 enum FulfillmentType {
   PICKUP
   DELIVERY
+  DIGITAL
 }
 
 enum OrderActorType {
@@ -593,6 +600,9 @@ model Product {
   quantity             Int              @default(0)
   reservedQuantity     Int              @default(0)
   status               ProductStatus    @default(DRAFT)
+  purchaseMode         PurchaseMode     @default(INTERNAL)
+  externalUrl          String?
+  digitalDetails       Json?
   campusId             String?          @db.Uuid
   deliveryOptions      DeliveryOption[] @default([])
   pickupAvailable      Boolean          @default(true)

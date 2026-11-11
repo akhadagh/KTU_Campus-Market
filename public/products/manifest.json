@@ -1,0 +1,282 @@
+{
+  "hp-elitebook-840-g5": {
+    "file": "public/products/hp-elitebook-840-g5.jpg",
+    "source": "https://images.pexels.com/photos/1187692/pexels-photo-1187692.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic silver business laptop open on a desk; no HP EliteBook-branded photo available on Unsplash/Pexels."
+  },
+  "samsung-galaxy-a54-5g": {
+    "file": "public/products/samsung-galaxy-a54-5g.jpg",
+    "source": "https://images.pexels.com/photos/3756879/pexels-photo-3756879.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic modern smartphone held in hand; no Samsung Galaxy A54 product photo available."
+  },
+  "lenovo-ideapad-15": {
+    "file": "public/products/lenovo-ideapad-15.jpg",
+    "source": "https://images.pexels.com/photos/18773225/pexels-photo-18773225.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic white laptop; no Lenovo IdeaPad-branded photo available."
+  },
+  "sony-wh-ch720n-headphones": {
+    "file": "public/products/sony-wh-ch720n-headphones.jpg",
+    "source": "https://images.pexels.com/photos/3945669/pexels-photo-3945669.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic black over-ear wireless headphones; no Sony WH-CH720N product photo available."
+  },
+  "anker-20w-charger": {
+    "file": "public/products/anker-20w-charger.jpg",
+    "source": "https://images.pexels.com/photos/37421859/pexels-photo-37421859.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic compact white USB-C wall charger with cable; no Anker-branded photo available."
+  },
+  "apple-usb-c-20w-charger": {
+    "file": "public/products/apple-usb-c-20w-charger.jpg",
+    "source": "https://images.pexels.com/photos/32710069/pexels-photo-32710069.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic white USB-C wall charger with cable; no Apple-branded photo available."
+  },
+  "anker-powercore-10000": {
+    "file": "public/products/anker-powercore-10000.jpg",
+    "source": "https://images.pexels.com/photos/4072683/pexels-photo-4072683.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic slim portable power bank with USB cable; no Anker-branded photo available."
+  },
+  "jbl-go-3-speaker": {
+    "file": "public/products/jbl-go-3-speaker.jpg",
+    "source": "https://images.pexels.com/photos/4917455/pexels-photo-4917455.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Close match: an actual JBL portable Bluetooth speaker."
+  },
+  "logitech-m330-mouse": {
+    "file": "public/products/logitech-m330-mouse.jpg",
+    "source": "https://images.pexels.com/photos/18295023/pexels-photo-18295023.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic black wireless computer mouse; no Logitech M330 product photo available."
+  },
+  "tp-link-archer-ac1200": {
+    "file": "public/products/tp-link-archer-ac1200.jpg",
+    "source": "https://images.pexels.com/photos/4218546/pexels-photo-4218546.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Close match: an actual TP-Link white Wi-Fi router with three antennas."
+  },
+  "ampx-32gb-microsd": {
+    "file": "public/products/ampx-32gb-microsd.jpg",
+    "source": "https://images.pexels.com/photos/27742571/pexels-photo-27742571.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a full-size SD/memory card with adapters shown; no microSD product photo available on Unsplash/Pexels."
+  },
+  "dell-latitude-7490": {
+    "file": "public/products/dell-latitude-7490.jpg",
+    "source": "https://images.pexels.com/photos/12662878/pexels-photo-12662878.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Generic black business laptop open on a desk; no Dell Latitude product photo available."
+  },
+  "engineering-mathematics-textbook": {
+    "file": "public/products/engineering-mathematics-textbook.jpg",
+    "source": "https://images.pexels.com/photos/5535288/pexels-photo-5535288.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a stack of university textbooks; no engineering-mathematics title available."
+  },
+  "computer-networks-beginners": {
+    "file": "public/products/computer-networks-beginners.jpg",
+    "source": "https://images.pexels.com/photos/6958541/pexels-photo-6958541.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: an open textbook being studied; no computer-networking title available."
+  },
+  "exam-answer-booklets-pack-of-5": {
+    "file": "public/products/exam-answer-booklets-pack-of-5.jpg",
+    "source": "https://images.pexels.com/photos/6683394/pexels-photo-6683394.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: exam answer sheets on a classroom desk (single sheet rather than a pack of 5)."
+  },
+  "a4-spiral-exercise-books-set-of-3": {
+    "file": "public/products/a4-spiral-exercise-books-set-of-3.jpg",
+    "source": "https://images.pexels.com/photos/7054755/pexels-photo-7054755.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a stack of A4 spiral-bound exercise notebooks."
+  },
+  "casio-fx-991-calculator": {
+    "file": "public/products/casio-fx-991-calculator.jpg",
+    "source": "https://images.pexels.com/photos/12174065/pexels-photo-12174065.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Close match: a Casio-style scientific calculator (fx-991 class)."
+  },
+  "cambridge-as-a-level-physics": {
+    "file": "public/products/cambridge-as-a-level-physics.jpg",
+    "source": "https://images.pexels.com/photos/8327812/pexels-photo-8327812.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: an open physics/engineering textbook with technical diagrams; no Cambridge A-level title available."
+  },
+  "past-questions-wassce-bundle": {
+    "file": "public/products/past-questions-wassce-bundle.jpg",
+    "source": "https://images.pexels.com/photos/31880175/pexels-photo-31880175.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a bundle of worn vintage question-past books; no WASSCE title available."
+  },
+  "highlighters-pens-set-12": {
+    "file": "public/products/highlighters-pens-set-12.jpg",
+    "source": "https://images.pexels.com/photos/6192514/pexels-photo-6192514.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a flat lay set of coloured highlighters and pens."
+  },
+  "5l-electric-kettle": {
+    "file": "public/products/5l-electric-kettle.jpg",
+    "source": "https://images.pexels.com/photos/10965749/pexels-photo-10965749.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a glass electric kettle (5 L style)."
+  },
+  "rechargeable-table-fan": {
+    "file": "public/products/rechargeable-table-fan.jpg",
+    "source": "https://images.pexels.com/photos/14542079/pexels-photo-14542079.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a small portable/rechargeable table fan."
+  },
+  "memory-foam-pillow": {
+    "file": "public/products/memory-foam-pillow.jpg",
+    "source": "https://images.pexels.com/photos/3755585/pexels-photo-3755585.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: white bed pillows on a made bed."
+  },
+  "study-desk-lamp-led": {
+    "file": "public/products/study-desk-lamp-led.jpg",
+    "source": "https://images.pexels.com/photos/11148009/pexels-photo-11148009.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: an LED desk lamp lighting a study desk."
+  },
+  "laundry-basket-collapsible": {
+    "file": "public/products/laundry-basket-collapsible.jpg",
+    "source": "https://images.pexels.com/photos/18063446/pexels-photo-18063446.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: plastic laundry baskets (collapsible type)."
+  },
+  "bedside-storage-rack": {
+    "file": "public/products/bedside-storage-rack.jpg",
+    "source": "https://images.pexels.com/photos/6688837/pexels-photo-6688837.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a small wall shelf beside a bed used as a bedside storage rack."
+  },
+  "water-bottle-25l-straw": {
+    "file": "public/products/water-bottle-25l-straw.jpg",
+    "source": "https://images.pexels.com/photos/7879955/pexels-photo-7879955.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a sports water bottle with a straw."
+  },
+  "mosquito-net-single-full-size": {
+    "file": "public/products/mosquito-net-single-full-size.jpg",
+    "source": "https://images.pexels.com/photos/33613739/pexels-photo-33613739.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a bedroom with a full-size mosquito net over the bed."
+  },
+  "jollof-rice-bowl-chicken": {
+    "file": "public/products/jollof-rice-bowl-chicken.jpg",
+    "source": "https://images.pexels.com/photos/40262791/pexels-photo-40262791.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Ghanaian jollof rice served with grilled chicken and fried plantain."
+  },
+  "fresh-banku-tomtom-pack": {
+    "file": "public/products/fresh-banku-tomtom-pack.jpg",
+    "source": "https://images.pexels.com/photos/26587857/pexels-photo-26587857.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Close match: a West African plate of banku (cornmeal dough) with tomtom-style soup, meat and rice."
+  },
+  "milo-450g-tin-pack-of-2": {
+    "file": "public/products/milo-450g-tin-pack-of-2.jpg",
+    "source": "https://images.pexels.com/photos/35285853/pexels-photo-35285853.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Close match: a shelf display of genuine Milo tins."
+  },
+  "indomie-carton-20-packs": {
+    "file": "public/products/indomie-carton-20-packs.jpg",
+    "source": "https://images.pexels.com/photos/39007274/pexels-photo-39007274.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: close-up of dry instant noodles; no branded Indomie carton packaging photo available."
+  },
+  "fresh-vegetables-bundle": {
+    "file": "public/products/fresh-vegetables-bundle.jpg",
+    "source": "https://images.pexels.com/photos/33214227/pexels-photo-33214227.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: bundled fresh leafy vegetables at a market."
+  },
+  "kente-print-fabric-6-yards": {
+    "file": "public/products/kente-print-fabric-6-yards.jpg",
+    "source": "https://images.pexels.com/photos/36773397/pexels-photo-36773397.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Close match: Ghanaian kente cloth being woven on a loom in Accra."
+  },
+  "unisex-cotton-sneakers": {
+    "file": "public/products/unisex-cotton-sneakers.jpg",
+    "source": "https://images.pexels.com/photos/267326/pexels-photo-267326.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a pair of plain white cotton sneakers."
+  },
+  "plain-white-oxford-shirt": {
+    "file": "public/products/plain-white-oxford-shirt.jpg",
+    "source": "https://images.pexels.com/photos/40183035/pexels-photo-40183035.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a plain white button-up (oxford-class) shirt, flat lay."
+  },
+  "denim-jeans-32x32": {
+    "file": "public/products/denim-jeans-32x32.jpg",
+    "source": "https://images.pexels.com/photos/4109759/pexels-photo-4109759.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: folded blue denim jeans."
+  },
+  "leather-crossbody-bag": {
+    "file": "public/products/leather-crossbody-bag.jpg",
+    "source": "https://images.pexels.com/photos/22432989/pexels-photo-22432989.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a brown leather crossbody/shoulder bag."
+  },
+  "ankara-faded-t-shirt": {
+    "file": "public/products/ankara-faded-t-shirt.jpg",
+    "source": "https://images.pexels.com/photos/36942017/pexels-photo-36942017.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a faded graphic-print T-shirt."
+  },
+  "printing-binding-100-pages-a4": {
+    "file": "public/products/printing-binding-100-pages-a4.jpg",
+    "source": "https://images.pexels.com/photos/8382613/pexels-photo-8382613.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a stack of printed A4 pages with bound documents."
+  },
+  "custom-mug-printing": {
+    "file": "public/products/custom-mug-printing.jpg",
+    "source": "https://images.pexels.com/photos/12494099/pexels-photo-12494099.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a plain white ceramic mug for custom printing."
+  },
+  "graphic-design-business-cards": {
+    "file": "public/products/graphic-design-business-cards.jpg",
+    "source": "https://images.pexels.com/photos/8490097/pexels-photo-8490097.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: business card mock-ups with stationery on a desk."
+  },
+  "laptop-repair-diagnostics": {
+    "file": "public/products/laptop-repair-diagnostics.jpg",
+    "source": "https://images.pexels.com/photos/37489058/pexels-photo-37489058.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: hands performing electronics/laptop repair with tools."
+  },
+  "cv-typing-formatting": {
+    "file": "public/products/cv-typing-formatting.jpg",
+    "source": "https://images.pexels.com/photos/590044/pexels-photo-590044.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a printed CV document on a desk."
+  },
+  "photography-event-session": {
+    "file": "public/products/photography-event-session.jpg",
+    "source": "https://images.pexels.com/photos/8389708/pexels-photo-8389708.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Substitute: a DSLR on a tripod with studio lighting gear."
+  },
+  "electronics": {
+    "file": "public/categories/electronics.jpg",
+    "source": "https://images.pexels.com/photos/16387546/pexels-photo-16387546.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Flat lay of electronics accessories (earbuds, phone, watch, camera, mouse)."
+  },
+  "fashion": {
+    "file": "public/categories/fashion.jpg",
+    "source": "https://images.pexels.com/photos/5531711/pexels-photo-5531711.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Clothing rack with garments in a boutique."
+  },
+  "books-academics": {
+    "file": "public/categories/books-academics.jpg",
+    "source": "https://images.pexels.com/photos/12940778/pexels-photo-12940778.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Stack of books with study stationery."
+  },
+  "food-groceries": {
+    "file": "public/categories/food-groceries.jpg",
+    "source": "https://images.pexels.com/photos/9070116/pexels-photo-9070116.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Groceries and fresh produce in a shopping cart/basket."
+  },
+  "beauty-care": {
+    "file": "public/categories/beauty-care.jpg",
+    "source": "https://images.pexels.com/photos/12969358/pexels-photo-12969358.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Skincare and cosmetics products with a makeup brush."
+  },
+  "hostel-essentials": {
+    "file": "public/categories/hostel-essentials.jpg",
+    "source": "https://images.pexels.com/photos/5158963/pexels-photo-5158963.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Travellers packing their belongings in a hostel room."
+  },
+  "sports-fitness": {
+    "file": "public/categories/sports-fitness.jpg",
+    "source": "https://images.pexels.com/photos/19025674/pexels-photo-19025674.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Dumbbell rack in a gym."
+  },
+  "services": {
+    "file": "public/categories/services.jpg",
+    "source": "https://images.pexels.com/photos/23496897/pexels-photo-23496897.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Professional consultation/service meeting."
+  },
+  "accommodation": {
+    "file": "public/categories/accommodation.jpg",
+    "source": "https://images.pexels.com/photos/27199015/pexels-photo-27199015.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Student bedroom with bed, desk and personal items."
+  },
+  "other": {
+    "file": "public/categories/other.jpg",
+    "source": "https://images.pexels.com/photos/31939581/pexels-photo-31939581.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Assorted miscellaneous second-hand items."
+  },
+  "airtime-bundles": {
+    "file": "public/categories/airtime-bundles.jpg",
+    "source": "https://images.pexels.com/photos/163069/mobile-phone-money-banknotes-us-dollars-163069.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "note": "Person using a smartphone alongside cash, representing mobile top-up / data bundles."
+  }
+}

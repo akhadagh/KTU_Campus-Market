@@ -105,7 +105,7 @@ describe.skipIf(!reachable)("authentication", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: "sample-tech-store@example.com",
+        email: "adumtechpoint@campusmarket.gh",
         password: "definitely-not-the-password",
       }),
     });
@@ -119,7 +119,7 @@ describe.skipIf(!reachable)("authentication", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: "sample-tech-store@example.com",
+        email: "adumtechpoint@campusmarket.gh",
         password: DEMO_PASSWORD,
       }),
     });
@@ -134,6 +134,73 @@ describe.skipIf(!reachable)("protected routes", () => {
     const res = await fetch(`${BASE_URL}/orders`, { redirect: "manual" });
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("/login?next=%2Forders");
+  });
+});
+
+describe.skipIf(!reachable)("airtime and digital delivery", () => {
+  it("exposes bundles with digital delivery and external purchase links", async () => {
+    const bundle = await fetch(`${BASE_URL}/api/v1/products/mtn-data-bundle-5gb`);
+    expect(bundle.status).toBe(200);
+    const bundlePayload = (await bundle.json()) as {
+      data: {
+        product: { purchaseMode: string; deliveryOptions: string[]; digitalDetails: unknown };
+      };
+    };
+    expect(bundlePayload.data.product.purchaseMode).toBe("INTERNAL");
+    expect(bundlePayload.data.product.deliveryOptions).toContain("DIGITAL");
+    expect(bundlePayload.data.product.digitalDetails).toBeTruthy();
+
+    const external = await fetch(`${BASE_URL}/api/v1/products/vodafone-20gb-calls`);
+    const externalPayload = (await external.json()) as {
+      data: { product: { purchaseMode: string; externalUrl: string | null } };
+    };
+    expect(externalPayload.data.product.purchaseMode).toBe("EXTERNAL");
+    expect(externalPayload.data.product.externalUrl).toMatch(/^https?:\/\//);
+  });
+
+  it("requires a phone number for a digital order and creates it with one", async () => {
+    const session = new Session();
+    const email = `smoke.airtime.${Date.now()}@ktu.edu.gh`;
+    const created = await session.fetch("/api/v1/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fullName: "Smoke Airtime", email, password: "Password123" }),
+    });
+    expect(created.status).toBe(201);
+
+    const detail = await fetch(`${BASE_URL}/api/v1/products/mtn-data-bundle-5gb`);
+    const productId = ((await detail.json()) as { data: { product: { id: string } } }).data.product
+      .id;
+
+    const added = await session.fetch("/api/v1/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, quantity: 1 }),
+    });
+    expect(added.status).toBe(201);
+
+    const withoutNumber = await session.fetch("/api/v1/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deliveryMethod: "DIGITAL",
+        idempotencyKey: `smoke-digital-${Date.now()}`,
+      }),
+    });
+    expect(withoutNumber.status).toBe(422);
+
+    const withNumber = await session.fetch("/api/v1/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deliveryMethod: "DIGITAL",
+        msisdn: "0241234567",
+        idempotencyKey: `smoke-digital-${Date.now()}`,
+      }),
+    });
+    expect(withNumber.status).toBe(201);
+    const order = (await withNumber.json()) as { data: { order: { orderNumber: string } } };
+    expect(order.data.order.orderNumber).toMatch(/^CM-\d{8}-\d{5}$/);
   });
 });
 

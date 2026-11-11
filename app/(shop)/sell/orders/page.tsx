@@ -27,6 +27,7 @@ export default async function VendorOrdersPage() {
       status: true,
       totalPesewas: true,
       fulfillmentType: true,
+      notes: true,
       createdAt: true,
       order: {
         select: {
@@ -72,6 +73,9 @@ export default async function VendorOrdersPage() {
                       {vendorOrderStatusLabels[vendorOrder.status] ?? vendorOrder.status}
                     </Badge>
                     <Badge variant="muted">{vendorOrder.fulfillmentType}</Badge>
+                    {vendorOrder.notes ? (
+                      <Badge variant="warning">{vendorOrder.notes}</Badge>
+                    ) : null}
                   </div>
                   <p className="mt-1 text-sm text-neutral-600">
                     {vendorOrder.order.buyer.fullName}

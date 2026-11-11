@@ -41,12 +41,21 @@ export async function POST(request: Request) {
     return fail("VALIDATION_ERROR", "Your cart is empty.", 422);
   }
 
-  if (values.deliveryMethod !== "PICKUP" && !values.deliveryAddress) {
+  const digitalLines = summary.items.filter((item) => item.isDigital);
+  const allDigital = digitalLines.length === summary.items.length;
+  if (digitalLines.length > 0 && !values.msisdn) {
+    return fail("VALIDATION_ERROR", "Enter the phone number for the digital delivery.", 422, {
+      msisdn: "Enter the phone number for the digital delivery",
+    });
+  }
+  const deliveryMethod = allDigital ? "DIGITAL" : values.deliveryMethod;
+
+  if (deliveryMethod !== "PICKUP" && deliveryMethod !== "DIGITAL" && !values.deliveryAddress) {
     return fail("VALIDATION_ERROR", "Enter a delivery address.", 422, {
       deliveryAddress: "Enter a delivery address",
     });
   }
-  if (values.deliveryMethod === "PICKUP" && !values.pickupLocationId) {
+  if (deliveryMethod === "PICKUP" && !values.pickupLocationId) {
     return fail("VALIDATION_ERROR", "Choose a pickup point.", 422, {
       pickupLocationId: "Choose a pickup point",
     });
@@ -86,7 +95,7 @@ export async function POST(request: Request) {
     byVendor.set(line.vendorId, [...(byVendor.get(line.vendorId) ?? []), line]);
   }
 
-  const deliveryFee = DELIVERY_FEES_PESEWAS[values.deliveryMethod];
+  const deliveryFee = DELIVERY_FEES_PESEWAS[deliveryMethod];
   const vendorOrders = [...byVendor.entries()].map(([vendorId, lines]) => {
     const subtotal = lines.reduce((total, line) => total + line.lineTotalPesewas, 0);
     return {
@@ -116,7 +125,7 @@ export async function POST(request: Request) {
         subtotalPesewas: subtotalTotal,
         deliveryTotalPesewas: deliveryTotal,
         totalPesewas: total,
-        deliveryMethod: values.deliveryMethod,
+        deliveryMethod,
         deliveryAddressJson: values.deliveryAddress ?? undefined,
         notes: values.notes ?? null,
         idempotencyKey: values.idempotencyKey,
@@ -142,8 +151,16 @@ export async function POST(request: Request) {
           subtotalPesewas: entry.subtotal,
           deliveryFeePesewas: deliveryFee,
           totalPesewas: entry.total,
-          fulfillmentType: values.deliveryMethod === "PICKUP" ? "PICKUP" : "DELIVERY",
-          pickupLocationId: values.pickupLocationId ?? null,
+          fulfillmentType:
+            deliveryMethod === "PICKUP"
+              ? "PICKUP"
+              : deliveryMethod === "DIGITAL"
+                ? "DIGITAL"
+                : "DELIVERY",
+          pickupLocationId: deliveryMethod === "PICKUP" ? (values.pickupLocationId ?? null) : null,
+          ...(deliveryMethod === "DIGITAL" && values.msisdn
+            ? { notes: `Credit to ${values.msisdn}` }
+            : {}),
           statusHistory: {
             create: {
               orderId: created.id,
@@ -170,6 +187,7 @@ export async function POST(request: Request) {
             productSnapshotJson: {
               slug: product.slug,
               imageUrl: product.images[0]?.url ?? null,
+              ...(line.isDigital ? { msisdn: values.msisdn } : {}),
             },
           },
         });
