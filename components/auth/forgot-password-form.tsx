@@ -22,12 +22,32 @@ export function ForgotPasswordForm() {
     formState: { errors, isSubmitting },
   } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { email: "" } });
 
-  async function onSubmit() {
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    toast.info("Password recovery is not connected yet", {
-      description:
-        "Email verification and password reset are implemented in Milestone 3. No reset email was sent.",
-    });
+  async function onSubmit(values: Values) {
+    try {
+      const res = await fetch("/api/v1/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email }),
+      });
+      const json = (await res.json()) as {
+        data?: { delivery?: string };
+        error?: { message?: string };
+      };
+      if (!res.ok) {
+        toast.error(json.error?.message ?? "Could not send the reset link");
+        return;
+      }
+      toast.success("Check your email", {
+        description:
+          json.data?.delivery === "provider_not_configured"
+            ? "If that email is registered, a reset link was created. Email delivery is not configured yet, so nothing was sent."
+            : "If that email is registered, a reset link is on its way.",
+      });
+    } catch {
+      toast.error("Could not reach the server", {
+        description: "Check your connection and try again.",
+      });
+    }
   }
 
   return (

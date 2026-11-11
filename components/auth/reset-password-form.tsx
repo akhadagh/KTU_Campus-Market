@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,6 +23,7 @@ const schema = z
 type Values = z.infer<typeof schema>;
 
 export function ResetPasswordForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -31,12 +33,35 @@ export function ResetPasswordForm() {
     defaultValues: { password: "", confirmPassword: "" },
   });
 
-  async function onSubmit() {
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    toast.info("Password reset is not connected yet", {
-      description:
-        "Password reset tokens and session revocation are implemented in Milestone 3. No password was changed.",
-    });
+  async function onSubmit(values: Values) {
+    const token = new URLSearchParams(window.location.search).get("token");
+    if (!token) {
+      toast.error("Reset link is missing", {
+        description: "Open the link from your reset email, or request a new one.",
+      });
+      return;
+    }
+    try {
+      const res = await fetch("/api/v1/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, password: values.password }),
+      });
+      const json = (await res.json()) as { error?: { message?: string } };
+      if (!res.ok) {
+        toast.error(json.error?.message ?? "Could not reset your password");
+        return;
+      }
+      toast.success("Password updated", {
+        description: "Log in with your new password.",
+      });
+      router.push("/login");
+      router.refresh();
+    } catch {
+      toast.error("Could not reach the server", {
+        description: "Check your connection and try again.",
+      });
+    }
   }
 
   return (

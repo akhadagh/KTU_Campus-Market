@@ -11,14 +11,14 @@ import {
 } from "lucide-react";
 import { CategoryCard } from "@/components/commerce/category-card";
 import { ProductCard } from "@/components/commerce/product-card";
-import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { sampleCategories, sampleProducts } from "@/lib/sample-data";
+import { listMarketplaceCategories, listMarketplaceProducts } from "@/lib/marketplace";
 import { cn } from "@/lib/utils";
+import { connection } from "next/server";
 
 const trustPoints = [
   {
@@ -99,7 +99,16 @@ function SectionHeading({
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  await connection();
+
+  const [categories, listings] = await Promise.all([
+    listMarketplaceCategories(),
+    listMarketplaceProducts({ sort: "newest", pageSize: 12 }),
+  ]);
+  const featured = listings.items;
+  const trending = listings.items;
+
   return (
     <>
       <section className="border-b border-neutral-200 bg-white">
@@ -143,8 +152,8 @@ export default function HomePage() {
                   </label>
                   <Select id="hero-category" name="category" defaultValue="">
                     <option value="">All categories</option>
-                    {sampleCategories.map((category) => (
-                      <option key={category.slug} value={category.slug}>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.slug}>
                         {category.name}
                       </option>
                     ))}
@@ -205,8 +214,16 @@ export default function HomePage() {
           linkLabel="All categories"
         />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {sampleCategories.map((category) => (
-            <CategoryCard key={category.slug} category={category} />
+          {categories.map((category) => (
+            <CategoryCard
+              key={category.id}
+              category={{
+                name: category.name,
+                slug: category.slug,
+                type: category.type,
+                productCount: category.productCount,
+              }}
+            />
           ))}
         </div>
       </section>
@@ -218,13 +235,9 @@ export default function HomePage() {
           href="/marketplace"
           linkLabel="Browse marketplace"
         />
-        <Alert variant="warning" title="Sample listings" className="mb-6">
-          These cards are demonstration data for the design preview. They are not real vendor
-          listings. Real database-backed listings arrive in Milestone 4.
-        </Alert>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {sampleProducts.slice(0, 4).map((product) => (
-            <ProductCard key={product.slug} product={product} />
+          {featured.slice(0, 4).map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
@@ -232,13 +245,13 @@ export default function HomePage() {
       <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <SectionHeading
           title="Trending around campus"
-          description="Popular sample categories including laptops, hostel essentials, and student services."
+          description="Newest listings from approved campus vendors, including hostel essentials and student services."
           href="/marketplace"
           linkLabel="See all listings"
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {sampleProducts.slice(4, 8).map((product) => (
-            <ProductCard key={product.slug} product={product} />
+          {trending.slice(0, 4).map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>

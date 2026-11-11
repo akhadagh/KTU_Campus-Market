@@ -1,9 +1,16 @@
 import Link from "next/link";
-import type { SampleCategory } from "@/lib/sample-data";
+import { LayoutGrid, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-export function CategoryCard({ category }: { category: SampleCategory }) {
-  const Icon = category.icon;
+export interface CategoryCardData {
+  name: string;
+  slug: string;
+  type: "PRODUCT" | "SERVICE";
+  productCount: number;
+}
+
+export function CategoryCard({ category }: { category: CategoryCardData }) {
+  const Icon = category.type === "SERVICE" ? Sparkles : LayoutGrid;
   return (
     <Link href={`/categories/${category.slug}`} className="group block">
       <Card className="group-hover:border-brand-200 group-hover:bg-brand-50/40 h-full p-4 transition-colors">
@@ -13,8 +20,8 @@ export function CategoryCard({ category }: { category: SampleCategory }) {
         <h3 className="group-hover:text-brand-700 text-sm font-semibold text-neutral-900">
           {category.name}
         </h3>
-        <p className="mt-1 line-clamp-2 text-xs leading-5 text-neutral-600">
-          {category.description}
+        <p className="mt-1 text-xs leading-5 text-neutral-600">
+          {category.productCount} listing{category.productCount === 1 ? "" : "s"}
         </p>
       </Card>
     </Link>

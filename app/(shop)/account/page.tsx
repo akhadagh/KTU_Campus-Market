@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BadgeCheck, Mail, Package, ShieldCheck, User, Heart } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { ResendVerificationButton } from "@/components/auth/resend-verification-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/auth/session";
@@ -76,10 +77,15 @@ export default async function AccountPage() {
         </dl>
 
         {!user.emailVerifiedAt ? (
-          <p className="mt-6 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-            Email verification will activate as soon as an email provider is connected. Until then
-            your account is usable but unverified.
-          </p>
+          <div className="mt-6 rounded-lg bg-amber-50 p-3">
+            <p className="text-sm text-amber-800">
+              Your email is not verified yet. We can send a fresh verification link. If server email
+              delivery is not configured, the link is written to the server log instead.
+            </p>
+            <div className="mt-3">
+              <ResendVerificationButton />
+            </div>
+          </div>
         ) : null}
 
         <div className="mt-6 flex flex-wrap gap-3">

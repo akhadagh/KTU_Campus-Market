@@ -12,17 +12,17 @@ This roadmap is the approved implementation plan for Campus Market. Work proceed
 |---|---|---|
 | M0 | Environment and repository foundation | Completed |
 | M1 | Documentation and architecture approval | Completed |
-| M2 | Design system and UI foundation | In Progress |
-| M3 | Database, authentication, and users | In Progress |
-| M4 | Marketplace core | Not Started |
-| M5 | Cart, checkout, and orders | Not Started |
-| M6 | Dashboards and messaging | Not Started |
-| M7 | Payments and delivery | Not Started |
-| M8 | Trust, safety, and moderation | Not Started |
-| M9 | AI integration | Not Started |
-| M10 | Administration and configuration | Not Started |
-| M11 | Quality assurance and hardening | Not Started |
-| M12 | Deployment and launch | Not Started |
+| M2 | Design system and UI foundation | Completed |
+| M3 | Database, authentication, and users | Completed |
+| M4 | Marketplace core | Completed |
+| M5 | Cart, checkout, and orders | Completed |
+| M6 | Dashboards and messaging | Completed |
+| M7 | Payments and delivery | In Progress |
+| M8 | Trust, safety, and moderation | In Progress |
+| M9 | AI integration | In Progress |
+| M10 | Administration and configuration | In Progress |
+| M11 | Quality assurance and hardening | In Progress |
+| M12 | Deployment and launch | In Progress |
 
 ---
 

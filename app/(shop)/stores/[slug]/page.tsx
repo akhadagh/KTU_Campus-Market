@@ -2,32 +2,58 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MapPin, Star, Store } from "lucide-react";
 import { ProductCard } from "@/components/commerce/product-card";
-import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { sampleProducts } from "@/lib/sample-data";
+import { EmptyState } from "@/components/ui/empty-state";
+import { prisma } from "@/lib/db";
+import { listMarketplaceProducts } from "@/lib/marketplace";
+import { connection } from "next/server";
 
 interface StorePageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 export async function generateMetadata({ params }: StorePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const products = sampleProducts.filter((product) => product.vendorSlug === slug);
-  const name = products[0]?.vendorName;
+  const vendor = await prisma.vendorProfile.findUnique({
+    where: { slug },
+    select: { storeName: true, description: true },
+  });
   return {
-    title: name ?? "Store",
-    description: name ? `Shop products from ${name} on Campus Market.` : undefined,
+    title: vendor?.storeName ?? "Store",
+    description: vendor?.description ?? undefined,
   };
 }
 
-export default async function StorePage({ params }: StorePageProps) {
+export default async function StorePage({ params, searchParams }: StorePageProps) {
+  await connection();
+
   const { slug } = await params;
-  const products = sampleProducts.filter((product) => product.vendorSlug === slug);
+  const query = await searchParams;
+  const page = Math.max(1, Number(query.page ?? "1") || 1);
 
-  if (products.length === 0) notFound();
+  const vendor = await prisma.vendorProfile.findFirst({
+    where: { slug, status: "ACTIVE", deletedAt: null },
+    select: {
+      id: true,
+      storeName: true,
+      slug: true,
+      description: true,
+      businessCategory: true,
+      phone: true,
+      whatsapp: true,
+      ratingAvg: true,
+      ratingCount: true,
+      pickupAvailable: true,
+      deliveryAvailable: true,
+      campus: { select: { name: true } },
+    },
+  });
+  if (!vendor) notFound();
 
-  const vendor = products[0];
+  const results = await listMarketplaceProducts({ vendorSlug: slug, page });
+  const isDemo = vendor.storeName.toLowerCase().startsWith("sample");
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -41,41 +67,54 @@ export default async function StorePage({ params }: StorePageProps) {
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
-                  {vendor.vendorName}
+                  {vendor.storeName}
                 </h1>
-                <Badge variant="sample">Sample store</Badge>
+                {isDemo ? <Badge variant="sample">Demo store</Badge> : null}
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-neutral-600">
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                  {vendor.campus}
-                </span>
+                {vendor.campus?.name ? (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                    {vendor.campus.name}
+                  </span>
+                ) : null}
                 <span className="flex items-center gap-1">
                   <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-                  {vendor.rating.toFixed(1)} ({vendor.reviewCount} sample reviews)
+                  {vendor.ratingCount > 0
+                    ? `${vendor.ratingAvg.toFixed(1)} (${vendor.ratingCount} review${vendor.ratingCount === 1 ? "" : "s"})`
+                    : "No reviews yet"}
                 </span>
               </div>
             </div>
           </div>
-          <p className="max-w-md text-sm leading-6 text-neutral-600">
-            A sample storefront preview. Real store profiles, verification badges, and vendor
-            analytics are connected in Milestones 4 and 6.
-          </p>
+          <div className="max-w-md text-sm leading-6 text-neutral-600">
+            {vendor.description ?? "This vendor has not added a store description yet."}
+            <p className="mt-2 text-xs text-neutral-500">
+              {vendor.pickupAvailable ? "Campus pickup available" : "Pickup not available"}
+              {vendor.deliveryAvailable ? " · Delivery available" : ""}
+              {vendor.phone ? ` · ${vendor.phone}` : ""}
+            </p>
+          </div>
         </div>
       </Card>
-
-      <Alert variant="warning" title="Design preview" className="mt-6">
-        These products are demonstration data and are not real vendor listings.
-      </Alert>
 
       <h2 className="mt-8 mb-4 text-xl font-semibold tracking-tight text-neutral-900">
         Products from this store
       </h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {products.map((product) => (
-          <ProductCard key={product.slug} product={product} />
-        ))}
-      </div>
+
+      {results.items.length === 0 ? (
+        <EmptyState
+          icon={Store}
+          title="No live listings right now"
+          description="This store has no published products at the moment."
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {results.items.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

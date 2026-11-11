@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PackageSearch } from "lucide-react";
 import { ProductCard } from "@/components/commerce/product-card";
-import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
-import { sampleCategories, sampleProducts } from "@/lib/sample-data";
+import { listMarketplaceCategories, listMarketplaceProducts } from "@/lib/marketplace";
+import { conditionLabels } from "@/lib/labels";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Explore marketplace",
@@ -20,42 +22,53 @@ interface MarketplacePageProps {
     category?: string;
     condition?: string;
     sort?: string;
+    page?: string;
   }>;
 }
 
+const conditionOptions = [
+  "NEW",
+  "LIKE_NEW",
+  "USED_GOOD",
+  "USED_FAIR",
+  "REFURBISHED",
+  "NOT_SPECIFIED",
+];
+
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
+  await connection();
+
   const params = await searchParams;
-  const query = params.q?.trim().toLowerCase() ?? "";
+  const query = params.q?.trim() ?? "";
   const category = params.category ?? "";
   const condition = params.condition ?? "";
-  const sort = params.sort ?? "relevance";
+  const sort = params.sort ?? "newest";
+  const page = Math.max(1, Number(params.page ?? "1") || 1);
 
-  let results = sampleProducts.filter((product) => {
-    const matchesQuery =
-      !query ||
-      product.name.toLowerCase().includes(query) ||
-      product.description.toLowerCase().includes(query) ||
-      product.categoryName.toLowerCase().includes(query);
-    const matchesCategory = !category || product.categorySlug === category;
-    const matchesCondition = !condition || product.condition === condition;
-    return matchesQuery && matchesCategory && matchesCondition;
-  });
+  const [categories, results] = await Promise.all([
+    listMarketplaceCategories(),
+    listMarketplaceProducts({ q: query, categorySlug: category, condition, sort, page }),
+  ]);
 
-  if (sort === "price_asc") results = [...results].sort((a, b) => a.pricePesewas - b.pricePesewas);
-  if (sort === "price_desc") results = [...results].sort((a, b) => b.pricePesewas - a.pricePesewas);
-  if (sort === "name") results = [...results].sort((a, b) => a.name.localeCompare(b.name));
+  const buildUrl = (next: Record<string, string | undefined>) => {
+    const search = new URLSearchParams();
+    if (query) search.set("q", query);
+    if (category) search.set("category", category);
+    if (condition) search.set("condition", condition);
+    if (sort !== "newest") search.set("sort", sort);
+    for (const [key, value] of Object.entries(next)) {
+      if (value) search.set(key, value);
+    }
+    const qs = search.toString();
+    return qs ? `/marketplace?${qs}` : "/marketplace";
+  };
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title="Explore marketplace"
-        description="Browse products and services from the campus community. Filters below work against sample preview data until the marketplace database is connected."
+        description="Browse live listings from approved campus vendors. New listings appear after administrator review."
       />
-
-      <Alert variant="warning" title="Design preview" className="mt-6">
-        Only sample listings are shown right now. Real database-backed vendor listings arrive in
-        Milestone 4.
-      </Alert>
 
       <form
         action="/marketplace"
@@ -70,7 +83,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
             id="search"
             name="q"
             type="search"
-            defaultValue={params.q ?? ""}
+            defaultValue={query}
             placeholder="Search products and services"
           />
         </div>
@@ -80,7 +93,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
           </label>
           <Select id="category" name="category" defaultValue={category}>
             <option value="">All categories</option>
-            {sampleCategories.map((item) => (
+            {categories.map((item) => (
               <option key={item.slug} value={item.slug}>
                 {item.name}
               </option>
@@ -93,9 +106,11 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
           </label>
           <Select id="condition" name="condition" defaultValue={condition}>
             <option value="">Any condition</option>
-            <option value="New">New</option>
-            <option value="Used">Used</option>
-            <option value="Refurbished">Refurbished</option>
+            {conditionOptions.map((option) => (
+              <option key={option} value={option}>
+                {conditionLabels[option]}
+              </option>
+            ))}
           </Select>
         </div>
         <div>
@@ -104,10 +119,11 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
           </label>
           <div className="flex gap-2">
             <Select id="sort" name="sort" defaultValue={sort}>
-              <option value="relevance">Relevance</option>
+              <option value="newest">Newest</option>
               <option value="price_asc">Price: low to high</option>
               <option value="price_desc">Price: high to low</option>
               <option value="name">Name</option>
+              <option value="rating">Highest rated</option>
             </Select>
             <Button type="submit" className="shrink-0">
               Apply
@@ -118,26 +134,62 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
 
       <div className="mt-6 flex items-center justify-between text-sm text-neutral-600">
         <p>
-          {results.length} {results.length === 1 ? "result" : "results"}
-          {params.q ? ` for “${params.q}”` : ""}
+          {results.total} listing{results.total === 1 ? "" : "s"}
+          {query ? ` for “${query}”` : ""}
+        </p>
+        <p>
+          Page {results.page} of {results.pages}
         </p>
       </div>
 
-      {results.length > 0 ? (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {results.map((product) => (
-            <ProductCard key={product.slug} product={product} />
-          ))}
-        </div>
-      ) : (
+      {results.items.length === 0 ? (
         <div className="mt-6">
           <EmptyState
             icon={PackageSearch}
-            title="No listings match your search"
-            description="Try a different keyword, category, or condition. Real marketplace search will query vendor listings once the database is connected."
+            title="No listings match those filters"
+            description="Try a different search term, or clear the filters to see everything on campus."
+            action={
+              <Link href="/marketplace" className={buttonVariants()}>
+                Clear filters
+              </Link>
+            }
           />
         </div>
+      ) : (
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {results.items.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
       )}
+
+      {results.pages > 1 ? (
+        <nav aria-label="Pagination" className="mt-8 flex items-center justify-between">
+          {results.page > 1 ? (
+            <Link
+              href={buildUrl({ page: String(results.page - 1) })}
+              className={buttonVariants({ variant: "outline" })}
+            >
+              Previous
+            </Link>
+          ) : (
+            <span />
+          )}
+          <span className="text-sm text-neutral-600">
+            Page {results.page} of {results.pages}
+          </span>
+          {results.page < results.pages ? (
+            <Link
+              href={buildUrl({ page: String(results.page + 1) })}
+              className={buttonVariants({ variant: "outline" })}
+            >
+              Next
+            </Link>
+          ) : (
+            <span />
+          )}
+        </nav>
+      ) : null}
     </div>
   );
 }

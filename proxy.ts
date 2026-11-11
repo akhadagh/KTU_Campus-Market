@@ -20,5 +20,7 @@ export const config = {
     "/notifications/:path*",
     "/sell/:path*",
     "/wishlist/:path*",
+    "/checkout/:path*",
+    "/admin/:path*",
   ],
 };

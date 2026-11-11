@@ -4,7 +4,7 @@
 
 Campus Market is a mobile-first, multi-vendor marketplace for university communities, launching at Koforidua Technical University (KTU), Ghana. Students can discover products, buy from verified campus vendors, open their own stores, manage orders, and get help from an AI shopping assistant grounded in real marketplace listings.
 
-> **Project status:** Milestone 3 — database, authentication, and users. The UI foundation is complete and real registration, login, sessions, and logout run against the Neon PostgreSQL database. Email verification and password reset await an email provider.
+> **Project status:** Milestone 8 of 12 — the marketplace core is live. Vendors apply and get approved, listings are published and moderated, buyers can search, add to cart, check out and pay with Paystack, sellers fulfil orders, and buyers can review, message and report. Email delivery and image uploads still need provider credentials; refunds, disputes and payouts are not built yet. See [CAMPUS_MARKET_FUNCTIONALITY_AUDIT.md](./CAMPUS_MARKET_FUNCTIONALITY_AUDIT.md) for the evidence-backed status of every module.
 
 ---
 
@@ -23,21 +23,21 @@ Campus Market is a mobile-first, multi-vendor marketplace for university communi
 
 ## Planned stack
 
-| Layer      | Technology                                                 |
-| ---------- | ---------------------------------------------------------- |
-| Language   | TypeScript                                                 |
-| Framework  | Next.js (App Router)                                       |
-| UI         | React, Tailwind CSS, Radix/shadcn-style primitives, Lucide |
-| Database   | PostgreSQL                                                 |
-| ORM        | Prisma                                                     |
-| Auth       | Auth.js v5 with database sessions (or opaque DB sessions)  |
-| Validation | Zod, React Hook Form                                       |
-| Storage    | Cloudinary or Supabase Storage                             |
-| Payments   | Paystack first, Hubtel adapter interface                   |
-| AI         | Provider-agnostic server-side LLM, feature-flagged         |
-| Email      | Resend or SMTP                                             |
-| Testing    | Vitest, React Testing Library, Playwright                  |
-| Deployment | Vercel + managed PostgreSQL                                |
+| Layer      | Technology                                                     |
+| ---------- | -------------------------------------------------------------- |
+| Language   | TypeScript                                                     |
+| Framework  | Next.js (App Router)                                           |
+| UI         | React, Tailwind CSS, Radix/shadcn-style primitives, Lucide     |
+| Database   | PostgreSQL                                                     |
+| ORM        | Prisma                                                         |
+| Auth       | Opaque database sessions with hashed tokens (scrypt passwords) |
+| Validation | Zod, React Hook Form                                           |
+| Storage    | Cloudinary or Supabase Storage                                 |
+| Payments   | Paystack first, Hubtel adapter interface                       |
+| AI         | Provider-agnostic server-side LLM, feature-flagged             |
+| Email      | Resend or SMTP                                                 |
+| Testing    | Vitest (unit + API integration), Playwright (E2E specs)        |
+| Deployment | Vercel + managed PostgreSQL                                    |
 
 ---
 
@@ -46,7 +46,7 @@ Campus Market is a mobile-first, multi-vendor marketplace for university communi
 ```bash
 # Requires Node.js 22+ and pnpm 10+
 pnpm install            # installs dependencies and generates the Prisma client
-cp .env.example .env    # fill in DATABASE_URL and AUTH_SECRET at minimum
+cp .env.example .env    # fill in DATABASE_URL, then PAYSTACK_SECRET_KEY, AI_API_KEY, RESEND_API_KEY
 pnpm db:deploy         # apply committed migrations (requires a PostgreSQL database)
 pnpm db:seed           # load development sample data (development only)
 pnpm dev
@@ -66,14 +66,18 @@ The application will be available at `http://localhost:3000`.
 | `pnpm db:deploy`                         | Apply committed migrations (staging/production)                 |
 | `pnpm db:seed`                           | Idempotent development seed (refuses to run in production)      |
 | `pnpm db:studio`                         | Prisma Studio database browser                                  |
+| `pnpm test`                              | Vitest unit + API integration suites                            |
+| `pnpm test:e2e`                          | Playwright end-to-end journeys                                  |
+| `pnpm admin:bootstrap`                   | Create/grant an admin account from `ADMIN_BOOTSTRAP_*` env vars |
+| `pnpm db:verify`                         | Verify the seeded database contents                             |
 
 ### Current status
 
-- Working: full marketing/shop/auth UI, 26 routes, health endpoint, lint/typecheck/build green.
+- Working: marketing + shop + admin UI, auth with email verification and password reset, vendor onboarding and approval, product CRUD with moderation, database-backed marketplace with search/filters/pagination, cart, wishlist, multi-vendor checkout and orders, Paystack payments, seller fulfilment, reviews, reports, messaging, notifications, admin console and a grounded AI assistant.
 - Database: Prisma schema (46 tables), migration `0001_init`, and seed applied to Neon PostgreSQL; `pnpm db:verify` and `/api/health` prove connectivity.
-- Auth: registration, login, logout, session cookies, route protection, and rate limiting verified end to end against Neon.
+- Verification: auth, email, vendor approval, moderation, cart → checkout → Paystack → fulfilment, RBAC denials, the AI assistant and the 21-test Vitest suite were all exercised against the live database.
 - Deployed: https://campus-market-teal.vercel.app
-- Not yet implemented: email verification/password reset (needs email provider), payments, messaging, AI, admin dashboards.
+- Not yet implemented: image upload storage, refunds/payouts, disputes and evidence, student-verification records, product variants UI, vendor analytics charts. Email delivery needs `RESEND_API_KEY`.
 
 ### Required environment
 

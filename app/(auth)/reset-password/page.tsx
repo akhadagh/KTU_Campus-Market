@@ -17,9 +17,9 @@ export default function ResetPasswordPage() {
         Use a strong password you do not reuse on another site.
       </p>
 
-      <Alert variant="info" title="Email delivery pending" className="mt-6">
-        Reset links are delivered by email. Until an email provider is connected, no reset link is
-        issued and no password is changed.
+      <Alert variant="info" title="Reset links arrive by email" className="mt-6">
+        If server email delivery is not configured on this deployment, the reset email cannot be
+        delivered. Request a new link from the forgot-password page when delivery is available.
       </Alert>
 
       <div className="mt-6">

@@ -1,8 +1,10 @@
 # Campus Market — API Documentation
 
-**Base path:** `/api/v1`  
-**Format:** JSON  
-**Authentication:** Secure session cookie
+**Base path:** `/api/v1`
+**Format:** JSON
+**Authentication:** Secure session cookie (`cm_session`)
+
+> Status legend: **Implemented** — live and verified against the database · **Planned** — specified but not built.
 
 ---
 
@@ -40,58 +42,50 @@ Error responses:
 
 ### Pagination
 
-```text
-?page=1&limit=20&sort=newest
-```
-
-Response meta:
+List endpoints accept `page` (1-based) and `pageSize`, and return:
 
 ```json
-{
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 143,
-    "totalPages": 8
-  }
-}
+{ "data": { "items": [], "page": 1, "pageSize": 24, "total": 137, "pages": 6 } }
 ```
 
 ### Idempotency
 
-Checkout and payment initiation accept:
-
-```text
-Idempotency-Key: <uuid>
-```
-
-The server stores the key with a unique constraint and returns the original result for retries.
+`POST /orders` requires `idempotencyKey` (8–128 chars). Repeating a request with the same key returns the original order instead of creating a duplicate. Paystack webhook events are deduplicated on `(provider, eventId)`.
 
 ### Authorization
 
-- Public endpoints allow guest browsing.
-- Authenticated endpoints require a valid session.
-- Vendor endpoints require vendor capability plus resource ownership.
-- Admin endpoints require explicit administrative capability.
+Permissions are resolved server-side from the seeded role/permission tables:
+
+| Permission | Roles | Used by |
+|---|---|---|
+| `product.create`, `product.edit` | vendor, admin | Vendor product APIs |
+| `product.moderate` | moderator, admin | Listing moderation, review moderation |
+| `order.manage` | vendor, admin | Vendor fulfilment endpoints |
+| `vendor.approve` | admin | Vendor review endpoint |
+| `user.manage` | admin | Admin console |
+| `report.review` | moderator, admin | Report queue |
+| `settings.manage` | admin | Platform settings (planned) |
+
+Client-side hiding is never trusted: every API re-checks the session, role and permission.
 
 ---
 
-## 2. Authentication
+## 2. Authentication — Implemented
 
-Session cookie: `cm_session` — `HttpOnly`, `SameSite=Lax`, `Secure` in production, 30-day expiry. Tokens are random 256-bit values; only their SHA-256 hash is stored in `sessions`.
+Session cookie: `cm_session` — `HttpOnly`, `SameSite=Lax`, `Secure` in production, 30-day expiry. Tokens are random 256-bit values; only their SHA-256 hash is stored in `sessions`. Passwords use scrypt with per-user salts.
 
 | Method | Path | Status | Description |
 |---|---|---|---|
-| POST | `/auth/register` | Implemented | Create an account and start a session |
+| POST | `/auth/register` | Implemented | Create an account, start a session, issue a verification token |
 | POST | `/auth/login` | Implemented | Log in |
 | POST | `/auth/logout` | Implemented | Revoke session and clear cookie |
 | GET | `/auth/session` | Implemented | Current session and user |
-| POST | `/auth/verify-email` | Blocked (email provider) | Verify email with token |
-| POST | `/auth/resend-verification` | Blocked (email provider) | Resend verification |
-| POST | `/auth/forgot-password` | Blocked (email provider) | Request reset |
-| POST | `/auth/reset-password` | Blocked (email provider) | Reset with token |
+| POST | `/auth/verify-email` | Implemented | Verify email with a single-use token |
+| POST | `/auth/resend-verification` | Implemented | Issue a fresh verification token (logged-in users) |
+| POST | `/auth/forgot-password` | Implemented | Request a reset link (generic response, no enumeration) |
+| POST | `/auth/reset-password` | Implemented | Set a new password and revoke all sessions |
 
-Example registration body:
+Registration body:
 
 ```json
 {
@@ -115,14 +109,15 @@ Register response (`201`, sets cookie):
       "status": "ACTIVE",
       "emailVerifiedAt": null,
       "createdAt": "2026-01-01T00:00:00.000Z"
-    }
+    },
+    "emailVerification": "sent"
   },
   "error": null,
   "meta": null
 }
 ```
 
-Login body: `{ "email": "...", "password": "..." }` → `200` with the same `user` shape. Logout returns `{ "data": { "loggedOut": true } }`. Session returns `{ "data": { "user": ... } }` or `{ "data": { "user": null } }`.
+`emailVerification` is `sent`, `provider_not_configured` or `provider_error`. Verification and reset emails are delivered through Resend when `RESEND_API_KEY` is set; otherwise they are written to the server log in development only, and the API reports that honestly.
 
 Auth error behaviour:
 
@@ -134,294 +129,298 @@ Auth error behaviour:
 | Suspended/banned account | 403 | `FORBIDDEN` |
 | Too many attempts (10/min/IP) | 429 | `RATE_LIMITED` |
 
-Protected routes (`/account`, `/orders`, `/messages`, `/notifications`, `/sell`, `/wishlist`) redirect guests to `/login?next=<path>` and re-check the session server-side.
+Protected routes (`/account`, `/orders`, `/messages`, `/notifications`, `/sell`, `/wishlist`, `/checkout`, `/admin`) redirect guests to `/login?next=<path>` in `proxy.ts` and re-check the session server-side.
 
 ---
 
-## 3. Users and preferences
+## 3. Users and preferences — Partially implemented
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/users/me` | Current profile |
-| PATCH | `/users/me` | Update profile |
-| PATCH | `/users/me/preferences` | Update preferences |
-| POST | `/users/me/verification` | Submit student verification |
-| GET | `/users/me/verification` | Verification status |
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/users/me` | Planned | Current profile |
+| PATCH | `/users/me` | Planned | Update profile |
+| GET | `/users/me/notifications` | Planned | Notification preferences |
 
-Public user data is limited to display-safe fields. Email and phone are private by default.
+`GET /auth/session` currently returns the profile fields used by the account page.
 
 ---
 
-## 4. Vendors
+## 4. Vendors — Implemented
 
-| Method | Path | Description |
-|---|---|---|
-| POST | `/vendors/apply` | Apply to become a vendor |
-| GET | `/vendors/me` | Own vendor profile |
-| PATCH | `/vendors/me` | Update store settings |
-| GET | `/vendors/:slug` | Public storefront |
-| GET | `/vendors/me/analytics` | Store analytics |
+| Method | Path | Status | Description |
+|---|---|---|---|
+| POST | `/vendors/apply` | Implemented | Apply to become a vendor (status `PENDING`) |
+| GET | `/vendors/me` | Implemented | Own vendor profile |
+| PATCH | `/vendors/me` | Implemented | Update store settings |
+| GET | `/admin/vendors` | Implemented | Vendor queue, filter by `status` |
+| POST | `/admin/vendors/:id/review` | Implemented | `APPROVE`, `REJECT`, `SUSPEND`, `REACTIVATE`, `PAUSE` |
+| GET | `/vendors/:slug` | Planned | JSON storefront (the storefront page is live) |
+| GET | `/vendors/me/analytics` | Planned | Store analytics |
 
----
-
-## 5. Categories
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/categories` | Active category tree |
-| GET | `/categories/:slug` | Category and children |
-| POST | `/admin/categories` | Create category (admin) |
-| PATCH | `/admin/categories/:id` | Update category (admin) |
-| DELETE | `/admin/categories/:id` | Deactivate category (admin) |
+Approving a vendor sets `status=ACTIVE`, `verificationStatus=VERIFIED`, grants the `vendor` role, and notifies the applicant. Rejecting sets `status=CLOSED`, `verificationStatus=REJECTED` and allows the applicant to re-apply.
 
 ---
 
-## 6. Products
+## 5. Categories — Partially implemented
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/products` | List/filter products |
-| GET | `/products/:slug` | Product details |
-| POST | `/products` | Create product (vendor) |
-| PATCH | `/products/:id` | Update own product |
-| DELETE | `/products/:id` | Soft-delete own product |
-| POST | `/products/:id/images` | Upload image |
-| DELETE | `/products/:id/images/:imageId` | Remove image |
-| POST | `/products/:id/variants` | Create variant |
-| PATCH | `/products/:id/variants/:variantId` | Update variant |
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/categories` | Planned | Active category tree (JSON) |
+| GET | `/categories/:slug` | Planned | Category and children (JSON) |
+| POST | `/admin/categories` | Planned | Create category (admin) |
+| PATCH | `/admin/categories/:id` | Planned | Update category (admin) |
+| DELETE | `/admin/categories/:id` | Planned | Deactivate category (admin) |
 
-Product query parameters:
-
-`q`, `category`, `subcategory`, `campus`, `condition`, `minPrice`, `maxPrice`, `rating`, `available`, `vendor`, `sort`, `page`, `limit`.
-
-Sort values: `newest`, `price_asc`, `price_desc`, `popular`, `relevance`.
-
-Uploads use server-authorized multipart or signed upload requests. Clients do not receive storage secrets.
+Category pages and marketplace filters already read the seeded `categories` table directly.
 
 ---
 
-## 7. Search
+## 6. Products — Implemented
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/search` | Unified product search |
-| GET | `/search/suggestions` | Query suggestions |
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/products/:slug` | Implemented | Live product detail (public) |
+| POST | `/vendor/products` | Implemented | Create product (vendor, `product.create`) |
+| PATCH | `/vendor/products/:id` | Implemented | Update own product, change status, replace images |
+| DELETE | `/vendor/products/:id` | Implemented | Archive own product |
+| GET | `/products` | Planned | JSON list endpoint (marketplace page filters live) |
+| POST | `/products/:id/images` | Planned | Upload image (needs storage provider) |
+| DELETE | `/products/:id/images/:imageId` | Planned | Remove image |
+| POST | `/products/:id/variants` | Planned | Create variant |
 
-The search endpoint uses the same filters as `/products` and supports relevance ranking with PostgreSQL full-text and trigram matching.
+Create body (prices in cedis; the server converts to pesewas):
+
+```json
+{
+  "name": "HP EliteBook 840 G5",
+  "categoryId": "uuid",
+  "description": "Refurbished, 16GB RAM, 512GB SSD, charger included.",
+  "priceCedis": 2850,
+  "originalPriceCedis": 3200,
+  "condition": "USED_GOOD",
+  "quantity": 3,
+  "deliveryOptions": ["PICKUP", "CAMPUS_DELIVERY"],
+  "pickupAvailable": true,
+  "tags": ["laptop", "dell"],
+  "imageUrls": ["https://example.com/photo.jpg"],
+  "status": "PENDING_REVIEW"
+}
+```
+
+Vendors can only set `DRAFT`, `PENDING_REVIEW` or `ARCHIVED`. Editing a live listing sends it back to `PENDING_REVIEW` for moderation. Marketplace query parameters (`q`, `category`, `condition`, `sort`, `page`) are supported by the marketplace page; sort values are `newest`, `price_asc`, `price_desc`, `name`, `rating`.
 
 ---
 
-## 8. Cart and wishlist
+## 7. Search — Planned
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/cart` | Current cart |
-| POST | `/cart/items` | Add item |
-| PATCH | `/cart/items/:id` | Update quantity |
-| DELETE | `/cart/items/:id` | Remove item |
-| POST | `/cart/merge` | Merge guest cart |
-| GET | `/wishlist` | Wishlist |
-| POST | `/wishlist/items` | Add item |
-| DELETE | `/wishlist/items/:id` | Remove item |
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/search` | Planned | Unified product search |
+| GET | `/search/suggestions` | Planned | Query suggestions |
 
-The server recalculates prices and stock on every cart response. Cart responses include unavailable-item warnings.
+The marketplace page already performs case-insensitive matching over name, description and tags, with category and condition filters.
 
 ---
 
-## 9. Checkout and orders
+## 8. Cart and wishlist — Implemented
 
-| Method | Path | Description |
-|---|---|---|
-| POST | `/checkout` | Create order(s) and initiate checkout |
-| GET | `/orders` | Buyer orders |
-| GET | `/orders/:id` | Buyer order detail |
-| POST | `/orders/:id/cancel` | Request cancellation |
-| GET | `/vendor/orders` | Vendor orders |
-| POST | `/vendor/orders/:id/accept` | Accept vendor order |
-| POST | `/vendor/orders/:id/status` | Advance fulfilment status |
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/cart` | Implemented | Current cart with totals and per-vendor grouping |
+| POST | `/cart` | Implemented | Add a product (body `{ "productId", "quantity" }`) |
+| PATCH | `/cart/items/:id` | Implemented | Update quantity |
+| DELETE | `/cart/items/:id` | Implemented | Remove item |
+| POST | `/cart/merge` | Planned | Merge guest cart after login |
+| GET | `/wishlist` | Implemented | Saved products |
+| POST | `/wishlist` | Implemented | Toggle a product in the wishlist |
+| DELETE | `/wishlist/items/:id` | Planned | Remove by item id |
+
+Guests get a cart identified by the `cm_guest` cookie; signed-in users get one cart row. The server recalculates prices and stock on every response and hides items whose product or store is no longer active.
+
+---
+
+## 9. Checkout and orders — Implemented
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| POST | `/orders` | Implemented | Create the order (and its per-vendor sub-orders) |
+| GET | `/orders` | Implemented | Buyer order list (page) |
+| GET | `/orders/:id` | Implemented | Buyer order detail (page) |
+| GET | `/vendor/orders` | Implemented | Vendor order list (page) |
+| PATCH | `/vendor/orders/:id/status` | Implemented | Advance fulfilment status |
+| POST | `/checkout` | Planned | Combined checkout + payment endpoint |
+| POST | `/orders/:id/cancel` | Planned | Buyer cancellation request |
 
 Checkout body:
 
 ```json
 {
-  "cartId": "uuid",
-  "campusId": "uuid",
-  "deliveryMethod": "pickup",
-  "pickupLocationId": "uuid",
-  "deliveryAddress": null,
-  "instructions": "",
-  "paymentMethod": "mobile_money",
-  "paymentProvider": "paystack",
-  "idempotencyKey": "uuid"
+  "deliveryMethod": "CAMPUS_DELIVERY",
+  "pickupLocationId": null,
+  "deliveryAddress": {
+    "fullName": "Ama Mensah",
+    "phone": "+233200000000",
+    "address": "Hostel B, room 12",
+    "instructions": "Near the main gate"
+  },
+  "notes": "Please call on arrival",
+  "idempotencyKey": "9f0c…"
 }
 ```
 
-The server returns order IDs, vendor order IDs, totals, and payment initiation data. It never accepts client-supplied prices or totals.
+The server recalculates the subtotal, applies per-seller delivery fees (campus delivery GH₵5.00, courier GH₵15.00, pickup free), splits the order per vendor, creates `OrderItem` snapshots, holds inventory (`InventoryReservation`, 30 minutes) and writes the first `OrderStatusHistory` row. It never accepts client-supplied prices or totals.
+
+Vendor fulfilment transitions: `PENDING → ACCEPTED → PREPARING → READY_FOR_PICKUP / OUT_FOR_DELIVERY → DELIVERED`, with `CANCELLED` available until delivery. Invalid transitions return `409`. The parent order becomes `PARTIALLY_FULFILLED` or `FULFILLED` automatically.
 
 ---
 
-## 10. Payments and refunds
+## 10. Payments and refunds — Implemented (initiation, verification)
 
-| Method | Path | Description |
-|---|---|---|
-| POST | `/payments/initiate` | Initiate payment for an order |
-| GET | `/payments/:reference/verify` | Verify payment status |
-| POST | `/webhooks/paystack` | Paystack webhook |
-| POST | `/admin/payments/:id/refund` | Refund (admin) |
+| Method | Path | Status | Description |
+|---|---|---|---|
+| POST | `/payments/initialize` | Implemented | Start a Paystack transaction for an order |
+| GET | `/payments/initialize?reference=` | Implemented | Verify a transaction and mark the order paid |
+| GET | `/payments/callback?reference=` | Implemented | Paystack redirect target, verifies then redirects to the order |
+| POST | `/payments/webhook` | Implemented | Signed webhook with event de-duplication |
+| POST | `/payments/:id/refund` | Planned | Refund workflow |
 
-Webhook requirements:
-
-- Read the raw body.
-- Verify the provider signature.
-- Store the event idempotently.
-- Re-fetch the transaction from the provider.
-- Match reference, amount, and currency.
-- Apply changes transactionally.
-
----
-
-## 11. Delivery and pickup
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/pickup-locations` | Active pickup locations |
-| POST | `/vendor/orders/:id/delivery` | Record delivery/tracking |
-| POST | `/vendor/orders/:id/confirm-delivery` | Confirm delivery |
-| GET | `/orders/:id/tracking` | Buyer tracking view |
-
----
-
-## 12. Reviews
-
-| Method | Path | Description |
-|---|---|---|
-| POST | `/reviews` | Create review for eligible purchase |
-| GET | `/products/:id/reviews` | Product reviews |
-| GET | `/vendors/:slug/reviews` | Vendor reviews |
-| PATCH | `/admin/reviews/:id` | Moderate review |
-
-Review creation is rejected unless the reviewer has a completed, paid, non-refunded order item for that product and no existing review for the item.
-
----
-
-## 13. Messaging and notifications
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/conversations` | User conversations |
-| POST | `/conversations` | Start conversation |
-| GET | `/conversations/:id/messages` | Messages |
-| POST | `/conversations/:id/messages` | Send message |
-| GET | `/notifications` | Notifications |
-| PATCH | `/notifications/:id/read` | Mark read |
-| POST | `/notifications/read-all` | Mark all read |
-
-Only conversation participants may read or send messages.
-
----
-
-## 14. Reports and disputes
-
-| Method | Path | Description |
-|---|---|---|
-| POST | `/reports` | Report product/vendor/user/review/transaction |
-| GET | `/reports/me` | Own reports |
-| POST | `/disputes` | Open dispute |
-| GET | `/disputes/:id` | Dispute detail |
-| POST | `/disputes/:id/evidence` | Upload evidence |
-| GET | `/admin/reports` | Moderation queue |
-| PATCH | `/admin/reports/:id` | Resolve report |
-| GET | `/admin/disputes` | Dispute queue |
-| PATCH | `/admin/disputes/:id` | Resolve dispute |
-
-Access is restricted to the involved parties and authorized staff.
-
----
-
-## 15. AI
-
-| Method | Path | Description |
-|---|---|---|
-| POST | `/ai/assistant` | Conversational marketplace search |
-| GET | `/ai/recommendations` | Personalized recommendations |
-| POST | `/ai/description` | Vendor description draft |
-
-Assistant request:
-
-```json
-{
-  "message": "I need a laptop under GH₵3,000 for programming",
-  "campusId": "uuid"
-}
-```
-
-Assistant response:
+`POST /payments/initialize` body: `{ "orderId": "uuid" }` →
 
 ```json
 {
   "data": {
-    "message": "Here are three laptops under GH₵3,000...",
-    "products": [
-      { "id": "uuid", "slug": "hp-elitebook-840", "name": "HP EliteBook 840" }
-    ],
-    "fallbackUsed": false
-  }
+    "authorizationUrl": "https://checkout.paystack.com/…",
+    "reference": "CM-CM-20261110-12345-ABCD",
+    "paymentId": "uuid"
+  },
+  "error": null,
+  "meta": null
 }
 ```
 
-All product facts must come from the search tool. If AI is unavailable, `fallbackUsed` is `true` and deterministic results are returned.
+If Paystack is not configured the endpoint returns `503 PROVIDER_UNAVAILABLE` — the platform never fakes a payment. The webhook validates the `x-paystack-signature` HMAC-SHA512 signature against `PAYSTACK_WEBHOOK_SECRET` and de-duplicates on `(PAYSTACK, eventId)` before marking the order `PAID`, consuming reservations and decrementing stock.
 
 ---
 
-## 16. Administration
+## 11. Delivery and pickup — Partially implemented
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/admin/users` | List users |
-| PATCH | `/admin/users/:id/status` | Suspend/restore |
-| GET | `/admin/vendors` | Vendor applications |
-| POST | `/admin/vendors/:id/approve` | Approve vendor |
-| POST | `/admin/vendors/:id/reject` | Reject vendor |
-| GET | `/admin/verifications` | Student/vendor verifications |
-| PATCH | `/admin/verifications/:id` | Review verification |
-| GET | `/admin/products` | Moderate listings |
-| GET | `/admin/orders` | Orders |
-| GET | `/admin/payments` | Payments |
-| GET | `/admin/analytics` | Platform metrics |
-| GET | `/admin/audit-logs` | Audit history |
-| GET/PATCH | `/admin/settings` | Platform settings |
-| POST | `/admin/announcements` | Publish announcement |
-| GET/PATCH | `/admin/support` | Support tickets |
-| POST/PATCH | `/admin/campuses` | Campus management |
-| POST/PATCH | `/admin/pickup-locations` | Pickup locations |
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/pickup-locations` | Planned | Active pickup points (JSON) |
+| POST | `/vendor/orders/:id/delivery` | Planned | Delivery record and tracking code |
 
-Every admin mutation writes an audit log entry.
+Pickup locations are seeded and selectable during checkout; the chosen method and address are stored on the order and vendor order.
 
 ---
 
-## 17. Health and metadata
+## 12. Reviews — Implemented
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| POST | `/reviews` | Implemented | Review a delivered order item (verified purchase) |
+| POST | `/admin/reviews/:id/review` | Implemented | `APPROVE`, `REJECT`, `REMOVE` a review |
+
+Only items whose vendor order is `DELIVERED` can be reviewed, one review per order item. New reviews start as `PENDING`; publishing recomputes the product and store rating averages.
+
+---
+
+## 13. Messaging and notifications — Implemented
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/conversations` | Implemented | Buyer conversations with the last message |
+| POST | `/conversations` | Implemented | Start (or reuse) a conversation and send a message |
+| GET | `/conversations/:id/messages` | Implemented | Message history (marks the other side read) |
+| POST | `/conversations/:id/messages` | Implemented | Reply in a conversation |
+| GET | `/notifications` | Implemented | Notifications with unread count |
+| POST | `/notifications` | Implemented | Mark notifications as read (all or by id) |
+
+Messages are restricted to the buyer and the store owner; the other party receives a notification.
+
+---
+
+## 14. Reports and disputes — Partially implemented
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| POST | `/reports` | Implemented | Report a product, store, user, order or review |
+| PATCH | `/admin/reports/:id` | Implemented | `IN_REVIEW`, `RESOLVED`, `DISMISSED` |
+| POST | `/orders/:id/disputes` | Planned | Raise a dispute with evidence |
+
+---
+
+## 15. AI — Implemented
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| POST | `/ai/assistant` | Implemented | Grounded shopping assistant |
+| POST | `/ai/description` | Planned | Vendor description drafting |
+
+Request: `{ "message": "I need a charger under GH₵100" }` →
+
+```json
+{
+  "data": {
+    "reply": "Two matching chargers are available on campus…",
+    "products": [
+      {
+        "id": "uuid",
+        "slug": "usb-c-fast-charger-65w",
+        "name": "USB-C Fast Charger 65W",
+        "pricePesewas": 8500,
+        "vendorName": "KTU Test Gadgets",
+        "vendorSlug": "ktu-test-gadgets",
+        "categoryName": "Electronics & Gadgets",
+        "condition": "NEW"
+      }
+    ],
+    "source": "ai"
+  },
+  "error": null,
+  "meta": null
+}
+```
+
+`source` is `ai` when Gemini answered or `search` when the assistant fell back to the listing index (provider missing, unreachable, or erroring). The prompt lists only live, approved listings, so the model cannot invent products or prices. Rate limit: 30 requests per user per hour.
+
+---
+
+## 16. Administration — Implemented
+
+| Method | Path | Status | Description |
+|---|---|---|---|
+| GET | `/admin/vendors` | Implemented | Vendor queue (`?status=PENDING\|ACTIVE\|PAUSED\|SUSPENDED\|CLOSED`) |
+| POST | `/admin/vendors/:id/review` | Implemented | Vendor decision |
+| GET | `/admin/products` | Implemented | Listing queue (`?status=PENDING_REVIEW\|ACTIVE\|…`) |
+| POST | `/admin/products/:id/review` | Implemented | `APPROVE`, `REJECT`, `DELIST` |
+| POST | `/admin/reviews/:id/review` | Implemented | Review moderation |
+| PATCH | `/admin/reports/:id` | Implemented | Report decisions |
+| GET | `/admin/users` | Planned | User management |
+| GET | `/admin/analytics` | Planned | Platform analytics |
+
+Admin pages (`/admin`, `/admin/vendors`, `/admin/products`, `/admin/orders`, `/admin/reports`, `/admin/reviews`) render from the database and are permission-gated server-side.
+
+---
+
+## 17. Health and metadata — Implemented
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/health` | Database and service health |
-| GET | `/version` | Build version and environment |
-
-Health responses must not expose secrets or detailed internal errors.
+| GET | `/api/health` | Service and database health |
+| GET | `/api/v1/products/:slug` | Public product detail for integrations |
 
 ---
 
 ## 18. Rate limits
 
-Suggested initial limits:
+| Scope | Limit | Endpoint |
+|---|---|---|
+| Per IP | 10/minute | `/auth/register`, `/auth/login` |
+| Per IP | 5/10 minutes | `/auth/forgot-password` |
+| Per IP | 10/10 minutes | `/auth/reset-password` |
+| Per user | 3/10 minutes | `/auth/resend-verification` |
+| Per user | 5/hour | `/vendors/apply` |
+| Per IP | 60/minute | `/cart` |
+| Per user | 30/hour | `/ai/assistant` |
 
-| Endpoint group | Limit |
-|---|---|
-| Login/register/reset | 10 per 15 minutes per IP |
-| Email resend | 3 per 15 minutes per account |
-| Search | 60 per minute per user/IP |
-| AI assistant | 20 per hour per user |
-| Uploads | 20 per hour per vendor |
-| Messaging | 30 per minute per user |
-| Reports | 10 per day per user |
-
-Limits are configurable and enforced server-side.
+Limits are enforced in-process, so they are per instance. A shared store (Upstash Redis) is required for multi-region deployments.

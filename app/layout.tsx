@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   applicationName: "Campus Market",
 };
 
+// Every page in this app reads the session cookie and the database while
+// rendering, so a fully static shell cannot be produced. Opt out of the
+// static-shell and instant-navigation validation for the whole tree.
+export const instant = false;
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,

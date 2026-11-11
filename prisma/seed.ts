@@ -298,7 +298,11 @@ async function main() {
     for (const vendor of sampleVendors) {
       const user = await prisma.user.upsert({
         where: { email: vendor.email },
-        update: { status: "ACTIVE", emailVerifiedAt: new Date() },
+        update: {
+          status: "ACTIVE",
+          emailVerifiedAt: new Date(),
+          ...(process.env["SEED_SAMPLE_PASSWORD"] ? { passwordHash } : {}),
+        },
         create: {
           email: vendor.email,
           passwordHash,

@@ -62,7 +62,7 @@ export function RegisterForm() {
         }),
       });
       const json = (await res.json()) as {
-        data?: { user: { fullName: string } };
+        data?: { user: { fullName: string }; emailVerification?: string };
         error?: { message?: string; fields?: Record<string, string> };
       };
       if (!res.ok) {
@@ -71,7 +71,12 @@ export function RegisterForm() {
         });
         return;
       }
-      toast.success(`Account created. Welcome, ${json.data?.user.fullName ?? "student"}!`);
+      toast.success(`Account created. Welcome, ${json.data?.user.fullName ?? "student"}!`, {
+        description:
+          json.data?.emailVerification === "sent"
+            ? "We sent a verification link to your email."
+            : "Email delivery is not configured on this deployment, so no verification email was sent. You can request one from your account page.",
+      });
       router.push("/account");
       router.refresh();
     } catch {

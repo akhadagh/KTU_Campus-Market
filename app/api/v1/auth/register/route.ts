@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { fieldsFromZod, fail, ok } from "@/lib/api-response";
+import { sendVerificationEmail } from "@/lib/auth/emails";
 import { hashPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
+import { createToken } from "@/lib/email";
 import { prisma } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -107,5 +109,27 @@ export async function POST(request: Request) {
     ipAddress: ip,
     userAgent: request.headers.get("user-agent"),
   });
-  return ok({ user }, { status: 201 });
+
+  let emailVerification: "sent" | "provider_not_configured" | "provider_error" = "sent";
+  try {
+    const { token, tokenHash, expiresAt } = createToken();
+    await prisma.$transaction([
+      prisma.emailVerificationToken.deleteMany({ where: { userId: user.id, usedAt: null } }),
+      prisma.emailVerificationToken.create({ data: { userId: user.id, tokenHash, expiresAt } }),
+    ]);
+    const result = await sendVerificationEmail(
+      { email: user.email, fullName: user.fullName },
+      token,
+    );
+    if (!result.delivered) {
+      emailVerification =
+        result.reason === "email_provider_not_configured"
+          ? "provider_not_configured"
+          : "provider_error";
+    }
+  } catch {
+    emailVerification = "provider_error";
+  }
+
+  return ok({ user, emailVerification }, { status: 201 });
 }
