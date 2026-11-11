@@ -14,6 +14,9 @@ const TEST_EMAIL_PARTS = [
   "stab2.",
   "stab3.",
   "admin.test@",
+  "prod.smoke.",
+  "prod.buyer.",
+  "prod.vendor.",
 ];
 
 async function deleteOrders(orderIds: string[]) {

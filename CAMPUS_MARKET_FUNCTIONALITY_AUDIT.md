@@ -162,4 +162,6 @@ Secrets are stored only in `.env` (gitignored) and Vercel environment variables,
 
 **Not yet production-complete**, by explicit design decision and documented scope: transactional email delivery, image upload storage, refunds/disputes/payouts and delivery tracking, student-verification records, vendor analytics charts, and product variants. Each of these is listed as an open defect in §3 with its cause, so no gap is hidden behind a green status.
 
-**Readiness estimate:** Milestone 8 of 12 (marketplace core and moderation complete; fulfilment, trust and finance modules remain).
+**Production status:** deployed and live at https://campus-market-teal.vercel.app with Paystack and Gemini enabled in the Vercel environment. Email delivery is the only configured integration still missing (add `RESEND_API_KEY` to enable it).
+
+**Readiness estimate:** Milestone 8 of 12 (marketplace core, payments and moderation complete; refunds, disputes, delivery tracking, student verification and analytics remain).
