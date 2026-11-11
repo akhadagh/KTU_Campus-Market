@@ -1,3 +1,9 @@
+try {
+  process.loadEnvFile(".env");
+} catch {
+  // Standalone runs may rely on exported environment variables only.
+}
+
 import { prisma } from "../lib/db";
 import { hashPassword } from "../lib/auth/password";
 

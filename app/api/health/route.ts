@@ -20,7 +20,8 @@ export async function GET() {
   return NextResponse.json(
     {
       status: database === "error" ? "degraded" : "ok",
-      service: "campus-market",
+      service: "jumart",
+      brand: "JUMART — Your Campus. Your Marketplace.",
       timestamp: new Date().toISOString(),
       checks: {
         database,
