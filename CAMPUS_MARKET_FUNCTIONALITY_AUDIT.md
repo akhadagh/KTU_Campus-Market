@@ -170,6 +170,79 @@ Secrets are stored only in `.env` (gitignored) and Vercel environment variables,
 
 ---
 
+## 6b. JUMART implementation report (Phase 10 status)
+
+### 1. Brand transformation summary
+
+| Item                                                                                 | Status                 |
+| ------------------------------------------------------------------------------------ | ---------------------- |
+| Original vector logo set (primary, light, dark, symbol, favicon, app icon, OG image) | COMPLETED AND VERIFIED |
+| Brand tokens: deep purple, vibrant purple, action orange, canvas, ink                | COMPLETED AND VERIFIED |
+| Poppins type stack, refreshed buttons/badges/cards/shadows/states                    | COMPLETED AND VERIFIED |
+| Header, footer, auth screens, marketing, shop, vendor and admin surfaces re-skinned  | COMPLETED AND VERIFIED |
+| Metadata, Open Graph, Twitter card, manifest, favicon, PWA icons                     | COMPLETED AND VERIFIED |
+| All "Campus Market" strings removed (pages, emails, AI prompt, manifest, health)     | COMPLETED AND VERIFIED |
+
+### 2. Logo assets created
+
+`public/brand/`: `jumart-logo.svg`, `jumart-logo-light.svg`, `jumart-logo-dark.svg`, `jumart-symbol.svg`, `jumart-icon.svg`, `jumart-favicon.svg`, `jumart-favicon-32.png`, `jumart-app-icon.png`, `jumart-og.png`, `jumart-brand-reference.png`, `jumart-logo-sheet.png`. Plus `app/icon.svg` for the app router and the manifest entries.
+
+### 3. Files and components modified
+
+- **Brand:** `components/brand/logo.tsx` (JumartMark / JumartWordmark / JumartLogo), `app/globals.css` (tokens), `components/ui/button.tsx`, `components/ui/badge.tsx`.
+- **Shell:** `components/layout/app-header.tsx` (slim bar), `components/layout/nav-drawer.tsx` (new), `components/layout/site-footer.tsx`, `components/commerce/cart-badge.tsx` (new).
+- **Storefront:** `components/commerce/product-card.tsx`, `category-card.tsx`, `product-gallery.tsx` (new), `purchase-panel.tsx`, `app/(shop)/marketplace/page.tsx`, `categories/page.tsx`, `products/[slug]/page.tsx`, `stores/[slug]/page.tsx`, `app/(marketing)/page.tsx`.
+- **New modules:** `app/(shop)/resources/page.tsx`, `app/(shop)/admin/resources/page.tsx`, `app/(shop)/admin/airtime/page.tsx`, `app/(shop)/admin/messages/page.tsx`, `components/admin/resource-upload-form.tsx`, `external-review-buttons.tsx`, `components/messaging/support-composer.tsx`.
+- **APIs:** `app/api/v1/resources/**`, `app/api/v1/admin/resources/**`, `app/api/v1/admin/products/[id]/external-review/route.ts`, `app/api/v1/conversations/route.ts`, `app/api/v1/conversations/[id]/messages/route.ts`, `app/api/v1/products/[slug]/route.ts`.
+- **Data:** `prisma/schema.prisma` (+ `LearningMaterial`, `ConversationKind`, `ExternalStatus`), `prisma/migrations/0004_jumart_modules`, `prisma/seed.ts` (90 products, 8 stores, multi-image, external-status seeds).
+- **Security:** `proxy.ts` (staff-role gate for `/admin`), `scripts/bootstrap-admin.ts`.
+
+### 4. Pages updated
+
+All 45 routes: home, marketplace, categories + category detail, product detail, store, cart, checkout, orders + order detail, wishlist, messages, notifications, account, sell (+ apply, pending, dashboard, products, product new/edit, orders, messages), admin (overview, vendors, products, orders, reports, reviews, messages, airtime, resources), auth (login, register, forgot, reset, verify), marketing (how-it-works, help, trust-safety, policies, terms, privacy, about, contact), plus loading, error and not-found.
+
+### 5. Functional tests performed
+
+| Test                                                                                 | Result           |
+| ------------------------------------------------------------------------------------ | ---------------- |
+| Vitest unit + API integration suite (26 tests)                                       | PASS — 5/5 files |
+| Register → session → account → logout → login (production)                           | PASS             |
+| Cart add → item count → cart page (production)                                       | PASS             |
+| Order creation → Paystack authorization URL (production)                             | PASS             |
+| Vendor fulfilment transitions + invalid transition 409 + buyer 403                   | PASS             |
+| Support message → thread created → visible to student and staff inbox                | PASS             |
+| Admin upload learning material → Blob → public library → download redirect + counter | PASS             |
+| Airtime link approval: pending 404 publicly, approved 200, admin queue shows pending | PASS             |
+| Image upload to Vercel Blob as vendor, non-vendor 403                                | PASS             |
+| Admin gate: anonymous 307, regular user 307, staff 200                               | PASS             |
+| AI assistant grounded reply (production, `source: ai`)                               | PASS             |
+| Production page sweep (22 public routes)                                             | PASS — all 200   |
+
+### 6. Build and deployment readiness
+
+`pnpm lint`, `pnpm typecheck`, `pnpm format:check`, `pnpm test` (26/26) and `pnpm build` are green. Deployed to Vercel from the GitHub `main` branch; production health reports `database: ok`, `payments: configured`, `ai: enabled`.
+
+### 7. Outstanding issues
+
+| Issue                                          | Status                                                                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Refunds, disputes, evidence and vendor payouts | NOT IMPLEMENTED (schema exists)                                                                              |
+| Student-verification record workflow           | NOT IMPLEMENTED (schema exists)                                                                              |
+| Product variants UI                            | NOT IMPLEMENTED (schema exists)                                                                              |
+| Vendor analytics charts and date ranges        | NOT IMPLEMENTED (counts only)                                                                                |
+| Transactional email delivery                   | BLOCKED — needs `RESEND_API_KEY` (dev log fallback works)                                                    |
+| Visual responsive audit on real devices        | COMPLETED BUT NEEDS MANUAL VERIFICATION — no browser available in this environment to screenshot breakpoints |
+| Playwright E2E execution                       | BLOCKED — Chromium download is blocked in this sandbox; specs are written and committed                      |
+
+### 8. Manual verification needed
+
+- Visual pass of the header, drawer and cards on a real phone (iPhone SE, mid-range Android) and tablet.
+- Print/share preview of the OG image in WhatsApp and X link previews.
+- Real card/mobile-money payment completion in Paystack test mode (the transaction initialises and the callback is verified, but no real funding was performed).
+- Upload of real past-question PDFs so the free library has production content.
+
+---
+
 ## 7. Final readiness assessment
 
 **Core commerce is verified working.** Register → verify → apply as vendor → admin approval → publish a listing → moderation → discovery → cart → checkout → Paystack payment → seller fulfilment → verified-purchase review, plus messaging, notifications, reports and an AI assistant that answers from live listings.

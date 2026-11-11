@@ -34,7 +34,7 @@ import { formatPesewas } from "@/lib/money";
 import { connection } from "next/server";
 
 export const metadata: Metadata = {
-  title: "JUMART — Your Campus. Your Marketplace.",
+  title: "Buy and sell on your campus",
   description:
     "Shop laptops, sandals, Ghanaian food, past questions and airtime bundles from verified vendors on your campus. Buy and sell with JUMART.",
 };

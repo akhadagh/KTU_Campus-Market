@@ -31,9 +31,7 @@ export async function proxy(request: NextRequest) {
       });
 
       const valid =
-        session !== null &&
-        session.revokedAt === null &&
-        session.expiresAt.getTime() > Date.now();
+        session !== null && session.revokedAt === null && session.expiresAt.getTime() > Date.now();
       const isStaff = session?.user.roles.some((entry) => STAFF_ROLES.has(entry.role.name));
 
       if (!valid || !isStaff) {
