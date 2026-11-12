@@ -22,7 +22,7 @@ The platform was already a working marketplace, but the audit found **four P0-cl
 
 All P0 and P1 findings listed below are now **fixed and verified**. The remaining open items are the ones a commercial client must accept explicitly: product variants are not yet exposed in the vendor UI, vendor settlement is manual by design, administrator MFA is not implemented, and a formal legal review of Ghana's Data Protection Act (Act 843) has not been carried out.
 
-**Production health at audit close:** `database: ok`, `payments: configured`, `ai: enabled`. Build green, 27 automated tests passing, 22/22 public routes returning 200, payment authorisation URL returned by the live Paystack sandbox.
+**Production health at audit close (verified on the deployed build):** `database: ok`, `payments: configured`, `ai: enabled`. Build green; lint, typecheck, formatting and 27 automated tests passing; 22/22 public routes returning 200; all 14 administrator surfaces returning 200 for a staff session and 307/401 without one; security headers present on every response; cross-origin state-changing requests rejected with 403; payment authorisation URL returned by the live Paystack sandbox.
 
 ---
 
@@ -92,7 +92,9 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 | Admin upload of a learning material → Blob → public download with counter | PASS |
 | Unapproved vendor link hidden (404) → admin approval → visible (200) | PASS |
 | Image upload: non-vendor `403`, vendor accepted, EXIF stripped, random name, delete removes the blob | PASS |
-| Anonymous `/admin` → `307`; non-staff → `307`/`403`; staff → `200` | PASS |
+| Anonymous `/admin` → `307`; non-staff → `307`/`403`; staff → `200` | PASS (production build) |
+| Security headers present on every response (CSP, HSTS, frame, referrer, permissions, COOP/CORP) | PASS (production build) |
+| Guest cart still works without a session while the rest of the API stays deny-by-default | PASS |
 | Cross-origin state-changing API request → `403`; same-origin → handled | PASS |
 | AI assistant answers from live listings (`source: ai`) and falls back cleanly when the provider fails | PASS |
 
