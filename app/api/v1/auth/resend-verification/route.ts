@@ -3,7 +3,7 @@ import { sendVerificationEmail } from "@/lib/auth/emails";
 import { getSession } from "@/lib/auth/session";
 import { createToken } from "@/lib/email";
 import { prisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitWith } from "@/lib/rate-limit";
 
 export async function POST() {
   const session = await getSession();
@@ -11,7 +11,11 @@ export async function POST() {
   if (session.user.emailVerifiedAt) {
     return ok({ sent: false, alreadyVerified: true });
   }
-  if (!rateLimit(`resend-verification:${session.user.id}`, 3, 10 * 60_000)) {
+  const resendLimit = await rateLimitWith(`resend-verification:${session.user.id}`, 3, {
+    windowMs: 10 * 60_000,
+    failClosed: false,
+  });
+  if (!resendLimit.allowed) {
     return fail("RATE_LIMITED", "Too many requests. Try again later.", 429);
   }
 

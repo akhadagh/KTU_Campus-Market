@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-const BASE_URL = process.env["TEST_BASE_URL"] ?? "http://localhost:3000";
+const BASE_URL = process.env["TEST_BASE_URL"] ?? "http://localhost:3100";
 const DEMO_PASSWORD = process.env["SEED_SAMPLE_PASSWORD"] ?? "";
 
 async function serverIsReachable(): Promise<boolean> {
@@ -158,15 +158,54 @@ describe.skipIf(!reachable)("airtime and digital delivery", () => {
     expect(externalPayload.data.product.externalUrl).toMatch(/^https?:\/\//);
   });
 
-  it("requires a phone number for a digital order and creates it with one", async () => {
+  it("blocks unverified buyers from checking out", async () => {
     const session = new Session();
-    const email = `smoke.airtime.${Date.now()}@ktu.edu.gh`;
+    const email = `smoke.unverified.${Date.now()}@ktu.edu.gh`;
     const created = await session.fetch("/api/v1/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullName: "Smoke Airtime", email, password: "Password123" }),
+      body: JSON.stringify({ fullName: "Smoke Unverified", email, password: "Password123" }),
     });
     expect(created.status).toBe(201);
+
+    const detail = await fetch(`${BASE_URL}/api/v1/products/mtn-data-bundle-5gb`);
+    const productId = ((await detail.json()) as { data: { product: { id: string } } }).data.product
+      .id;
+
+    const added = await session.fetch("/api/v1/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, quantity: 1 }),
+    });
+    expect(added.status).toBe(201);
+
+    const order = await session.fetch("/api/v1/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deliveryMethod: "DIGITAL",
+        msisdn: "0241234567",
+        idempotencyKey: `smoke-unverified-${Date.now()}`,
+      }),
+    });
+    expect(order.status).toBe(403);
+    const payload = (await order.json()) as { error: { code: string } };
+    expect(payload.error.code).toBe("EMAIL_NOT_VERIFIED");
+  });
+
+  it("requires a phone number for a digital order and creates it with one", async () => {
+    const demoPassword = process.env["SEED_SAMPLE_PASSWORD"] ?? "";
+    if (!demoPassword) return;
+    const session = new Session();
+    const login = await session.fetch("/api/v1/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "adumtechpoint@campusmarket.gh",
+        password: demoPassword,
+      }),
+    });
+    expect(login.status).toBe(200);
 
     const detail = await fetch(`${BASE_URL}/api/v1/products/mtn-data-bundle-5gb`);
     const productId = ((await detail.json()) as { data: { product: { id: string } } }).data.product

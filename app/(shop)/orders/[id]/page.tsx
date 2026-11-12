@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { OrderSupportActions } from "@/components/commerce/order-support-actions";
 import { PayOrderButton } from "@/components/commerce/pay-order-button";
 import { ReviewForm } from "@/components/commerce/review-form";
 import { Badge } from "@/components/ui/badge";
@@ -58,8 +59,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         },
       },
       payments: {
-        select: { id: true, status: true, provider: true, amountPesewas: true, paidAt: true },
+        select: {
+          id: true,
+          status: true,
+          provider: true,
+          amountPesewas: true,
+          paidAt: true,
+          refunds: { select: { id: true, amountPesewas: true, status: true } },
+        },
         orderBy: { createdAt: "desc" },
+      },
+      disputes: {
+        select: { id: true, status: true, category: true },
       },
       statusHistory: {
         select: { toStatus: true, reason: true, createdAt: true, actorType: true },
@@ -68,6 +79,23 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     },
   });
   if (!order) notFound();
+
+  const orderRefunds = order.payments.flatMap((payment) => payment.refunds);
+  const completedRefunds = orderRefunds.filter((refund) => refund.status === "COMPLETED");
+  const refundedPesewas = completedRefunds.reduce(
+    (total, refund) => total + refund.amountPesewas,
+    0,
+  );
+  const maxRefundCedis = Math.max(0, (order.totalPesewas - refundedPesewas) / 100);
+  const openDispute = order.disputes.some((dispute) =>
+    ["OPEN", "UNDER_REVIEW"].includes(dispute.status),
+  );
+  const canRefund =
+    ["PAID", "PARTIALLY_FULFILLED"].includes(order.status) &&
+    maxRefundCedis >= 1 &&
+    !orderRefunds.some((refund) => refund.status === "REQUESTED");
+  const canDispute =
+    ["PAID", "PARTIALLY_FULFILLED", "FULFILLED"].includes(order.status) && !openDispute;
 
   const address = order.deliveryAddressJson as {
     fullName?: string;
@@ -221,6 +249,40 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <Card className="p-5">
               <h2 className="text-sm font-semibold text-neutral-900">Order note</h2>
               <p className="mt-2 text-sm text-neutral-700">{order.notes}</p>
+            </Card>
+          ) : null}
+
+          <OrderSupportActions
+            orderId={order.id}
+            maxRefundCedis={maxRefundCedis}
+            canRefund={canRefund}
+            canDispute={canDispute}
+          />
+
+          {orderRefunds.length > 0 ? (
+            <Card className="p-5">
+              <h2 className="text-sm font-semibold text-neutral-900">Refunds</h2>
+              <ul className="mt-2 space-y-1 text-sm text-neutral-700">
+                {orderRefunds.map((refund) => (
+                  <li key={refund.id}>
+                    {formatPesewas(refund.amountPesewas)} · {refund.status.toLowerCase()}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
+
+          {order.disputes.length > 0 ? (
+            <Card className="p-5">
+              <h2 className="text-sm font-semibold text-neutral-900">Reported problems</h2>
+              <ul className="mt-2 space-y-1 text-sm text-neutral-700">
+                {order.disputes.map((dispute) => (
+                  <li key={dispute.id}>
+                    {dispute.category.replaceAll("_", " ").toLowerCase()} ·{" "}
+                    {dispute.status.replaceAll("_", " ").toLowerCase()}
+                  </li>
+                ))}
+              </ul>
             </Card>
           ) : null}
         </div>

@@ -4,7 +4,7 @@
 
 JUMART is a mobile-first, multi-vendor marketplace for university communities, launching at Koforidua Technical University (KTU), Ghana. Students can discover products, buy from verified campus vendors, open their own stores, manage orders, download free past questions and lecture notes, top up airtime through approved merchants, and get help from an AI shopping assistant grounded in real listings.
 
-> **Project status:** Milestone 9 of 12 — the JUMART brand is live across every surface, with 8 campus stores, 90 listings, 76 real photographs, admin-approved vendor purchase links, a free learning-materials library and support messaging. Vendors apply and get approved, listings are published and moderated, buyers can search, add to cart, check out and pay with Paystack, sellers fulfil orders, and buyers can review, message and report. Refunds, disputes and payouts are not built yet. See [CAMPUS_MARKET_FUNCTIONALITY_AUDIT.md](./CAMPUS_MARKET_FUNCTIONALITY_AUDIT.md) for the evidence-backed status of every module.
+> **Project status:** production-readiness pass complete. The JUMART brand is live across every surface, with 8 campus stores, 90 listings, real photography, admin-approved vendor purchase links, a free learning-materials library, support messaging, refunds, disputes, delivery tracking, student verification and vendor analytics. See [docs/PRODUCTION_READINESS_AUDIT.md](./docs/PRODUCTION_READINESS_AUDIT.md) for the evidence-backed status of every module and [docs/CLIENT_HANDOVER.md](./docs/CLIENT_HANDOVER.md) for operating the platform.
 
 ---
 

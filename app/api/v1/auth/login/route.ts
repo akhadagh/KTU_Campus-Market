@@ -3,7 +3,7 @@ import { fieldsFromZod, fail, ok } from "@/lib/api-response";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimitWith } from "@/lib/rate-limit";
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().min(1, "Enter your email address").max(320),
@@ -23,8 +23,12 @@ const userSelect = {
 const BLOCKED_STATUSES = ["SUSPENDED", "BANNED", "DEACTIVATED"];
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`login:${ip}`, 10)) {
+  const ip = clientIp(request);
+  const loginLimit = await rateLimitWith(`login:${ip}`, 10, {
+    windowMs: 60_000,
+    failClosed: false,
+  });
+  if (!loginLimit.allowed) {
     return fail("RATE_LIMITED", "Too many attempts. Try again in a minute.", 429);
   }
 

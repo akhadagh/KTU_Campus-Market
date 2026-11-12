@@ -1,5 +1,5 @@
 import { fieldsFromZod, fail, ok } from "@/lib/api-response";
-import { requireApiAuth } from "@/lib/auth/api-guards";
+import { requireApiVerified } from "@/lib/auth/api-guards";
 import { writeAuditLog } from "@/lib/audit";
 import { getCartSummary, getOrCreateCart } from "@/lib/cart";
 import { prisma } from "@/lib/db";
@@ -8,7 +8,7 @@ import { DELIVERY_FEES_PESEWAS, RESERVATION_MINUTES, generateOrderNumber } from 
 import { checkoutSchema } from "@/lib/validation";
 
 export async function POST(request: Request) {
-  const guard = await requireApiAuth();
+  const guard = await requireApiVerified();
   if (guard.response) return guard.response;
   const { auth } = guard;
 

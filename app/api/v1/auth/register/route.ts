@@ -5,7 +5,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 import { createToken } from "@/lib/email";
 import { prisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimitWith } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   fullName: z.string().trim().min(2, "Enter your full name").max(160, "Name is too long"),
@@ -40,8 +40,12 @@ const userSelect = {
 } as const;
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`register:${ip}`, 10)) {
+  const ip = clientIp(request);
+  const registerLimit = await rateLimitWith(`register:${ip}`, 10, {
+    windowMs: 60_000,
+    failClosed: true,
+  });
+  if (!registerLimit.allowed) {
     return fail("RATE_LIMITED", "Too many attempts. Try again in a minute.", 429);
   }
 
@@ -84,16 +88,40 @@ export async function POST(request: Request) {
     email,
     phone: phone || null,
     passwordHash: await hashPassword(password),
-    status: "ACTIVE" as const,
+    status: "PENDING_VERIFICATION" as const,
     campusId: campus?.id ?? null,
     universityId: campus?.universityId ?? null,
   };
 
   let userId: string;
+  let reactivated = false;
   if (existing) {
-    await prisma.user.update({
-      where: { id: existing.id },
-      data: { ...accountData, deletedAt: null },
+    // Reactivating a deleted account must not inherit the old account's trust:
+    // sessions are revoked, verification is cleared again and elevated roles
+    // (vendor, moderator, admin) are removed until they are granted afresh.
+    reactivated = true;
+    await prisma.$transaction(async (tx) => {
+      await tx.session.updateMany({
+        where: { userId: existing.id, revokedAt: null },
+        data: { revokedAt: new Date(), revocationReason: "PASSWORD_CHANGED" },
+      });
+      await tx.userRole.deleteMany({
+        where: {
+          userId: existing.id,
+          role: { name: { in: ["admin", "moderator", "vendor"] } },
+        },
+      });
+      await tx.cartItem.deleteMany({ where: { cart: { userId: existing.id } } });
+      await tx.wishlistItem.deleteMany({ where: { wishlist: { userId: existing.id } } });
+      await tx.user.update({
+        where: { id: existing.id },
+        data: {
+          ...accountData,
+          deletedAt: null,
+          emailVerifiedAt: null,
+          status: "PENDING_VERIFICATION",
+        },
+      });
     });
     userId = existing.id;
   } else {
@@ -131,5 +159,5 @@ export async function POST(request: Request) {
     emailVerification = "provider_error";
   }
 
-  return ok({ user, emailVerification }, { status: 201 });
+  return ok({ user, emailVerification, reactivated }, { status: 201 });
 }

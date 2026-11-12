@@ -1,6 +1,8 @@
 export type ApiErrorCode =
   | "AUTH_REQUIRED"
   | "FORBIDDEN"
+  | "EMAIL_NOT_VERIFIED"
+  | "ACCOUNT_SUSPENDED"
   | "VALIDATION_ERROR"
   | "NOT_FOUND"
   | "CONFLICT"

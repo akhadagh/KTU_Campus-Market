@@ -59,6 +59,8 @@ export async function createSession(
   });
 }
 
+const BLOCKED_STATUSES = ["SUSPENDED", "BANNED", "DEACTIVATED"];
+
 export async function getSession(): Promise<{
   sessionId: string;
   expiresAt: Date;
@@ -72,6 +74,9 @@ export async function getSession(): Promise<{
     include: { user: { select: userSelect } },
   });
   if (!session || session.revokedAt !== null || session.expiresAt.getTime() <= Date.now()) {
+    return null;
+  }
+  if (BLOCKED_STATUSES.includes(session.user.status)) {
     return null;
   }
   return { sessionId: session.id, expiresAt: session.expiresAt, user: session.user };

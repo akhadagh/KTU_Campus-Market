@@ -9,6 +9,11 @@ const links = [
   { href: "/admin/messages", label: "Support" },
   { href: "/admin/airtime", label: "Airtime links" },
   { href: "/admin/resources", label: "Learning materials" },
+  { href: "/admin/categories", label: "Categories" },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/refunds", label: "Refunds" },
+  { href: "/admin/disputes", label: "Disputes" },
+  { href: "/admin/students", label: "Students" },
 ];
 
 export function AdminNav() {

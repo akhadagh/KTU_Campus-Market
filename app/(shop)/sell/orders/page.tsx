@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { VendorDeliveryActions } from "@/components/vendor/vendor-delivery-actions";
 import { VendorOrderActions } from "@/components/vendor/vendor-order-actions";
 import { requireVendor } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
@@ -38,6 +39,10 @@ export default async function VendorOrdersPage() {
         },
       },
       items: { select: { id: true, titleSnapshot: true, quantity: true } },
+      deliveries: {
+        select: { id: true, status: true, trackingCode: true, deliveredAt: true },
+        take: 1,
+      },
     },
   });
 
@@ -96,6 +101,15 @@ export default async function VendorOrdersPage() {
                     {formatPesewas(vendorOrder.totalPesewas)}
                   </p>
                   <VendorOrderActions orderId={vendorOrder.id} status={vendorOrder.status} />
+                  {vendorOrder.fulfillmentType === "DELIVERY" ? (
+                    <div className="mt-3 border-t border-neutral-100 pt-3">
+                      <VendorDeliveryActions
+                        vendorOrderId={vendorOrder.id}
+                        currentStatus={vendorOrder.deliveries[0]?.status ?? null}
+                        trackingCode={vendorOrder.deliveries[0]?.trackingCode ?? null}
+                      />
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </Card>

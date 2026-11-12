@@ -92,6 +92,9 @@ export default async function AccountPage() {
           <Link href="/orders" className={buttonVariants({ variant: "outline" })}>
             My orders
           </Link>
+          <Link href="/account/verification" className={buttonVariants({ variant: "outline" })}>
+            Student verification
+          </Link>
           <Link href="/wishlist" className={buttonVariants({ variant: "outline" })}>
             <Heart className="h-4 w-4" aria-hidden="true" />
             Wishlist

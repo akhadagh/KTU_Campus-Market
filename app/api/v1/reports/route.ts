@@ -1,6 +1,7 @@
 import { fieldsFromZod, fail, ok } from "@/lib/api-response";
 import { requireApiAuth } from "@/lib/auth/api-guards";
 import { prisma } from "@/lib/db";
+import { rateLimitWith } from "@/lib/rate-limit";
 import { reportSchema } from "@/lib/validation";
 
 export async function POST(request: Request) {
@@ -24,6 +25,14 @@ export async function POST(request: Request) {
     );
   }
   const values = parsed.data;
+
+  const reportLimit = await rateLimitWith(`report:${auth.user.id}`, 20, {
+    windowMs: 60 * 60_000,
+    failClosed: false,
+  });
+  if (!reportLimit.allowed) {
+    return fail("RATE_LIMITED", "Too many reports submitted. Try again later.", 429);
+  }
 
   const targetExists = await prisma.report.findFirst({
     where: {

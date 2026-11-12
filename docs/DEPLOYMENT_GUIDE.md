@@ -232,3 +232,51 @@ Notes:
 - [ ] Security checklist complete.
 - [ ] Accessibility and performance targets met.
 - [ ] Support and incident contacts documented.
+
+
+---
+
+## Production readiness additions (2026-11-11)
+
+### Required environment variables
+
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL`, `DATABASE_URL_UNPOOLED` | Yes | The runtime prefers the unpooled URL, keeps sockets alive and retries transient connection failures |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public origin, used for payment callbacks and cross-origin checks |
+| `AUTH_SECRET` | Yes | Session secret |
+| `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET`, `PAYSTACK_CALLBACK_URL` | Yes for payments | Sandbox or live credentials |
+| `BLOB_READ_WRITE_TOKEN` | Yes for uploads | Vercel Blob store token |
+| `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`, `AI_ENABLED` | Optional | Server-side assistant |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Optional | Without it, mail is written to the server log in development |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Recommended | Distributed rate limiting |
+| `CRON_SECRET` | Recommended | Protects the order-expiry endpoint |
+
+### Scheduled jobs
+
+Schedule `GET /api/v1/cron/expire-orders` every 15 minutes with the header `Authorization: Bearer $CRON_SECRET`. The route is idempotent and cancels unpaid orders, releases inventory holds and fails their pending payments.
+
+### Storage
+
+- Vercel Blob store `campus-market-media` (public). Product images are re-encoded and stored under random names; learning materials are stored under random names as well.
+- The orphan sweep in `lib/uploads.ts` removes stored objects that no database row references.
+
+### Deploying a schema change
+
+1. Edit `prisma/schema.prisma`.
+2. `pnpm db:generate`.
+3. Create the migration (never edit an applied migration).
+4. Apply it to a Neon branch first, then to production: `pnpm db:deploy`.
+5. Deploy the application.
+
+### Verifying a release
+
+```bash
+curl -s https://<domain>/api/health
+```
+
+The health endpoint reports the database, payment and AI configuration state and returns `degraded` when the database is unavailable. It never returns `ok` with an unreachable database.
+
+### Rollback
+
+Vercel keeps previous deployments: promote the previous deployment from the dashboard or with `vercel redeploy`. Database rollbacks must be forward-only — restore a Neon branch clone and repoint the connection strings, because destructive down-migrations are not permitted.

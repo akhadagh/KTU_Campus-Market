@@ -4,18 +4,8 @@ import { fail, ok } from "@/lib/api-response";
 import { requireApiAuth, requireApiPermission } from "@/lib/auth/api-guards";
 import { PERMISSION } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
-
-const MAX_BYTES = 25 * 1024 * 1024;
-const ALLOWED = new Set([
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain",
-  "image/jpeg",
-  "image/png",
-]);
+import { clientIp, rateLimitWith } from "@/lib/rate-limit";
+import { MAX_DOCUMENT_BYTES, detectDocumentType, randomFileName } from "@/lib/uploads";
 
 const metaSchema = z.object({
   title: z.string().trim().min(4).max(180),
@@ -66,6 +56,21 @@ export async function POST(request: Request) {
     return fail("PROVIDER_UNAVAILABLE", "File storage is not configured on this deployment.", 503);
   }
 
+  const uploadLimit = await rateLimitWith(`resource-upload:${guard.auth.user.id}`, 30, {
+    windowMs: 10 * 60_000,
+    failClosed: true,
+  });
+  if (!uploadLimit.allowed) {
+    return fail("RATE_LIMITED", "Too many uploads. Try again in a few minutes.", 429);
+  }
+  const ipLimit = await rateLimitWith(`resource-upload-ip:${clientIp(request)}`, 60, {
+    windowMs: 10 * 60_000,
+    failClosed: true,
+  });
+  if (!ipLimit.allowed) {
+    return fail("RATE_LIMITED", "Too many uploads from this network. Try again later.", 429);
+  }
+
   const form = await request.formData().catch(() => null);
   if (!form) return fail("VALIDATION_ERROR", "Send the file as multipart form data.", 422);
 
@@ -73,15 +78,18 @@ export async function POST(request: Request) {
   if (!(file instanceof File)) {
     return fail("VALIDATION_ERROR", "Choose a file to upload.", 422);
   }
-  if (!ALLOWED.has(file.type)) {
+  if (file.size > MAX_DOCUMENT_BYTES) {
+    return fail("VALIDATION_ERROR", "Files must be 25MB or smaller.", 422);
+  }
+  const buffer = Buffer.from(await file.arrayBuffer());
+  // The declared MIME type is never trusted: the file signature is inspected.
+  const detected = detectDocumentType(buffer);
+  if (!detected) {
     return fail(
       "VALIDATION_ERROR",
-      "Upload a PDF, Word, Excel, PowerPoint, text or image file.",
+      "That file is not a supported PDF, Word, Excel or image file.",
       422,
     );
-  }
-  if (file.size > MAX_BYTES) {
-    return fail("VALIDATION_ERROR", "Files must be 25MB or smaller.", 422);
   }
 
   const parsed = metaSchema.safeParse({
@@ -97,17 +105,22 @@ export async function POST(request: Request) {
     });
   }
 
-  const extension = (file.name.split(".").pop() ?? "pdf").toLowerCase().slice(0, 8);
-  const safeTitle = parsed.data.title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .slice(0, 60);
+  const extension =
+    detected === "application/zip"
+      ? "zip"
+      : detected === "application/pdf"
+        ? "pdf"
+        : detected === "application/msword"
+          ? "doc"
+          : detected === "image/png"
+            ? "png"
+            : "jpg";
 
   try {
-    const uploaded = await put(`materials/${safeTitle}-${Date.now()}.${extension}`, file, {
+    const uploaded = await put(`materials/${randomFileName(extension)}`, buffer, {
       access: "public",
-      contentType: file.type,
-      addRandomSuffix: true,
+      contentType: file.type || detected,
+      addRandomSuffix: false,
     });
 
     const material = await prisma.learningMaterial.create({
@@ -119,7 +132,7 @@ export async function POST(request: Request) {
         category: parsed.data.category,
         fileUrl: uploaded.url,
         fileName: file.name,
-        fileType: file.type,
+        fileType: detected,
         sizeBytes: file.size,
         isFree: true,
         status: "PUBLISHED",

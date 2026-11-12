@@ -1,30 +1,42 @@
 import { prisma } from "@/lib/db";
-import { markOrderPaid, paystackConfigured, verifyPaystackTransaction } from "@/lib/payments";
+import {
+  confirmPaymentFromVerification,
+  paystackConfigured,
+  verifyPaystackTransaction,
+} from "@/lib/payments";
 
 async function handleReference(reference: string): Promise<string> {
   if (!paystackConfigured()) return "/orders?payment=unavailable";
 
   const payment = await prisma.payment.findUnique({
     where: { providerReference: reference },
-    select: { id: true, orderId: true, status: true, order: { select: { orderNumber: true } } },
+    select: {
+      id: true,
+      orderId: true,
+      status: true,
+      order: { select: { orderNumber: true } },
+    },
   });
   if (!payment) return "/orders?payment=unknown";
 
   if (payment.status !== "SUCCEEDED") {
     try {
+      // The browser returning from Paystack proves nothing: the transaction is
+      // verified with the provider and compared with the stored payment.
       const verification = await verifyPaystackTransaction(reference);
-      if (verification.status === "success") {
-        await markOrderPaid({
-          paymentId: payment.id,
-          orderId: payment.orderId,
-          raw: verification.raw,
-        });
-      } else {
-        await prisma.payment.update({
-          where: { id: payment.id },
-          data: { status: "FAILED", rawPayloadJson: verification.raw },
-        });
+      const result = await confirmPaymentFromVerification({
+        paymentId: payment.id,
+        verification,
+        source: "callback",
+      });
+
+      if (result.outcome === "paid" || result.outcome === "already_paid") {
+        return `/orders?paid=1&order=${result.orderNumber}`;
       }
+      if (result.outcome === "rejected") {
+        return `/orders?payment=${result.reason}`;
+      }
+      return "/orders?payment=unverified";
     } catch {
       return "/orders?payment=unverified";
     }

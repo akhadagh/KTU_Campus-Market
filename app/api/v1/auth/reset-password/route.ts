@@ -5,7 +5,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { SESSION_COOKIE } from "@/lib/auth/session";
 import { hashEmailToken } from "@/lib/email";
 import { prisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimitWith } from "@/lib/rate-limit";
 
 const schema = z.object({
   token: z.string().min(10).max(200),
@@ -13,8 +13,12 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`reset-password:${ip}`, 10, 10 * 60_000)) {
+  const ip = clientIp(request);
+  const resetLimit = await rateLimitWith(`reset-password:${ip}`, 10, {
+    windowMs: 10 * 60_000,
+    failClosed: true,
+  });
+  if (!resetLimit.allowed) {
     return fail("RATE_LIMITED", "Too many attempts. Try again later.", 429);
   }
 

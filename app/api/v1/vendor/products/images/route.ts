@@ -3,10 +3,15 @@ import { fail, ok } from "@/lib/api-response";
 import { requireApiAuth, requireApiPermission } from "@/lib/auth/api-guards";
 import { PERMISSION } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
-
-const MAX_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+import { clientIp, rateLimitWith } from "@/lib/rate-limit";
+import {
+  DAILY_UPLOAD_QUOTA,
+  MAX_IMAGE_BYTES,
+  countVendorImages,
+  detectImageType,
+  randomFileName,
+  sanitiseImage,
+} from "@/lib/uploads";
 
 export async function POST(request: Request) {
   const guard = await requireApiAuth();
@@ -23,8 +28,29 @@ export async function POST(request: Request) {
       503,
     );
   }
-  if (!rateLimit(`product-image:${guard.auth.user.id}`, 30, 10 * 60_000)) {
+
+  const uploadLimit = await rateLimitWith(`product-image:${guard.auth.user.id}`, 30, {
+    windowMs: 10 * 60_000,
+    failClosed: true,
+  });
+  if (!uploadLimit.allowed) {
     return fail("RATE_LIMITED", "Too many uploads. Try again in a few minutes.", 429);
+  }
+  const ipLimit = await rateLimitWith(`product-image-ip:${clientIp(request)}`, 60, {
+    windowMs: 10 * 60_000,
+    failClosed: true,
+  });
+  if (!ipLimit.allowed) {
+    return fail("RATE_LIMITED", "Too many uploads from this network. Try again later.", 429);
+  }
+
+  const owned = await countVendorImages(guard.auth.user.id);
+  if (owned >= DAILY_UPLOAD_QUOTA) {
+    return fail(
+      "RATE_LIMITED",
+      `You have reached the limit of ${DAILY_UPLOAD_QUOTA} images. Remove an image before adding more.`,
+      429,
+    );
   }
 
   const form = await request.formData().catch(() => null);
@@ -34,25 +60,41 @@ export async function POST(request: Request) {
   if (!(file instanceof File)) {
     return fail("VALIDATION_ERROR", "Choose an image to upload.", 422);
   }
-  if (!ALLOWED_TYPES.has(file.type)) {
-    return fail("VALIDATION_ERROR", "Upload a JPEG, PNG, WebP or AVIF image.", 422);
+  if (file.size === 0) {
+    return fail("VALIDATION_ERROR", "The selected file is empty.", 422);
   }
-  if (file.size > MAX_BYTES) {
+  if (file.size > MAX_IMAGE_BYTES) {
     return fail("VALIDATION_ERROR", "Images must be 5MB or smaller.", 422);
   }
 
-  const extension = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
-  const safeName = `${guard.auth.vendorId}-${Date.now()}.${extension}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  // The declared MIME type is never trusted; the content is inspected.
+  const detected = detectImageType(buffer);
+  if (!detected) {
+    return fail("VALIDATION_ERROR", "That file is not a valid JPEG, PNG, WebP or AVIF image.", 422);
+  }
 
   try {
-    const result = await put(`products/${safeName}`, file, {
-      access: "public",
-      contentType: file.type,
-      addRandomSuffix: true,
-    });
-    return ok({ url: result.url, pathname: result.pathname }, { status: 201 });
-  } catch {
-    return fail("PROVIDER_UNAVAILABLE", "The image could not be stored. Try again.", 502);
+    const sanitised = await sanitiseImage(buffer);
+    const uploaded = await put(
+      `products/${randomFileName(sanitised.extension)}`,
+      sanitised.buffer,
+      { access: "public", contentType: sanitised.contentType, addRandomSuffix: false },
+    );
+
+    return ok(
+      {
+        url: uploaded.url,
+        pathname: uploaded.pathname,
+        width: sanitised.width,
+        height: sanitised.height,
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error("[upload] failed to process image", error);
+    return fail("PROVIDER_UNAVAILABLE", "The image could not be processed. Try another file.", 502);
   }
 }
 
@@ -62,18 +104,30 @@ export async function DELETE(request: Request) {
   const denied = requireApiPermission(guard.auth, PERMISSION.PRODUCT_EDIT);
   if (denied) return denied;
 
-  const url = new URL(request.url).searchParams.get("url");
-  if (!url) return fail("VALIDATION_ERROR", "Provide the image URL to remove.", 422);
+  const url = new URL(request.url);
+  const imageUrl = url.searchParams.get("url");
+  const productId = url.searchParams.get("productId");
+  if (!imageUrl || !productId) {
+    return fail("VALIDATION_ERROR", "Provide the image URL and product to remove.", 422);
+  }
 
+  // Ownership check: the product must belong to the vendor's store.
   const product = await prisma.product.findFirst({
-    where: {
-      id: new URL(request.url).searchParams.get("productId") ?? "",
-      vendor: { userId: guard.auth.user.id },
-    },
+    where: { id: productId, vendor: { userId: guard.auth.user.id }, deletedAt: null },
     select: { id: true },
   });
   if (!product) return fail("NOT_FOUND", "Product not found.", 404);
 
-  await prisma.productImage.deleteMany({ where: { productId: product.id, url } });
+  const image = await prisma.productImage.findFirst({
+    where: { productId: product.id, url: imageUrl },
+    select: { id: true, url: true },
+  });
+  if (!image) return fail("NOT_FOUND", "Image not found.", 404);
+
+  await prisma.productImage.delete({ where: { id: image.id } });
+
+  const { deleteStoredFile } = await import("@/lib/uploads");
+  await deleteStoredFile(image.url);
+
   return ok({ removed: true });
 }

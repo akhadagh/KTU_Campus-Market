@@ -312,3 +312,71 @@ export async function listMarketplaceVendors(options: {
     pages: Math.max(1, Math.ceil(total / pageSize)),
   };
 }
+
+/**
+ * Recommendations built from real marketplace signals only: the categories a
+ * student actually interacted with (cart, wishlist, purchases) and genuine
+ * rating and freshness. No synthetic popularity is invented.
+ */
+export async function listRecommendedProducts(options: {
+  userId?: string | null;
+  limit?: number;
+}): Promise<MarketplaceProduct[]> {
+  const limit = Math.min(12, Math.max(1, options.limit ?? 6));
+
+  let categoryIds: string[] = [];
+  if (options.userId) {
+    const [cartItems, wishlistItems, purchased] = await Promise.all([
+      prisma.cartItem.findMany({
+        where: { cart: { userId: options.userId } },
+        select: { product: { select: { categoryId: true } } },
+        take: 20,
+      }),
+      prisma.wishlistItem.findMany({
+        where: { wishlist: { userId: options.userId } },
+        select: { product: { select: { categoryId: true } } },
+        take: 20,
+      }),
+      prisma.orderItem.findMany({
+        where: { vendorOrder: { order: { buyerId: options.userId } } },
+        select: { product: { select: { categoryId: true } } },
+        take: 20,
+      }),
+    ]);
+    categoryIds = [
+      ...new Set(
+        [...cartItems, ...wishlistItems, ...purchased]
+          .map((item) => item.product?.categoryId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+  }
+
+  const rows = await prisma.product.findMany({
+    where: {
+      status: "ACTIVE",
+      deletedAt: null,
+      quantity: { gt: 0 },
+      vendor: { status: "ACTIVE" },
+      ...(categoryIds.length > 0 ? { categoryId: { in: categoryIds } } : {}),
+    },
+    orderBy: [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { publishedAt: "desc" }],
+    take: limit,
+    select: productSelect,
+  });
+
+  if (rows.length > 0) return rows.map(toProduct);
+
+  const fallback = await prisma.product.findMany({
+    where: {
+      status: "ACTIVE",
+      deletedAt: null,
+      quantity: { gt: 0 },
+      vendor: { status: "ACTIVE" },
+    },
+    orderBy: [{ ratingAvg: "desc" }, { publishedAt: "desc" }],
+    take: limit,
+    select: productSelect,
+  });
+  return fallback.map(toProduct);
+}

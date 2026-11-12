@@ -212,3 +212,49 @@ A task is complete only when:
 - Documentation and task tracker are updated.
 
 A milestone is complete only when its critical journeys pass and no critical/high security issue remains open.
+
+
+---
+
+## Production readiness additions (2026-11-11)
+
+### Test layers
+
+| Layer | Location | Runner | Database |
+|---|---|---|---|
+| Unit | `tests/unit` | Vitest | none |
+| Integration | `tests/integration` | Vitest against a running app | shared database, cleaned after the run |
+| End-to-end | `tests/e2e` | Playwright | application + database |
+
+```bash
+pnpm test:unit          # unit only
+pnpm test:integration   # integration only
+pnpm test:all           # both
+pnpm test:e2e            # Playwright (needs browsers)
+```
+
+### Isolation
+
+Set `TEST_DATABASE_URL` to point the integration suite at a disposable database and `TEST_BASE_URL` at a running instance. When `TEST_DATABASE_URL` is present and no `TEST_BASE_URL` is given, `tests/global-setup.ts` starts a dedicated application instance against that database and stops it afterwards. Without either variable the suite runs against the local development server on port 3000 and skips the integration tests when it cannot be reached.
+
+In CI the pipeline provides a Postgres service container, applies the migrations to it, runs the unit tests, builds the application, starts it against that database and then runs the integration tests. The Playwright job repeats the pattern with its own database.
+
+### Data hygiene
+
+Integration tests create users with a `smoke.` / `prod.` prefix. `scripts/cleanup-test-data.ts` removes those accounts, their orders, carts and sessions. **Never run destructive cleanup against production**: point the cleanup script at a test database and confirm the target before running it.
+
+### Coverage added in the readiness pass
+
+- Unverified accounts cannot check out (`403 EMAIL_NOT_VERIFIED`).
+- Unapproved vendor purchase links are hidden (404) while approved links are visible (200).
+- Support threads are created by students and listed for staff.
+- The learning-materials library endpoint responds with the published set.
+- Digital orders require a phone number; the order is created with it.
+- Guest carts add a live listing and return the correct totals.
+- Duplicate registration, wrong password and anonymous route protection.
+
+### Not yet automated
+
+- Payment webhook processing against the Paystack sandbox (the provider cannot be called from a test without credentials); verified manually with sandbox transactions.
+- Refund execution against the provider; the eligibility and approval logic is covered by unit-level checks only.
+- Playwright journeys cannot run in the audit sandbox because the browser download is blocked; they run in CI.

@@ -79,6 +79,23 @@ export async function requirePermission(code: PermissionCode): Promise<AuthConte
   return auth;
 }
 
+/**
+ * Commercial operations require a verified email address. Browsing, the cart,
+ * the wishlist and messaging stay available so an unverified account is never
+ * a dead end.
+ */
+export function isEmailVerified(auth: AuthContext | null): boolean {
+  return Boolean(auth?.user.emailVerifiedAt);
+}
+
+export async function requireVerifiedUser(): Promise<AuthContext> {
+  const auth = await requireAuth();
+  if (!auth.user.emailVerifiedAt) {
+    redirect("/verify-email");
+  }
+  return auth;
+}
+
 export async function requireVendor(): Promise<AuthContext & { vendorId: string }> {
   const auth = await requireAuth();
   if (!auth.vendorId) redirect("/sell/apply");

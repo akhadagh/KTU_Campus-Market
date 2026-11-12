@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { getSession } from "@/lib/auth/session";
+import { expireStaleOrders } from "@/lib/orders";
 import { prisma } from "@/lib/db";
 import { orderStatusLabels, statusBadgeVariant, vendorOrderStatusLabels } from "@/lib/labels";
 import { formatPesewas } from "@/lib/money";
@@ -26,6 +27,8 @@ export default async function OrdersPage({
   const session = await getSession();
   if (!session) redirect("/login?next=/orders");
   const query = await searchParams;
+
+  await expireStaleOrders();
 
   const orders = await prisma.order.findMany({
     where: { buyerId: session.user.id, deletedAt: null },

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { fail, ok } from "@/lib/api-response";
 import { requireApiAuth } from "@/lib/auth/api-guards";
 import { prisma } from "@/lib/db";
+import { rateLimitWith } from "@/lib/rate-limit";
 import { createNotification } from "@/lib/notifications";
 import { messageSchema } from "@/lib/validation";
 
@@ -115,6 +116,14 @@ export async function POST(request: Request) {
     );
 
     return ok({ conversationId: conversation.id, message }, { status: 201 });
+  }
+
+  const messageLimit = await rateLimitWith(`message:${auth.user.id}`, 30, {
+    windowMs: 10 * 60_000,
+    failClosed: false,
+  });
+  if (!messageLimit.allowed) {
+    return fail("RATE_LIMITED", "You are sending messages too quickly.", 429);
   }
 
   const parsed = messageSchema.safeParse(raw);

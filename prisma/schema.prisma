@@ -1262,13 +1262,15 @@ model SearchHistory {
 }
 
 model WebhookEvent {
-  id          String        @id @default(uuid()) @db.Uuid
-  provider    String        @db.VarChar(48)
-  eventId     String        @db.VarChar(160)
-  payloadJson Json
-  status      WebhookStatus @default(RECEIVED)
-  processedAt DateTime?
-  createdAt   DateTime      @default(now())
+  id           String        @id @default(uuid()) @db.Uuid
+  provider     String        @db.VarChar(48)
+  eventId      String        @db.VarChar(160)
+  payloadJson  Json
+  status       WebhookStatus @default(RECEIVED)
+  attempts     Int           @default(0)
+  errorMessage String?
+  processedAt  DateTime?
+  createdAt    DateTime      @default(now())
 
   @@unique([provider, eventId])
   @@index([status, createdAt])

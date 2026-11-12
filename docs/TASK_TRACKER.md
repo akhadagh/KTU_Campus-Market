@@ -175,13 +175,37 @@
 
 ---
 
+## Production readiness pass (2026-11-11)
+
+| ID | Task | Status |
+|---|---|---|
+| PRA-01 | Provider amount/currency/reference comparison before marking paid | D |
+| PRA-02 | Webhook retry-safe processing with explicit states | D |
+| PRA-03 | Idempotent, transactional payment application (no double stock deduction) | D |
+| PRA-04 | Payment expiry and reservation release | D |
+| PRA-05 | Buyer refund request, admin decision, provider execution, audit | D |
+| PRA-06 | Session and account suspension enforcement | D |
+| PRA-07 | Safe deleted-account reactivation | D |
+| PRA-08 | Verified-email requirement for commercial operations | D |
+| PRA-09 | Staff-only enforcement on admin routes (pages and API) | D |
+| PRA-10 | Distributed rate limiting with fail-closed policy | D |
+| PRA-11 | Content-validated, re-encoded, ownership-checked uploads | D |
+| PRA-12 | Admin user, category, refund, dispute, delivery and student-verification tooling | D |
+| PRA-13 | Vendor analytics with separated gross, refunds, fees and payable | D |
+| PRA-14 | Security headers, CSP and cross-origin request validation | D |
+| PRA-15 | CI with isolated database, unit/integration tests, audit and Playwright | D |
+| PRA-16 | Product variants exposed in the vendor and buyer interface | NS |
+| PRA-17 | Automated vendor settlement | NS |
+| PRA-18 | Administrator MFA | NS |
+| PRA-19 | Legal review against Ghana Data Protection Act 843 | NS |
+
 ## Blockers
 
 | Item | Impact | Resolution needed |
 |---|---|---|
-| Email provider credentials (`RESEND_API_KEY`) | Verification and reset links are created and verified but cannot be delivered in production | Add the key to `.env` and to Vercel environment variables |
-| Image/object storage credentials | Product images must be supplied as URLs; no upload pipeline | Configure Cloudinary/Supabase/Neon Blob, then wire the upload endpoint |
-| Playwright browser download | `pnpm test:e2e` cannot run in the current sandbox | Run the suite where `cdn.playwright.dev` is reachable |
+| Email provider credentials (`RESEND_API_KEY`) | Verification, reset, order and refund emails are created but not delivered | Add the key to `.env` and to Vercel environment variables |
+| Upstash Redis credentials | Rate limiting stays per instance in production | Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` |
+| Playwright browser download | `pnpm test:e2e` cannot run in the audit sandbox | The CI workflow installs the browsers; run locally where the CDN is reachable |
 
 **Resolved:**
 - Node.js 22.23.4 and pnpm 10.34.9 installed locally.

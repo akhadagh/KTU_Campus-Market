@@ -1,14 +1,14 @@
 import { fieldsFromZod, fail, ok } from "@/lib/api-response";
-import { requireApiAuth } from "@/lib/auth/api-guards";
+import { requireApiVerified } from "@/lib/auth/api-guards";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
 import { vendorApplicationSchema } from "@/lib/validation";
 import { availableVendorSlug } from "@/lib/vendors";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitWith } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
-  const guard = await requireApiAuth();
+  const guard = await requireApiVerified();
   if (guard.response) return guard.response;
   const { auth } = guard;
 
@@ -20,7 +20,11 @@ export async function POST(request: Request) {
   if (existing && !canReapply) {
     return fail("CONFLICT", "You already have a vendor store.", 409);
   }
-  if (!rateLimit(`vendor-apply:${auth.user.id}`, 5, 60 * 60_000)) {
+  const applyLimit = await rateLimitWith(`vendor-apply:${auth.user.id}`, 5, {
+    windowMs: 60 * 60_000,
+    failClosed: false,
+  });
+  if (!applyLimit.allowed) {
     return fail("RATE_LIMITED", "Too many attempts. Try again later.", 429);
   }
 

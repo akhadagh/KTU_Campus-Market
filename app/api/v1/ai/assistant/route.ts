@@ -1,7 +1,7 @@
 import { fail, ok } from "@/lib/api-response";
 import { askAssistant } from "@/lib/ai";
 import { getSession } from "@/lib/auth/session";
-import { rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimitWith } from "@/lib/rate-limit";
 
 const schema = {
   parse(value: unknown) {
@@ -23,8 +23,12 @@ export async function POST(request: Request) {
   const session = await getSession();
   const rateKey = session
     ? `ai-assistant:${session.user.id}`
-    : `ai-assistant:ip:${request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local"}`;
-  if (!rateLimit(rateKey, 30, 60 * 60_000)) {
+    : `ai-assistant:ip:${clientIp(request)}`;
+  const aiLimit = await rateLimitWith(rateKey, 30, {
+    windowMs: 60 * 60_000,
+    failClosed: false,
+  });
+  if (!aiLimit.allowed) {
     return fail("RATE_LIMITED", "Too many questions. Try again later.", 429);
   }
 

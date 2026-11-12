@@ -205,3 +205,47 @@ Audit logs are append-only and retained according to policy.
 - [ ] Dependency audit clean or accepted.
 - [ ] Backup and restore tested.
 - [ ] Legal/privacy review completed.
+
+
+---
+
+## Production readiness additions (2026-11-11)
+
+### Payment integrity
+
+- A payment is applied in exactly one place: `confirmPaymentFromVerification()` in `lib/payments.ts`.
+- It compares the provider's verified reference, amount and currency with the stored payment, requires the provider status `success`, and requires the order to still be awaiting payment.
+- The payment update is conditional (`status in PENDING/INITIATED/FAILED`) inside the same transaction as the order update, the status history, the reservation consumption and the stock decrement. Concurrent callbacks cannot apply twice.
+- Webhooks are claimed atomically, are only considered duplicates once fully `PROCESSED`, keep their failure detail and are retried by the provider. A failed event never silently disappears.
+- Unpaid orders expire after 30 minutes: the hold on stock is released, the order is cancelled and the pending payment is failed.
+
+### Access control
+
+- Deny by default: every protected API resolves the session and the caller's permissions before doing work.
+- Commercial operations (checkout, vendor application, product creation, reviews) require a verified email address.
+- Suspended, banned and deactivated accounts are rejected when the session is read, and an administrator's suspension revokes every active session immediately.
+- Re-registering a deleted address revokes old sessions, removes elevated roles, clears the cart and wishlist and requires a fresh email verification.
+- `/admin` pages and APIs are gated by staff role in `proxy.ts`, before any rendering or data access.
+- State-changing API requests are rejected when they arrive cross-origin (`Origin`/`Sec-Fetch-Site`); provider callbacks are authenticated by their own signature instead.
+
+### Abuse protection
+
+- A shared Upstash Redis limiter is used when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are configured. Anonymous, abuse-prone endpoints (registration, password reset, uploads) fail **closed** when the shared store is unreachable; authenticated endpoints fall back to the per-instance bucket.
+- Client IP addresses are taken only from trusted proxy headers and validated, so a client cannot spoof a source address by chaining values.
+
+### File uploads
+
+- Content is validated from the file signature, not the declared MIME type or the filename.
+- Images are re-encoded with `sharp`: metadata (including GPS) is removed, the image is auto-rotated, capped at 2000px and stored as a progressive JPEG.
+- Stored objects use random identifiers; each vendor has a quota; deletion verifies ownership and removes the stored object as well as the database row.
+
+### Browser hardening
+
+`Content-Security-Policy` (with `frame-ancestors 'none'`), `Strict-Transport-Security` in production, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy` are set for every response. API responses are additionally marked `Cache-Control: no-store`.
+
+### Data protection
+
+- The assistant receives only public listing fields. No student, payment, session or authentication data is sent to the AI provider.
+- Student verification collects no identity documents, so no private bucket is required. If documents are introduced later they must be stored privately and served with short-lived signed URLs.
+- Financial records use restrictive foreign keys so a paid order cannot be deleted by accident, and administrative actions are audit-logged with actor, before/after state and IP address.
+- A legal review against Ghana's Data Protection Act, 2012 (Act 843) is outstanding and is recorded as an open item in the production readiness audit.

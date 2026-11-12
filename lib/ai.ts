@@ -144,10 +144,14 @@ export async function askAssistant(message: string): Promise<AssistantReply> {
   const model = process.env["AI_MODEL"]!;
   const apiKey = process.env["AI_API_KEY"]!;
 
+  // Only public listing data is ever sent to the provider. No student, payment,
+  // session or authentication data is included.
   const prompt = [
     "You are the JUMART shopping assistant for a university marketplace in Ghana.",
-    "Answer using ONLY the live listings below. If the listings do not cover the question, say so plainly and suggest a different search term. Do not invent products, prices, or sellers.",
-    "Keep answers under 120 words, use Ghana cedis (GH₵) for prices, and be practical for students.",
+    "Answer using ONLY the live listings below. If the listings do not cover the question, say so plainly and suggest a different search term.",
+    "Never invent products, prices, sellers, stock levels or discounts. If a price is not listed, say so.",
+    "Quote prices exactly as given, in Ghana cedis (GH₵).",
+    "Keep answers under 120 words and be practical for students.",
     "",
     "Live listings:",
     buildContext(products),
@@ -163,6 +167,7 @@ export async function askAssistant(message: string): Promise<AssistantReply> {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.3, maxOutputTokens: 400 },
       }),
+      signal: AbortSignal.timeout(20_000),
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => "");

@@ -1,7 +1,7 @@
 import { fail, ok } from "@/lib/api-response";
 import { getOrCreateCart, getCartSummary } from "@/lib/cart";
 import { prisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimitWith } from "@/lib/rate-limit";
 
 export async function GET() {
   const cart = await getOrCreateCart();
@@ -10,7 +10,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!rateLimit(`cart-add:${request.headers.get("x-forwarded-for") ?? "local"}`, 60, 60_000)) {
+  const cartLimit = await rateLimitWith(`cart-add:${clientIp(request)}`, 60, {
+    windowMs: 60_000,
+    failClosed: false,
+  });
+  if (!cartLimit.allowed) {
     return fail("RATE_LIMITED", "Too many cart updates. Slow down.", 429);
   }
 

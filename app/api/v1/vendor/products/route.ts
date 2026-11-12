@@ -1,7 +1,8 @@
 import { fieldsFromZod, fail, ok } from "@/lib/api-response";
-import { requireApiAuth, requireApiPermission } from "@/lib/auth/api-guards";
+import { requireApiPermission, requireApiVerified } from "@/lib/auth/api-guards";
 import { PERMISSION } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
+import { rateLimitWith } from "@/lib/rate-limit";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { cedisToPesewas } from "@/lib/money";
 import { buildDigitalDetails, productSchema } from "@/lib/validation";
@@ -9,7 +10,7 @@ import { availableProductSlug } from "@/lib/vendors";
 import { writeAuditLog } from "@/lib/audit";
 
 export async function POST(request: Request) {
-  const guard = await requireApiAuth();
+  const guard = await requireApiVerified();
   if (guard.response) return guard.response;
   const { auth } = guard;
   const denied = requireApiPermission(auth, PERMISSION.PRODUCT_CREATE);
@@ -34,6 +35,14 @@ export async function POST(request: Request) {
     );
   }
   const values = parsed.data;
+
+  const productLimit = await rateLimitWith(`product-create:${auth.user.id}`, 60, {
+    windowMs: 60 * 60_000,
+    failClosed: false,
+  });
+  if (!productLimit.allowed) {
+    return fail("RATE_LIMITED", "Too many listings created. Try again later.", 429);
+  }
 
   const category = await prisma.category.findFirst({
     where: { id: values.categoryId, isActive: true },

@@ -100,6 +100,9 @@ export default async function VendorDashboardPage() {
             <Link href="/sell/orders" className={buttonVariants({ variant: "outline" })}>
               Vendor orders
             </Link>
+            <Link href="/sell/analytics" className={buttonVariants({ variant: "outline" })}>
+              Sales analytics
+            </Link>
             <Link
               href={`/stores/${vendor.slug}`}
               className={buttonVariants({ variant: "outline" })}

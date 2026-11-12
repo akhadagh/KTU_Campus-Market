@@ -465,5 +465,12 @@ Admin pages (`/admin`, `/admin/vendors`, `/admin/products`, `/admin/orders`, `/a
 | Per user | 5/hour | `/vendors/apply` |
 | Per IP | 60/minute | `/cart` |
 | Per user | 30/hour | `/ai/assistant` |
+| Per user | 20/10 minutes | `/payments/initialize` |
+| Per user | 30/10 minutes | `/conversations` (messages) |
+| Per user | 20/hour | `/reviews`, `/reports` |
+| Per user | 60/hour | `/vendor/products` (listing creation) |
+| Per user | 30/10 minutes | `/vendor/products/images` (uploads) |
+
+Limits use the shared Upstash Redis store when it is configured. Anonymous abuse-prone endpoints (registration, password reset, uploads) fail closed while the shared store is unreachable; authenticated endpoints fall back to the per-instance bucket. See [SECURITY_NOTES.md](./SECURITY_NOTES.md).
 
 Limits are enforced in-process, so they are per instance. A shared store (Upstash Redis) is required for multi-region deployments.

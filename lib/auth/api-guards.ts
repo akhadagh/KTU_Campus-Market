@@ -11,6 +11,19 @@ export async function requireApiAuth(): Promise<
   return { auth };
 }
 
+export async function requireApiVerified(): Promise<
+  { auth: AuthContext; response?: never } | { auth?: never; response: Response }
+> {
+  const result = await requireApiAuth();
+  if (result.response) return result;
+  if (!result.auth.user.emailVerifiedAt) {
+    return {
+      response: fail("EMAIL_NOT_VERIFIED", "Verify your email address before you continue.", 403),
+    };
+  }
+  return result;
+}
+
 export function requireApiPermission(auth: AuthContext, code: PermissionCode): Response | null {
   if (!auth.permissions.has(code)) {
     return fail("FORBIDDEN", "You do not have permission to do that.", 403);
