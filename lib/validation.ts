@@ -40,6 +40,24 @@ export const vendorApplicationSchema = z.object({
   deliveryAvailable: z.boolean().default(false),
 });
 
+export const storeSettingsSchema = z.object({
+  storeName: z.string().trim().min(3).max(120),
+  description: z.string().trim().max(2000).optional().or(z.literal("")),
+  businessCategory: z.string().trim().max(80).optional().or(z.literal("")),
+  phone: z.string().trim().max(32).optional().or(z.literal("")),
+  whatsapp: z.string().trim().max(32).optional().or(z.literal("")),
+  logoUrl: z.string().trim().url("Enter a valid image link").max(600).optional().or(z.literal("")),
+  bannerUrl: z
+    .string()
+    .trim()
+    .url("Enter a valid image link")
+    .max(600)
+    .optional()
+    .or(z.literal("")),
+  pickupAvailable: z.boolean(),
+  deliveryAvailable: z.boolean(),
+});
+
 export const productSchema = z.object({
   name: z.string().trim().min(3, "Product name is too short").max(180, "Product name is too long"),
   categoryId: z.string().uuid("Choose a category"),

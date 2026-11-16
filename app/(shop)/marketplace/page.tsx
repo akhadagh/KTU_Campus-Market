@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PackageSearch } from "lucide-react";
+import { PackageSearch, Sparkles } from "lucide-react";
 import { ProductCard } from "@/components/commerce/product-card";
+import { CategorySidebar } from "@/components/marketplace/category-sidebar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
-import { listMarketplaceCategories, listMarketplaceProducts } from "@/lib/marketplace";
-import { cn } from "@/lib/utils";
+import { getSession } from "@/lib/auth/session";
+import { prisma } from "@/lib/db";
+import { isHiddenCategory, listRecentlyViewed } from "@/lib/discovery";
+import { listMarketplaceProducts } from "@/lib/marketplace";
 import { conditionLabels } from "@/lib/labels";
 import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Explore marketplace",
-  description: "Browse products and services from campus vendors at KTU.",
+  description: "Browse products and services from verified campus vendors.",
 };
 
 interface MarketplacePageProps {
@@ -38,7 +40,6 @@ const conditionOptions = [
 
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
   await connection();
-
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const category = params.category ?? "";
@@ -46,10 +47,48 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
   const sort = params.sort ?? "newest";
   const page = Math.max(1, Number(params.page ?? "1") || 1);
 
-  const [categories, results] = await Promise.all([
-    listMarketplaceCategories(),
+  const session = await getSession();
+
+  const [results, categories, shelf, recentlyViewed] = await Promise.all([
     listMarketplaceProducts({ q: query, categorySlug: category, condition, sort, page }),
+    prisma.category.findMany({
+      where: { isActive: true, parentId: null },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        _count: { select: { products: true } },
+        children: {
+          where: { isActive: true },
+          orderBy: { name: "asc" },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            _count: { select: { products: true } },
+          },
+        },
+      },
+    }),
+    listMarketplaceProducts({ sort: "rating", pageSize: 4 }),
+    listRecentlyViewed(session?.user.id ?? null, 8),
   ]);
+
+  const sidebarCategories = categories
+    .filter((item) => !isHiddenCategory(item))
+    .map((item) => ({
+      name: item.name,
+      slug: item.slug,
+      productCount: item._count.products,
+      children: item.children
+        .filter((child) => !isHiddenCategory(child))
+        .map((child) => ({
+          name: child.name,
+          slug: child.slug,
+          productCount: child._count.products,
+        })),
+    }));
 
   const buildUrl = (next: Record<string, string | undefined>) => {
     const search = new URLSearchParams();
@@ -68,159 +107,180 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title="Explore marketplace"
-        description="Browse live listings from approved campus vendors. New listings appear after administrator review."
+        description="Live listings from approved campus vendors. Search from the header, then narrow the results here."
       />
 
-      <div className="sticky top-16 z-30 -mx-4 mt-6 border-y border-neutral-200 bg-white/90 px-4 py-3 backdrop-blur-lg sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-        <form
-          action="/marketplace"
-          method="get"
-          className="grid gap-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-[var(--shadow-card)] sm:grid-cols-2 lg:grid-cols-5"
-        >
-          <div className="lg:col-span-2">
-            <label htmlFor="search" className="mb-1 block text-xs font-medium text-neutral-700">
-              Search
-            </label>
-            <Input
-              id="search"
-              name="q"
-              type="search"
-              defaultValue={query}
-              placeholder="Search products and services"
-            />
-          </div>
-          <div>
-            <label htmlFor="category" className="mb-1 block text-xs font-medium text-neutral-700">
-              Category
-            </label>
-            <Select id="category" name="category" defaultValue={category}>
-              <option value="">All categories</option>
-              {categories.map((item) => (
-                <option key={item.slug} value={item.slug}>
-                  {item.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label htmlFor="condition" className="mb-1 block text-xs font-medium text-neutral-700">
-              Condition
-            </label>
-            <Select id="condition" name="condition" defaultValue={condition}>
-              <option value="">Any condition</option>
-              {conditionOptions.map((option) => (
-                <option key={option} value={option}>
-                  {conditionLabels[option]}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label htmlFor="sort" className="mb-1 block text-xs font-medium text-neutral-700">
-              Sort
-            </label>
-            <div className="flex gap-2">
-              <Select id="sort" name="sort" defaultValue={sort}>
-                <option value="newest">Newest</option>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_1fr] lg:gap-8">
+        <aside className="lg:pt-1">
+          <CategorySidebar categories={sidebarCategories} activeSlug={category} />
+        </aside>
+
+        <div className="min-w-0">
+          <form
+            action="/marketplace"
+            method="get"
+            className="flex flex-wrap items-end gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-[var(--shadow-card)]"
+          >
+            {query ? <input type="hidden" name="q" value={query} /> : null}
+            {category ? <input type="hidden" name="category" value={category} /> : null}
+            <div className="w-full sm:w-44">
+              <label
+                htmlFor="marketplace-condition"
+                className="mb-1 block text-xs font-medium text-neutral-700"
+              >
+                Condition
+              </label>
+              <Select
+                id="marketplace-condition"
+                name="condition"
+                defaultValue={condition}
+                className="h-10"
+              >
+                <option value="">Any condition</option>
+                {conditionOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {conditionLabels[option]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="w-full sm:w-44">
+              <label
+                htmlFor="marketplace-sort"
+                className="mb-1 block text-xs font-medium text-neutral-700"
+              >
+                Sort by
+              </label>
+              <Select id="marketplace-sort" name="sort" defaultValue={sort} className="h-10">
+                <option value="newest">Newest first</option>
                 <option value="price_asc">Price: low to high</option>
                 <option value="price_desc">Price: high to low</option>
                 <option value="name">Name</option>
                 <option value="rating">Highest rated</option>
               </Select>
-              <Button type="submit" className="shrink-0">
-                Apply
-              </Button>
             </div>
-          </div>
-        </form>
-
-        <nav aria-label="Categories" className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          <Link
-            href="/marketplace"
-            className={cn(
-              "shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-              !category
-                ? "border-brand-700 bg-brand-700 text-white"
-                : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
-            )}
-          >
-            All
-          </Link>
-          {categories.map((item) => (
-            <Link
-              key={item.id}
-              href={`/marketplace?category=${item.slug}`}
-              className={cn(
-                "shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                category === item.slug
-                  ? "border-brand-700 bg-brand-700 text-white"
-                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
-              )}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-      </div>
-
-      <div className="mt-6 flex items-center justify-between text-sm text-neutral-600">
-        <p>
-          {results.total} listing{results.total === 1 ? "" : "s"}
-          {query ? ` for “${query}”` : ""}
-        </p>
-        <p>
-          Page {results.page} of {results.pages}
-        </p>
-      </div>
-
-      {results.items.length === 0 ? (
-        <div className="mt-6">
-          <EmptyState
-            icon={PackageSearch}
-            title="No listings match those filters"
-            description="Try a different search term, or clear the filters to see everything on campus."
-            action={
-              <Link href="/marketplace" className={buttonVariants()}>
+            <Button type="submit" className="h-10">
+              Apply filters
+            </Button>
+            {query || condition ? (
+              <Link
+                href={category ? `/marketplace?category=${category}` : "/marketplace"}
+                className={buttonVariants({ variant: "ghost" })}
+              >
                 Clear filters
               </Link>
-            }
-          />
-        </div>
-      ) : (
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {results.items.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
+            ) : null}
+          </form>
 
-      {results.pages > 1 ? (
-        <nav aria-label="Pagination" className="mt-8 flex items-center justify-between">
-          {results.page > 1 ? (
-            <Link
-              href={buildUrl({ page: String(results.page - 1) })}
-              className={buttonVariants({ variant: "outline" })}
-            >
-              Previous
-            </Link>
+          <div className="mt-5 flex items-center justify-between text-sm text-neutral-600">
+            <p>
+              {results.total} listing{results.total === 1 ? "" : "s"}
+              {query ? ` for “${query}”` : ""}
+            </p>
+            <p>
+              Page {results.page} of {results.pages}
+            </p>
+          </div>
+
+          {results.items.length === 0 ? (
+            <div className="mt-4">
+              <EmptyState
+                icon={PackageSearch}
+                title="No listings match those filters"
+                description="Try another category, clear the filters, or browse what other students are buying."
+                action={
+                  <Link href="/marketplace" className={buttonVariants()}>
+                    Clear filters
+                  </Link>
+                }
+              />
+            </div>
           ) : (
-            <span />
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+              {results.items.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
           )}
-          <span className="text-sm text-neutral-600">
-            Page {results.page} of {results.pages}
-          </span>
-          {results.page < results.pages ? (
-            <Link
-              href={buildUrl({ page: String(results.page + 1) })}
-              className={buttonVariants({ variant: "outline" })}
-            >
-              Next
-            </Link>
-          ) : (
-            <span />
-          )}
-        </nav>
-      ) : null}
+
+          {results.pages > 1 ? (
+            <nav aria-label="Pagination" className="mt-8 flex items-center justify-between">
+              {results.page > 1 ? (
+                <Link
+                  href={buildUrl({ page: String(results.page - 1) })}
+                  className={buttonVariants({ variant: "outline" })}
+                >
+                  Previous
+                </Link>
+              ) : (
+                <span />
+              )}
+              <span className="text-sm text-neutral-600">
+                Page {results.page} of {results.pages}
+              </span>
+              {results.page < results.pages ? (
+                <Link
+                  href={buildUrl({ page: String(results.page + 1) })}
+                  className={buttonVariants({ variant: "outline" })}
+                >
+                  Next
+                </Link>
+              ) : (
+                <span />
+              )}
+            </nav>
+          ) : null}
+
+          {recentlyViewed.length > 0 ? (
+            <section className="mt-10">
+              <h2 className="text-lg font-semibold tracking-tight text-neutral-900">
+                Recently viewed
+              </h2>
+              <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+                {recentlyViewed.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/products/${item.slug}`}
+                    className="group w-40 shrink-0"
+                  >
+                    <div className="aspect-[4/3] overflow-hidden rounded-xl bg-neutral-100">
+                      {item.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      ) : null}
+                    </div>
+                    <p className="group-hover:text-brand-700 mt-2 line-clamp-2 text-sm font-medium text-neutral-900">
+                      {item.name}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {shelf.items.length > 0 ? (
+            <section className="mt-12">
+              <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-neutral-900">
+                <Sparkles className="text-accent-500 h-4 w-4" aria-hidden="true" />
+                Popular right now
+              </h2>
+              <p className="mt-1 text-sm text-neutral-600">
+                The listings students are rating highest this week.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+                {shelf.items.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

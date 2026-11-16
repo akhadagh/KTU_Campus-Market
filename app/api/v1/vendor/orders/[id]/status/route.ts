@@ -4,7 +4,7 @@ import { PERMISSION } from "@/lib/auth/rbac";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
-import { VENDOR_ORDER_TRANSITIONS } from "@/lib/orders";
+import { VENDOR_ORDER_TRANSITIONS, platformFee } from "@/lib/orders";
 import type { OrderStatus, VendorOrderStatus } from "@/lib/generated/prisma/enums";
 
 const allowedTargets = new Set([
@@ -56,6 +56,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const nextStatus = target as VendorOrderStatus;
 
+  const vendorOrderForLedger = await prisma.vendorOrder.findUnique({
+    where: { id },
+    select: { subtotalPesewas: true },
+  });
+
   await prisma.$transaction([
     prisma.vendorOrder.update({ where: { id }, data: { status: nextStatus } }),
     prisma.orderStatusHistory.create({
@@ -80,6 +85,28 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (statuses.every((status) => status === "DELIVERED")) orderStatus = "FULFILLED";
   else if (statuses.every((status) => status === "CANCELLED")) orderStatus = "CANCELLED";
   else if (statuses.some((status) => status === "DELIVERED")) orderStatus = "PARTIALLY_FULFILLED";
+
+  if (nextStatus === "DELIVERED" && vendorOrderForLedger) {
+    const gross = vendorOrderForLedger.subtotalPesewas;
+    const fee = platformFee(gross);
+    const existingLedger = await prisma.ledgerEntry.findFirst({
+      where: { vendorId: guard.auth.vendorId ?? "", vendorOrderId: id },
+      select: { id: true },
+    });
+    if (!existingLedger) {
+      await prisma.ledgerEntry.create({
+        data: {
+          vendorId: guard.auth.vendorId ?? "",
+          vendorOrderId: id,
+          type: "SALE",
+          grossPesewas: gross,
+          feePesewas: fee,
+          netPesewas: gross - fee,
+          status: "AVAILABLE",
+        },
+      });
+    }
+  }
 
   if (orderStatus) {
     await prisma.$transaction([

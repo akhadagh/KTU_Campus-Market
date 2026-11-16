@@ -11,6 +11,12 @@ export const DELIVERY_FEES_PESEWAS: Record<DeliveryOption, number> = {
 
 export const RESERVATION_MINUTES = 30;
 export const PAYMENT_WINDOW_MINUTES = 30;
+/** Platform commission on a completed sale, in pesewas. */
+export const PLATFORM_FEE_RATE = 0.05;
+
+export function platformFee(grossPesewas: number): number {
+  return Math.round(grossPesewas * PLATFORM_FEE_RATE);
+}
 
 /**
  * Cancels orders whose payment window has closed, releases the inventory they

@@ -106,6 +106,12 @@ enum ExternalStatus {
   REJECTED
 }
 
+enum SellerType {
+  INDIVIDUAL
+  BUSINESS
+  REPRESENTATIVE
+}
+
 enum ReservationStatus {
   HELD
   CONSUMED
@@ -402,7 +408,11 @@ model User {
   cart                  Cart?
   wishlist              Wishlist?
   learningMaterials     LearningMaterial[] @relation("LearningMaterialUploader")
+  productViews          ProductView[]
   externalReviews       Product[]           @relation("ExternalProductReviewer")
+  verifiedVendors       VendorProfile[]     @relation("VendorVerifiedBy")
+  addresses             Address[]
+  closureRequestedAt    DateTime?
 
   @@index([campusId, status])
   @@index([status, createdAt])
@@ -554,6 +564,25 @@ model LearningMaterial {
   @@map("learning_materials")
 }
 
+model Address {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  label         String   @db.VarChar(60)
+  recipientName String   @db.VarChar(160)
+  phone         String   @db.VarChar(32)
+  address       String   @db.VarChar(300)
+  campus        String?  @db.VarChar(120)
+  instructions  String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
 model UserPreference {
   userId                 String   @id @db.Uuid
   personalizationEnabled Boolean  @default(true)
@@ -579,9 +608,19 @@ model VendorProfile {
   slug               String                   @unique @db.VarChar(140)
   description        String?
   logoUrl            String?
+  bannerUrl          String?
   campusId           String?                  @db.Uuid
   businessCategory   String?                  @db.VarChar(80)
+  sellerType         SellerType               @default(INDIVIDUAL)
+  businessAddress    String?
+  registrationNumber String?                  @db.VarChar(80)
+  documentUrl        String?
+  documentType       String?                  @db.VarChar(60)
+  riskFlagsJson      Json?
   verificationStatus VendorVerificationStatus @default(PENDING)
+  verificationNote   String?
+  verifiedAt         DateTime?
+  verifiedById       String?                  @db.Uuid
   status             VendorStatus             @default(PENDING)
   ratingAvg          Float                    @default(0)
   ratingCount        Int                      @default(0)
@@ -594,6 +633,7 @@ model VendorProfile {
   deletedAt          DateTime?
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verifiedBy    User?          @relation("VendorVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
   campus        Campus?        @relation(fields: [campusId], references: [id], onDelete: SetNull)
   products      Product[]
   cartItems     CartItem[]
@@ -672,6 +712,7 @@ model Product {
   reviews          Review[]
   featuredListings FeaturedListing[]
   conversations    Conversation[]
+  views            ProductView[]
 
   @@index([status, campusId, categoryId, createdAt])
   @@index([status, pricePesewas])
@@ -1246,6 +1287,20 @@ model SupportTicket {
 
   @@index([status, createdAt])
   @@map("support_tickets")
+}
+
+model ProductView {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @db.Uuid
+  productId String   @db.Uuid
+  viewedAt  DateTime @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([userId, viewedAt])
+  @@index([productId])
+  @@map("product_views")
 }
 
 model SearchHistory {

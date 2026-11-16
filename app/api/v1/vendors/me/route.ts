@@ -2,7 +2,7 @@ import { fieldsFromZod, fail, ok } from "@/lib/api-response";
 import { requireApiAuth } from "@/lib/auth/api-guards";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { vendorApplicationSchema } from "@/lib/validation";
+import { storeSettingsSchema } from "@/lib/validation";
 
 export async function GET() {
   const guard = await requireApiAuth();
@@ -44,7 +44,7 @@ export async function PATCH(request: Request) {
   } catch {
     return fail("VALIDATION_ERROR", "Request body must be JSON.", 422);
   }
-  const parsed = vendorApplicationSchema.partial().safeParse(body);
+  const parsed = storeSettingsSchema.partial().safeParse(body);
   if (!parsed.success) {
     return fail(
       "VALIDATION_ERROR",
@@ -76,6 +76,8 @@ export async function PATCH(request: Request) {
       ...(data.deliveryAvailable !== undefined
         ? { deliveryAvailable: data.deliveryAvailable }
         : {}),
+      ...(data.logoUrl !== undefined ? { logoUrl: data.logoUrl || null } : {}),
+      ...(data.bannerUrl !== undefined ? { bannerUrl: data.bannerUrl || null } : {}),
     },
     select: { id: true, storeName: true, slug: true, description: true, status: true },
   });

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, ShieldCheck, Star, Truck, Wallet } from "lucide-react";
 import { ProductGallery } from "@/components/commerce/product-gallery";
+import { ProductViewTracker } from "@/components/commerce/product-view-tracker";
 import { PurchasePanel } from "@/components/commerce/purchase-panel";
 import { ReportListingButton } from "@/components/commerce/report-listing-button";
 import { AddToWishlistButton } from "@/components/commerce/add-to-wishlist-button";
@@ -59,6 +60,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <ProductViewTracker slug={product.slug} />
       <nav aria-label="Breadcrumb" className="mb-6 text-sm text-neutral-500">
         <ol className="flex flex-wrap items-center gap-2">
           <li>
