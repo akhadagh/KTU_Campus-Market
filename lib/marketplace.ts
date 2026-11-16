@@ -1,6 +1,14 @@
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 
+export interface MarketplaceVariant {
+  id: string;
+  name: string;
+  sku: string | null;
+  priceDeltaPesewas: number;
+  stock: number;
+}
+
 export interface MarketplaceProduct {
   id: string;
   slug: string;
@@ -13,6 +21,7 @@ export interface MarketplaceProduct {
   imageUrl: string | null;
   imageAlt: string | null;
   images: { url: string; altText: string | null }[];
+  variants: MarketplaceVariant[];
   categoryName: string;
   categorySlug: string;
   vendorName: string;
@@ -58,6 +67,11 @@ const productSelect = {
   ratingCount: true,
   createdAt: true,
   images: { select: { url: true, altText: true }, orderBy: { sortOrder: "asc" }, take: 1 },
+  variants: {
+    where: { isActive: true },
+    select: { id: true, name: true, sku: true, priceDeltaPesewas: true, stock: true },
+    orderBy: { name: "asc" },
+  },
   category: { select: { name: true, slug: true } },
   vendor: { select: { storeName: true, slug: true, campus: { select: { name: true } } } },
 } satisfies Prisma.ProductSelect;
@@ -77,6 +91,13 @@ function toProduct(row: ProductRow): MarketplaceProduct {
     imageUrl: row.images[0]?.url ?? null,
     imageAlt: row.images[0]?.altText ?? null,
     images: row.images.map((image) => ({ url: image.url, altText: image.altText })),
+    variants: row.variants.map((variant) => ({
+      id: variant.id,
+      name: variant.name,
+      sku: variant.sku,
+      priceDeltaPesewas: variant.priceDeltaPesewas,
+      stock: variant.stock,
+    })),
     categoryName: row.category.name,
     categorySlug: row.category.slug,
     vendorName: row.vendor.storeName,

@@ -199,6 +199,20 @@
 | PRA-18 | Administrator MFA | NS |
 | PRA-19 | Legal review against Ghana Data Protection Act 843 | NS |
 
+## Dashboards, discovery and verification round (2026-11-11)
+
+| ID | Task | Status |
+|---|---|---|
+| D-01 | Customer dashboard shell, sidebar and live overview figures | D |
+| D-02 | Customer profile, password change, notification preferences, addresses, support requests, account closure | D |
+| D-03 | Vendor dashboard shell, sidebar, inventory, deliveries, payouts ledger, store settings, reviews | D |
+| D-04 | Administrator dashboard shell, sidebar, live overview, transactions, audit log, platform settings | D |
+| D-05 | Product variations end to end (vendor manager, buyer selector, cart, checkout, stock, order snapshot) | D |
+| D-06 | Marketplace category sidebar, single search, filters, discovery shelf, recently viewed | D |
+| D-07 | Staff multi-factor authentication | D |
+| D-08 | Structured vendor verification with evidence, risk flags and review workflow | D |
+| D-09 | Realistic Ghanaian catalogue with images and 31 seeded variants | D |
+
 ## Blockers
 
 | Item | Impact | Resolution needed |

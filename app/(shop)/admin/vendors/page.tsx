@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { VendorReviewButtons } from "@/components/admin/vendor-review-buttons";
+import { AlertTriangle, ExternalLink } from "lucide-react";
 import { PERMISSION, requirePermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
 import { statusBadgeVariant, vendorStatusLabels } from "@/lib/labels";
@@ -38,8 +39,29 @@ export default async function AdminVendorsPage({
       phone: true,
       whatsapp: true,
       status: true,
+      verificationStatus: true,
+      verificationNote: true,
+      sellerType: true,
+      businessAddress: true,
+      registrationNumber: true,
+      documentUrl: true,
+      documentType: true,
+      riskFlagsJson: true,
+      verifiedAt: true,
       createdAt: true,
-      user: { select: { fullName: true, email: true, emailVerifiedAt: true } },
+      user: {
+        select: {
+          fullName: true,
+          email: true,
+          emailVerifiedAt: true,
+          university: { select: { name: true } },
+          studentVerifications: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: { status: true, method: true, institutionEmail: true },
+          },
+        },
+      },
       _count: { select: { products: true } },
     },
   });
@@ -100,6 +122,63 @@ export default async function AdminVendorsPage({
                       vendor.createdAt,
                     )}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <Badge variant="muted">
+                      {vendor.sellerType === "INDIVIDUAL"
+                        ? "Individual student seller"
+                        : vendor.sellerType === "BUSINESS"
+                          ? "Registered business"
+                          : "Authorised representative"}
+                    </Badge>
+                    <Badge
+                      variant={
+                        vendor.verificationStatus === "VERIFIED"
+                          ? "success"
+                          : vendor.verificationStatus === "REJECTED"
+                            ? "danger"
+                            : "warning"
+                      }
+                    >
+                      {vendor.verificationStatus.replaceAll("_", " ")}
+                    </Badge>
+                    {vendor.user.studentVerifications[0] ? (
+                      <Badge variant="muted">
+                        Student verification:{" "}
+                        {vendor.user.studentVerifications[0].status.toLowerCase()}
+                      </Badge>
+                    ) : null}
+                  </div>
+                  {vendor.businessAddress ? (
+                    <p className="mt-1 text-xs text-neutral-600">
+                      Operating address: {vendor.businessAddress}
+                    </p>
+                  ) : null}
+                  {vendor.registrationNumber ? (
+                    <p className="mt-1 text-xs text-neutral-600">
+                      Registration number: {vendor.registrationNumber}
+                    </p>
+                  ) : null}
+                  {vendor.documentUrl ? (
+                    <a
+                      href={vendor.documentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-brand-700 mt-1 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                    >
+                      <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                      {vendor.documentType ?? "Verification document"}
+                    </a>
+                  ) : null}
+                  {Array.isArray(vendor.riskFlagsJson) && vendor.riskFlagsJson.length > 0 ? (
+                    <ul className="mt-2 space-y-1 rounded-lg bg-amber-50 p-2 text-xs text-amber-900">
+                      {(vendor.riskFlagsJson as string[]).map((flag: string) => (
+                        <li key={flag} className="flex items-center gap-1.5">
+                          <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
+                          {flag}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                   {vendor.description ? (
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-700">
                       {vendor.description}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,6 +20,8 @@ type Values = z.infer<typeof schema>;
 
 export function LoginForm() {
   const router = useRouter();
+  const [challengeId, setChallengeId] = useState<string | null>(null);
+  const [code, setCode] = useState("");
   const {
     register,
     handleSubmit,
@@ -36,7 +39,12 @@ export function LoginForm() {
         body: JSON.stringify(values),
       });
       const json = (await res.json()) as {
-        data?: { user: { fullName: string } };
+        data?: {
+          user?: { fullName: string };
+          mfaRequired?: boolean;
+          challengeId?: string;
+          delivery?: string;
+        };
         error?: { message?: string };
       };
       if (!res.ok) {
@@ -45,9 +53,19 @@ export function LoginForm() {
         });
         return;
       }
+      if (json.data?.mfaRequired && json.data.challengeId) {
+        setChallengeId(json.data.challengeId);
+        toast.info("Enter your staff sign-in code", {
+          description:
+            json.data.delivery === "email"
+              ? "We emailed a six digit code to your staff address."
+              : "The code is in the server log because no mail provider is configured.",
+        });
+        return;
+      }
       const next = new URLSearchParams(window.location.search).get("next");
       const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/account";
-      toast.success(`Welcome back, ${json.data?.user.fullName ?? "student"}`);
+      toast.success(`Welcome back, ${json.data?.user?.fullName ?? "student"}`);
       router.push(target);
       router.refresh();
     } catch {
@@ -55,6 +73,67 @@ export function LoginForm() {
         description: "Check your connection and try again.",
       });
     }
+  }
+
+  async function verifyCode(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!challengeId) return;
+    try {
+      const res = await fetch("/api/v1/auth/mfa/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeId, code: code.trim() }),
+      });
+      const json = (await res.json()) as { error?: { message?: string } };
+      if (!res.ok) {
+        toast.error(json.error?.message ?? "That code is not correct");
+        return;
+      }
+      toast.success("Signed in");
+      const next = new URLSearchParams(window.location.search).get("next");
+      const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/admin";
+      router.push(target);
+      router.refresh();
+    } catch {
+      toast.error("Could not reach the server");
+    }
+  }
+
+  if (challengeId) {
+    return (
+      <form onSubmit={verifyCode} noValidate className="space-y-4">
+        <FormField
+          label="Staff sign-in code"
+          htmlFor="mfa-code"
+          required
+          hint="We sent a six digit code to your staff email address."
+        >
+          <Input
+            id="mfa-code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            value={code}
+            onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+            placeholder="123456"
+            className="tracking-[0.4em]"
+          />
+        </FormField>
+        <Button type="submit" size="lg" className="w-full">
+          Verify and continue
+        </Button>
+        <button
+          type="button"
+          onClick={() => {
+            setChallengeId(null);
+            setCode("");
+          }}
+          className="text-brand-700 text-sm font-medium hover:underline"
+        >
+          Use a different account
+        </button>
+      </form>
+    );
   }
 
   return (

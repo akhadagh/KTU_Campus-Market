@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, ShieldCheck, Star, Truck, Wallet } from "lucide-react";
 import { ProductGallery } from "@/components/commerce/product-gallery";
+import { ProductPurchase } from "@/components/commerce/product-purchase";
 import { ProductViewTracker } from "@/components/commerce/product-view-tracker";
-import { PurchasePanel } from "@/components/commerce/purchase-panel";
 import { ReportListingButton } from "@/components/commerce/report-listing-button";
 import { AddToWishlistButton } from "@/components/commerce/add-to-wishlist-button";
 import { ProductCard } from "@/components/commerce/product-card";
@@ -15,6 +15,7 @@ import { listMarketplaceProducts, getMarketplaceProduct } from "@/lib/marketplac
 import { conditionLabels, deliveryLabels } from "@/lib/labels";
 import { formatPesewas } from "@/lib/money";
 import { connection } from "next/server";
+import { Suspense } from "react";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -33,9 +34,32 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  await connection();
-
   const { slug } = await params;
+  return (
+    <Suspense fallback={<ProductSkeleton />}>
+      <ProductDetails slug={slug} />
+    </Suspense>
+  );
+}
+
+function ProductSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="skeleton h-6 w-48 rounded" />
+      <div className="mt-6 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="skeleton aspect-[4/3] rounded-2xl" />
+        <div className="space-y-4">
+          <div className="skeleton h-8 w-3/4 rounded" />
+          <div className="skeleton h-5 w-1/3 rounded" />
+          <div className="skeleton h-24 w-full rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+async function ProductDetails({ slug }: { slug: string }) {
+  await connection();
   const product = await getMarketplaceProduct(slug);
   if (!product) notFound();
 
@@ -154,20 +178,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <p className="mt-5 text-sm leading-7 text-neutral-700">{product.description}</p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <PurchasePanel
-              target={{
-                productId: product.id,
-                productName: product.name,
-                pricePesewas: product.pricePesewas,
-                quantity: product.quantity,
-                vendorName: product.vendor.storeName,
-                purchaseMode: product.purchaseMode,
-                externalUrl: product.externalUrl,
-                isDigital: product.deliveryOptions.includes("DIGITAL"),
-                network: product.digitalDetails?.network ?? null,
-                dataAmount: product.digitalDetails?.dataAmount ?? null,
-                validity: product.digitalDetails?.validity ?? null,
-              }}
+            <ProductPurchase
+              productId={product.id}
+              productName={product.name}
+              pricePesewas={product.pricePesewas}
+              stock={product.quantity}
+              vendorName={product.vendor.storeName}
+              purchaseMode={product.purchaseMode}
+              externalUrl={product.externalUrl}
+              variants={product.variants.map((variant) => ({
+                id: variant.id,
+                name: variant.name,
+                priceDeltaPesewas: variant.priceDeltaPesewas,
+                stock: variant.stock,
+              }))}
             />
             <AddToWishlistButton productId={product.id} productName={product.name} />
           </div>

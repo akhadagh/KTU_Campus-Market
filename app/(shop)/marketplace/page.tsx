@@ -13,20 +13,23 @@ import { isHiddenCategory, listRecentlyViewed } from "@/lib/discovery";
 import { listMarketplaceProducts } from "@/lib/marketplace";
 import { conditionLabels } from "@/lib/labels";
 import { connection } from "next/server";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Explore marketplace",
   description: "Browse products and services from verified campus vendors.",
 };
 
+interface MarketplaceSearchParams {
+  q?: string;
+  category?: string;
+  condition?: string;
+  sort?: string;
+  page?: string;
+}
+
 interface MarketplacePageProps {
-  searchParams: Promise<{
-    q?: string;
-    category?: string;
-    condition?: string;
-    sort?: string;
-    page?: string;
-  }>;
+  searchParams: Promise<MarketplaceSearchParams>;
 }
 
 const conditionOptions = [
@@ -39,8 +42,30 @@ const conditionOptions = [
 ];
 
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
-  await connection();
   const params = await searchParams;
+  return (
+    <Suspense fallback={<MarketplaceSkeleton />}>
+      <MarketplaceResults params={params} />
+    </Suspense>
+  );
+}
+
+function MarketplaceSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="skeleton h-10 w-64 rounded-lg" />
+      <div className="skeleton mt-6 h-12 w-full rounded-2xl" />
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <div key={index} className="skeleton h-72 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+async function MarketplaceResults({ params }: { params: MarketplaceSearchParams }) {
+  await connection();
   const query = params.q?.trim() ?? "";
   const category = params.category ?? "";
   const condition = params.condition ?? "";

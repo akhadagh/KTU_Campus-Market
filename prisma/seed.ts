@@ -175,6 +175,7 @@ type ProductSeed = {
   externalStatus?: "PENDING" | "APPROVED" | "REJECTED";
   digital?: { network: string; dataAmount: string; validity: string };
   images?: string[];
+  variants?: { name: string; stock: number; priceDeltaCedis?: number; sku?: string }[];
 };
 
 const products: ProductSeed[] = [
@@ -579,6 +580,11 @@ const products: ProductSeed[] = [
   },
   {
     slug: "kente-print-fabric-6-yards",
+    variants: [
+      { name: "4 yards", stock: 3, priceDeltaCedis: -60 },
+      { name: "6 yards", stock: 6 },
+      { name: "8 yards", stock: 2, priceDeltaCedis: 70 },
+    ],
     name: "Kente Print Fabric (6 yards)",
     description:
       "Six yards of high-quality kente print with a matching piece for the sleeves. Popular for graduations and Sunday service. Cutting is available on request.",
@@ -603,6 +609,12 @@ const products: ProductSeed[] = [
   },
   {
     slug: "plain-white-oxford-shirt",
+    variants: [
+      { name: "Small", stock: 3 },
+      { name: "Medium", stock: 4 },
+      { name: "Large", stock: 4 },
+      { name: "Extra Large", stock: 3 },
+    ],
     name: "Plain White Oxford Shirt (Large)",
     description:
       "Regular-fit white oxford shirt with mother-of-pearl style buttons. Worn twice and washed, so it is in like-new condition. Great for interviews and presentations.",
@@ -615,6 +627,12 @@ const products: ProductSeed[] = [
   },
   {
     slug: "denim-jeans-32x32",
+    variants: [
+      { name: "30 x 30", stock: 2 },
+      { name: "32 x 32", stock: 3 },
+      { name: "34 x 32", stock: 3 },
+      { name: "36 x 32", stock: 2 },
+    ],
     name: "Denim Jeans (32 x 32)",
     description:
       "Mid-blue slim fit jeans with a little stretch. Worn a few times, no tears and no stains. Hemmed to length for free if you tell us your inseam.",
@@ -784,6 +802,14 @@ const products: ProductSeed[] = [
 const ghanaianProducts: ProductSeed[] = [
   {
     slug: "ghanaian-sandals",
+    variants: [
+      { name: "Size 39", stock: 2 },
+      { name: "Size 40", stock: 2 },
+      { name: "Size 41", stock: 3 },
+      { name: "Size 42", stock: 3 },
+      { name: "Size 43", stock: 2 },
+      { name: "Size 44", stock: 1 },
+    ],
     name: "Ghanaian Leather Sandals (Size 42)",
     description:
       "Hand-finished leather sandals with a cushioned insole, made for long days on campus. Available in sizes 39 to 45, and we can resize before delivery.",
@@ -797,6 +823,13 @@ const ghanaianProducts: ProductSeed[] = [
   },
   {
     slug: "white-sneakers",
+    variants: [
+      { name: "Size 39", stock: 2 },
+      { name: "Size 40", stock: 3 },
+      { name: "Size 41", stock: 3 },
+      { name: "Size 42", stock: 4 },
+      { name: "Size 43", stock: 2 },
+    ],
     name: "White Canvas Sneakers (Size 42)",
     description:
       "Clean white canvas sneakers with a padded insole and a rubber sole for daily campus use. True to size, brand new in the box.",
@@ -811,6 +844,12 @@ const ghanaianProducts: ProductSeed[] = [
   },
   {
     slug: "ankara-maxi-dress",
+    variants: [
+      { name: "Small", stock: 3 },
+      { name: "Medium", stock: 4 },
+      { name: "Large", stock: 3 },
+      { name: "Extra Large", stock: 2 },
+    ],
     name: "Ankara Maxi Dress",
     description:
       "Full-length ankara dress with a fitted waist and side pockets. Made to order in your size, and it takes two days.",
@@ -837,6 +876,7 @@ const ghanaianProducts: ProductSeed[] = [
   },
   {
     slug: "adinkra-tote-bag",
+    variants: [{ name: "One size", stock: 10 }],
     name: "Adinkra Print Tote Bag",
     description:
       "Sturdy cotton tote with Adinkra symbol prints and a reinforced base. Fits a laptop, notes and a lunch box.",
@@ -1098,6 +1138,10 @@ const ghanaianProducts: ProductSeed[] = [
   },
   {
     slug: "laptop-backpack",
+    variants: [
+      { name: "14 inch", stock: 4 },
+      { name: "15.6 inch", stock: 7 },
+    ],
     name: '15.6" Laptop Backpack',
     description:
       "Water-resistant backpack with a padded laptop compartment, USB charging port and a side water-bottle pocket. Built for a full day of lectures.",
@@ -1111,6 +1155,10 @@ const ghanaianProducts: ProductSeed[] = [
   },
   {
     slug: "laptop-sleeve",
+    variants: [
+      { name: "13 inch", stock: 3 },
+      { name: "14 inch", stock: 6 },
+    ],
     name: 'Laptop Sleeve (14")',
     description:
       "Slim felt sleeve with a soft lining that protects your laptop from hostel knocks. Slim enough to fit inside a backpack.",
@@ -1697,6 +1745,20 @@ async function main() {
           sortOrder: index,
         })),
       });
+
+      await prisma.productVariant.deleteMany({ where: { productId: created.id } });
+      if (product.variants && product.variants.length > 0) {
+        await prisma.productVariant.createMany({
+          data: product.variants.map((variant) => ({
+            productId: created.id,
+            name: variant.name,
+            stock: variant.stock,
+            priceDeltaPesewas: Math.round((variant.priceDeltaCedis ?? 0) * 100),
+            sku: variant.sku ?? null,
+            isActive: true,
+          })),
+        });
+      }
     }
   }
 

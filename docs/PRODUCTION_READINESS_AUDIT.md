@@ -72,6 +72,23 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 
 ---
 
+## 2b. Dashboards, discovery and verification pass (second review round)
+
+| ID | Severity | Item | Status | Notes |
+|----|----------|------|--------|-------|
+| PRA-033 | P1 | Customer, vendor and administrator surfaces had no navigation of their own; links to orders, wishlist and messages lived outside the account area | FIXED | Three dashboard shells (`/account`, `/sell/*`, `/admin/*`) each with a role-specific sidebar, live badge counts and a mobile drawer. Every sidebar entry opens a working page |
+| PRA-034 | P1 | The admin console was a horizontal link strip with no overview of platform state | FIXED | `/admin` now shows live counts for customers, vendors by state, listings by state, orders, payments, refunds, disputes, reports, support and review queues |
+| PRA-035 | P1 | Vendor pages had no inventory, delivery, ledger or store-settings screens | FIXED | `/sell/inventory`, `/sell/deliveries`, `/sell/payouts`, `/sell/store`, `/sell/reviews` with stock adjustment, movement history and a gross/fee/net ledger |
+| PRA-036 | P1 | Customer account had no profile, addresses, support-request or closure screens | FIXED | `/account/profile` (details, password, notification preferences), `/account/addresses`, `/account/requests`, `/account/close` with server-side authorisation |
+| PRA-037 | P1 | Product variations were impossible to sell | FIXED | Vendor variant manager (name, stock, price adjustment, SKU), buyer selector on the product page, variant-aware cart, per-variant stock validation at add and checkout, variant snapshot on order items, per-variant decrement on payment |
+| PRA-038 | P2 | The marketplace had a duplicate search bar and a horizontal category strip | FIXED | One search (header), a vertical database-driven category sidebar with subcategories and a mobile drawer, filters for condition and sort |
+| PRA-039 | P2 | Catalogue pages could serve identical results on every visit | FIXED | `ProductView` tracking, recently-viewed shelf, a varied discovery shelf that interleaves vendors and mixes new arrivals with top-rated listings, and `connection()`/Suspense so pages are never stale |
+| PRA-040 | P1 | Staff accounts had no second factor | FIXED | Staff logins require a six-digit code emailed to the staff address, with challenge expiry, attempt limits, single use and a server-log fallback when no mail provider is configured |
+| PRA-041 | P1 | Vendor admission was a single form with no evidence, no risk signals and no review trail | FIXED | Structured application (individual, business, representative), business details, evidence links, risk flags (duplicate registration, reused document, prior rejection, burst applications) that never auto-reject, and an admin workflow with approve, reject or request-information, all audit-logged |
+| PRA-042 | P2 | Sellers could not manage their own storefront | FIXED | `/sell/store` with name, description, category, phone, WhatsApp, logo, banner and fulfilment options |
+
+---
+
 ## 3. Verified journeys
 
 | Journey | Result |
@@ -96,6 +113,10 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 | Security headers present on every response (CSP, HSTS, frame, referrer, permissions, COOP/CORP) | PASS (production build) |
 | Guest cart still works without a session while the rest of the API stays deny-by-default | PASS |
 | Cross-origin state-changing API request → `403`; same-origin → handled | PASS |
+| Staff login returns an MFA challenge (202) and no session; the code completes the sign-in | PASS |
+| Vendor application captures seller type, business details and evidence, and the admin queue shows risk flags | PASS |
+| Variant added to the cart, kept in the cart response and snapshotted on the order item | PASS |
+| Dashboard sidebars: every customer, vendor and admin link opens a working page with live data | PASS |
 | AI assistant answers from live listings (`source: ai`) and falls back cleanly when the provider fails | PASS |
 
 ---

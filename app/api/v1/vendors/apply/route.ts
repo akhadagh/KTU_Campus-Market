@@ -7,6 +7,49 @@ import { vendorApplicationSchema } from "@/lib/validation";
 import { availableVendorSlug } from "@/lib/vendors";
 import { rateLimitWith } from "@/lib/rate-limit";
 
+/**
+ * Risk indicators for manual review. These never reject an application on their
+ * own; they simply make the application visible to the review queue.
+ */
+async function collectRiskFlags(
+  values: { registrationNumber?: string | undefined; documentUrl?: string | undefined },
+  userId: string,
+): Promise<string[]> {
+  const flags: string[] = [];
+
+  if (values.registrationNumber) {
+    const duplicate = await prisma.vendorProfile.findFirst({
+      where: {
+        registrationNumber: values.registrationNumber,
+        userId: { not: userId },
+      },
+      select: { id: true },
+    });
+    if (duplicate) flags.push("Registration number already used by another store");
+  }
+
+  if (values.documentUrl) {
+    const reused = await prisma.vendorProfile.findFirst({
+      where: { documentUrl: values.documentUrl, userId: { not: userId } },
+      select: { id: true },
+    });
+    if (reused) flags.push("The same document was submitted by another applicant");
+  }
+
+  const previous = await prisma.vendorProfile.findFirst({
+    where: { userId, verificationStatus: "REJECTED" },
+    select: { id: true },
+  });
+  if (previous) flags.push("Previous application from this account was rejected");
+
+  const recent = await prisma.vendorProfile.count({
+    where: { userId, createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } },
+  });
+  if (recent > 0) flags.push("More than one application in the last hour");
+
+  return flags;
+}
+
 export async function POST(request: Request) {
   const guard = await requireApiVerified();
   if (guard.response) return guard.response;
@@ -45,6 +88,8 @@ export async function POST(request: Request) {
   }
   const values = parsed.data;
 
+  const riskFlags = await collectRiskFlags(values, auth.user.id);
+
   const data = {
     storeName: values.storeName,
     description: values.description,
@@ -56,15 +101,32 @@ export async function POST(request: Request) {
     campusId: auth.user.campusId,
     status: "PENDING" as const,
     verificationStatus: "PENDING" as const,
+    sellerType: values.sellerType,
+    businessAddress: values.businessAddress || null,
+    registrationNumber: values.registrationNumber || null,
+    documentUrl: values.documentUrl || null,
+    documentType: values.documentType || null,
   };
   const vendor = canReapply
     ? await prisma.vendorProfile.update({
         where: { id: existing.id },
-        data: { ...data, slug: await availableVendorSlug(values.storeName) },
+        data: {
+          ...data,
+          slug: await availableVendorSlug(values.storeName),
+          riskFlagsJson: riskFlags.length > 0 ? riskFlags : undefined,
+          verificationNote: null,
+          verifiedAt: null,
+          verifiedById: null,
+        },
         select: { id: true, storeName: true, slug: true, status: true, createdAt: true },
       })
     : await prisma.vendorProfile.create({
-        data: { ...data, userId: auth.user.id, slug: await availableVendorSlug(values.storeName) },
+        data: {
+          ...data,
+          userId: auth.user.id,
+          slug: await availableVendorSlug(values.storeName),
+          riskFlagsJson: riskFlags.length > 0 ? riskFlags : [],
+        },
         select: { id: true, storeName: true, slug: true, status: true, createdAt: true },
       });
 

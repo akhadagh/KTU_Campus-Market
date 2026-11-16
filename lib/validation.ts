@@ -21,6 +21,7 @@ export const vendorApplicationSchema = z.object({
     .trim()
     .min(10, "Describe your store in at least 10 characters")
     .max(2000, "Description is too long"),
+  sellerType: z.enum(["INDIVIDUAL", "BUSINESS", "REPRESENTATIVE"]).default("INDIVIDUAL"),
   businessCategory: z.string().trim().max(80).optional().or(z.literal("")),
   phone: z
     .string()
@@ -36,8 +37,23 @@ export const vendorApplicationSchema = z.object({
     .max(32)
     .optional()
     .or(z.literal("")),
+  businessAddress: z.string().trim().max(300).optional().or(z.literal("")),
+  registrationNumber: z.string().trim().max(80).optional().or(z.literal("")),
+  documentType: z.string().trim().max(60).optional().or(z.literal("")),
+  documentUrl: z
+    .string()
+    .trim()
+    .url("Enter a valid document link")
+    .max(600)
+    .optional()
+    .or(z.literal("")),
   pickupAvailable: z.boolean().default(true),
   deliveryAvailable: z.boolean().default(false),
+});
+
+export const vendorDecisionSchema = z.object({
+  decision: z.enum(["APPROVE", "REJECT", "REQUEST_INFO"]),
+  note: z.string().trim().max(1000).optional(),
 });
 
 export const storeSettingsSchema = z.object({

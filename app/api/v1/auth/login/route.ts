@@ -2,6 +2,8 @@ import { z } from "zod";
 import { fieldsFromZod, fail, ok } from "@/lib/api-response";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
+import { sendMfaCode } from "@/lib/auth/mfa-email";
+import { createMfaChallenge, isStaffUser, staffMfaRequired } from "@/lib/mfa";
 import { prisma } from "@/lib/db";
 import { clientIp, rateLimitWith } from "@/lib/rate-limit";
 
@@ -52,7 +54,12 @@ export async function POST(request: Request) {
   const { email, password } = parsed.data;
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { ...userSelect, passwordHash: true, deletedAt: true },
+    select: {
+      ...userSelect,
+      passwordHash: true,
+      deletedAt: true,
+      roles: { select: { role: { select: { name: true } } } },
+    },
   });
 
   if (!user || user.deletedAt !== null || !(await verifyPassword(password, user.passwordHash))) {
@@ -66,6 +73,24 @@ export async function POST(request: Request) {
     where: { id: user.id },
     data: { lastLoginAt: new Date() },
   });
+
+  // Staff accounts must clear a second factor before a session is issued.
+  if (isStaffUser(user.roles) && (await staffMfaRequired())) {
+    const challenge = await createMfaChallenge(user.id);
+    const delivery = await sendMfaCode(
+      { email: user.email, fullName: user.fullName },
+      challenge.code,
+    );
+    return ok(
+      {
+        mfaRequired: true,
+        challengeId: challenge.id,
+        delivery: delivery.delivered ? "email" : (delivery.reason ?? "unknown"),
+      },
+      { status: 202 },
+    );
+  }
+
   await createSession(user.id, {
     ipAddress: ip,
     userAgent: request.headers.get("user-agent"),

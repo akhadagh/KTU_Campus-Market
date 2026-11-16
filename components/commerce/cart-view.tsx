@@ -43,6 +43,28 @@ export function CartView({
     }
   }
 
+  async function changeVariant(itemId: string, variantId: string) {
+    setPending(itemId);
+    try {
+      const res = await fetch(`/api/v1/cart/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity: 1, variantId: variantId || undefined }),
+      });
+      const json = (await res.json()) as { error?: { message?: string } };
+      if (!res.ok) {
+        toast.error(json.error?.message ?? "Could not change the option");
+        return;
+      }
+      toast.success("Option updated");
+      router.refresh();
+    } catch {
+      toast.error("Could not reach the server");
+    } finally {
+      setPending(null);
+    }
+  }
+
   async function remove(itemId: string) {
     setPending(itemId);
     try {
@@ -96,8 +118,29 @@ export function CartView({
                       {line.productName}
                     </Link>
                     <p className="text-xs text-neutral-500">
-                      {formatPesewas(line.unitPricePesewas)} each
+                      {formatPesewas(line.variantPricePesewas ?? line.unitPricePesewas)} each
                     </p>
+                    {line.variants.length > 0 ? (
+                      <label className="mt-1.5 block text-xs text-neutral-600">
+                        <span className="sr-only">Option for {line.productName}</span>
+                        <select
+                          value={line.variantId ?? ""}
+                          onChange={(event) => changeVariant(line.id, event.target.value)}
+                          disabled={pending === line.id}
+                          className="focus-visible:border-brand-500 mt-1 h-8 w-full max-w-[12rem] rounded-lg border border-neutral-300 bg-white px-2 text-xs"
+                        >
+                          <option value="">No option</option>
+                          {line.variants.map((variant) => (
+                            <option key={variant.id} value={variant.id}>
+                              {variant.name}
+                              {variant.stock === 0 ? " — out of stock" : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : line.variantName ? (
+                      <p className="mt-1 text-xs text-neutral-500">Option: {line.variantName}</p>
+                    ) : null}
                   </div>
                   <div className="flex items-center gap-2">
                     <button

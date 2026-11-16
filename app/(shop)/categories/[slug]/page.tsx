@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db";
 import { listMarketplaceProducts } from "@/lib/marketplace";
 import { connection } from "next/server";
 
+export const instant = false;
+
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;

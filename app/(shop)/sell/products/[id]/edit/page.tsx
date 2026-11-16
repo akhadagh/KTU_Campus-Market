@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProductForm } from "@/components/vendor/product-form";
+import { VariantManager } from "@/components/vendor/variant-manager";
 import { requireVendor } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
 
@@ -28,6 +29,18 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         tags: true,
         status: true,
         purchaseMode: true,
+        variants: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            sku: true,
+            priceDeltaPesewas: true,
+            stock: true,
+            isActive: true,
+          },
+          orderBy: { name: "asc" },
+        },
         externalUrl: true,
         digitalDetails: true,
         images: { select: { url: true }, orderBy: { sortOrder: "asc" } },
@@ -74,6 +87,14 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           }}
         />
       </Card>
+
+      <div className="mt-6">
+        <VariantManager
+          productId={product.id}
+          basePriceCedis={product.pricePesewas / 100}
+          variants={product.variants}
+        />
+      </div>
     </div>
   );
 }

@@ -72,6 +72,10 @@ export async function POST(request: Request) {
       status: true,
       slug: true,
       images: { select: { url: true }, orderBy: { sortOrder: "asc" }, take: 1 },
+      variants: {
+        where: { isActive: true },
+        select: { id: true, name: true, sku: true, priceDeltaPesewas: true, stock: true },
+      },
     },
   });
   const productById = new Map(products.map((product) => [product.id, product]));
@@ -187,6 +191,14 @@ export async function POST(request: Request) {
             productSnapshotJson: {
               slug: product.slug,
               imageUrl: product.images[0]?.url ?? null,
+              ...(line.variantId
+                ? {
+                    variantId: line.variantId,
+                    variantName:
+                      product.variants.find((variant) => variant.id === line.variantId)?.name ??
+                      null,
+                  }
+                : {}),
               ...(line.isDigital ? { msisdn: values.msisdn } : {}),
             },
           },

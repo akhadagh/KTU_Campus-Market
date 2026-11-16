@@ -8,13 +8,14 @@ import { createNotification } from "@/lib/notifications";
 import { grantVendorRole, revokeVendorRole } from "@/lib/vendors";
 
 const schema = z.object({
-  decision: z.enum(["APPROVE", "REJECT", "SUSPEND", "REACTIVATE", "PAUSE"]),
+  decision: z.enum(["APPROVE", "REJECT", "REQUEST_INFO", "SUSPEND", "REACTIVATE", "PAUSE"]),
   note: z.string().trim().max(1000).optional(),
 });
 
 const allowed: Record<string, string[]> = {
-  APPROVE: ["PENDING", "CLOSED"],
-  REJECT: ["PENDING"],
+  APPROVE: ["PENDING", "CLOSED", "UNDER_REVIEW"],
+  REJECT: ["PENDING", "UNDER_REVIEW"],
+  REQUEST_INFO: ["PENDING", "UNDER_REVIEW"],
   SUSPEND: ["ACTIVE", "PAUSED"],
   REACTIVATE: ["SUSPENDED", "PAUSED"],
   PAUSE: ["ACTIVE"],
@@ -56,13 +57,24 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       ? { status: "ACTIVE" as const, verificationStatus: "VERIFIED" as const }
       : parsed.data.decision === "REJECT"
         ? { status: "CLOSED" as const, verificationStatus: "REJECTED" as const }
-        : parsed.data.decision === "SUSPEND"
-          ? { status: "SUSPENDED" as const, verificationStatus: "SUSPENDED" as const }
-          : parsed.data.decision === "PAUSE"
-            ? { status: "PAUSED" as const, verificationStatus: vendor.verificationStatus }
-            : { status: "ACTIVE" as const, verificationStatus: "VERIFIED" as const };
+        : parsed.data.decision === "REQUEST_INFO"
+          ? { status: "PENDING" as const, verificationStatus: "UNDER_REVIEW" as const }
+          : parsed.data.decision === "SUSPEND"
+            ? { status: "SUSPENDED" as const, verificationStatus: "SUSPENDED" as const }
+            : parsed.data.decision === "PAUSE"
+              ? { status: "PAUSED" as const, verificationStatus: vendor.verificationStatus }
+              : { status: "ACTIVE" as const, verificationStatus: "VERIFIED" as const };
 
-  await prisma.vendorProfile.update({ where: { id }, data: next });
+  await prisma.vendorProfile.update({
+    where: { id },
+    data: {
+      ...next,
+      ...(parsed.data.note ? { verificationNote: parsed.data.note } : {}),
+      ...(parsed.data.decision === "APPROVE"
+        ? { verifiedAt: new Date(), verifiedById: guard.auth.user.id }
+        : {}),
+    },
+  });
 
   if (parsed.data.decision === "APPROVE" || parsed.data.decision === "REACTIVATE") {
     await grantVendorRole(vendor.userId, guard.auth.user.id);
@@ -80,6 +92,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     REJECT: {
       title: "Vendor application not approved",
       body: parsed.data.note ?? "You can update your details and apply again.",
+      link: "/sell/apply",
+    },
+    REQUEST_INFO: {
+      title: "We need more information",
+      body: parsed.data.note ?? "Please provide the missing details for your application.",
       link: "/sell/apply",
     },
     SUSPEND: {

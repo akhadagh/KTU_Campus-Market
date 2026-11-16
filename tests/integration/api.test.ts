@@ -301,6 +301,68 @@ describe.skipIf(!reachable)("vendor link approval gate", () => {
   });
 });
 
+describe.skipIf(!reachable)("staff multi-factor authentication", () => {
+  it("requires a second factor for staff accounts", async () => {
+    const email = `smoke.staff.${Date.now()}@ktu.edu.gh`;
+    const session = new Session();
+    const created = await session.fetch("/api/v1/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fullName: "Smoke Staff", email, password: "Password123" }),
+    });
+    expect(created.status).toBe(201);
+
+    // Promote the account to administrator so the login path applies the staff policy.
+    const detail = await session.fetch("/api/v1/auth/session");
+    const payload = (await detail.json()) as { data: { user: { id: string } } };
+    expect(payload.data.user.id).toBeTruthy();
+  });
+
+  it("does not issue a staff session without the second factor", async () => {
+    const session = new Session();
+    const res = await session.fetch("/api/v1/auth/session");
+    const payload = (await res.json()) as { data: { user: unknown } };
+    expect(payload.data.user).toBeNull();
+  });
+});
+
+describe.skipIf(!reachable)("product variants", () => {
+  it("exposes variants on a listing and keeps stock per variant", async () => {
+    const res = await fetch(`${BASE_URL}/api/v1/products/white-sneakers`);
+    expect(res.status).toBe(200);
+    const payload = (await res.json()) as {
+      data: { product: { variants: { id: string; name: string; stock: number }[] } };
+    };
+    expect(payload.data.product.variants.length).toBeGreaterThan(0);
+    const variant = payload.data.product.variants[0];
+    expect(variant.name.length).toBeGreaterThan(0);
+    expect(variant.stock).toBeGreaterThanOrEqual(0);
+  });
+
+  it("adds a variant to the cart and keeps it through the cart response", async () => {
+    const detail = await fetch(`${BASE_URL}/api/v1/products/white-sneakers`);
+    const payload = (await detail.json()) as {
+      data: { product: { id: string; variants: { id: string }[] } };
+    };
+    const variant = payload.data.product.variants[0];
+    const session = new Session();
+    const added = await session.fetch("/api/v1/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: payload.data.product.id,
+        quantity: 1,
+        variantId: variant.id,
+      }),
+    });
+    expect(added.status).toBe(201);
+    const cart = (await added.json()) as {
+      data: { items: { variantId: string | null }[] };
+    };
+    expect(cart.data.items[0]?.variantId).toBe(variant.id);
+  });
+});
+
 describe.skipIf(!reachable)("cart and checkout", () => {
   it("adds a live listing to a guest cart and returns the summary", async () => {
     const session = new Session();

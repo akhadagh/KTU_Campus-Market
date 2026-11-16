@@ -29,6 +29,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
       ratingAvg: true,
       ratingCount: true,
       images: { select: { url: true, altText: true }, orderBy: { sortOrder: "asc" } },
+      variants: {
+        where: { isActive: true },
+        select: { id: true, name: true, sku: true, priceDeltaPesewas: true, stock: true },
+        orderBy: { name: "asc" },
+      },
       category: { select: { name: true, slug: true } },
       vendor: { select: { id: true, storeName: true, slug: true, status: true } },
     },

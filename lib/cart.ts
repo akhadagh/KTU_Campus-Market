@@ -77,6 +77,10 @@ export interface CartLine {
   vendorSlug: string;
   deliveryOptions: string[];
   isDigital: boolean;
+  variantId: string | null;
+  variantName: string | null;
+  variantPricePesewas: number | null;
+  variants: { id: string; name: string; stock: number }[];
 }
 
 export interface CartSummary {
@@ -93,6 +97,7 @@ export async function getCartSummary(cartId: string): Promise<CartSummary> {
     select: {
       id: true,
       quantity: true,
+      variant: { select: { id: true, name: true, priceDeltaPesewas: true } },
       product: {
         select: {
           id: true,
@@ -102,6 +107,11 @@ export async function getCartSummary(cartId: string): Promise<CartSummary> {
           quantity: true,
           status: true,
           deliveryOptions: true,
+          variants: {
+            where: { isActive: true },
+            select: { id: true, name: true, stock: true },
+            orderBy: { name: "asc" },
+          },
           purchaseMode: true,
           externalUrl: true,
           digitalDetails: true,
@@ -129,6 +139,17 @@ export async function getCartSummary(cartId: string): Promise<CartSummary> {
       vendorSlug: item.product.vendor.slug,
       deliveryOptions: item.product.deliveryOptions,
       isDigital: item.product.deliveryOptions.includes("DIGITAL"),
+      variantId: item.variant?.id ?? null,
+      variantName: item.variant?.name ?? null,
+      variantPricePesewas:
+        item.variant && item.variant.priceDeltaPesewas !== 0
+          ? item.product.pricePesewas + item.variant.priceDeltaPesewas
+          : null,
+      variants: item.product.variants.map((variant) => ({
+        id: variant.id,
+        name: variant.name,
+        stock: variant.stock,
+      })),
     }));
 
   return {
