@@ -67,8 +67,8 @@ export default async function VendorInventoryPage() {
         <Card className="mt-5 border-amber-200 bg-amber-50 p-4">
           <p className="flex items-start gap-2 text-sm text-amber-900">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            {lowStock.length} listing{lowStock.length === 1 ? " is" : "s are"} low on stock. Top them
-            up so students can still order.
+            {lowStock.length} listing{lowStock.length === 1 ? " is" : "s are"} low on stock. Top
+            them up so students can still order.
           </p>
         </Card>
       ) : null}

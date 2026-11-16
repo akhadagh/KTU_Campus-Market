@@ -154,9 +154,7 @@ export default async function AdminTransactionsPage({
                     <td className="px-4 py-3 font-medium text-neutral-900">
                       {payment.order.orderNumber}
                     </td>
-                    <td className="px-4 py-3 text-neutral-600">
-                      {payment.order.buyer.fullName}
-                    </td>
+                    <td className="px-4 py-3 text-neutral-600">{payment.order.buyer.fullName}</td>
                     <td className="px-4 py-3 text-neutral-900">
                       {formatPesewas(payment.amountPesewas)} {payment.currency}
                     </td>
@@ -172,7 +170,9 @@ export default async function AdminTransactionsPage({
                       {payment.refunds.length === 0
                         ? "—"
                         : payment.refunds
-                            .map((refund) => `${formatPesewas(refund.amountPesewas)} ${refund.status}`)
+                            .map(
+                              (refund) => `${formatPesewas(refund.amountPesewas)} ${refund.status}`,
+                            )
                             .join(", ")}
                     </td>
                     <td className="px-4 py-3 text-xs text-neutral-500">

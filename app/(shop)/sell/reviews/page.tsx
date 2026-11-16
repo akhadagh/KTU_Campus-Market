@@ -77,7 +77,10 @@ export default async function VendorReviewsPage() {
                       {review.product?.name ?? "Product"}
                     </p>
                     <span className="flex items-center gap-1 text-sm text-amber-600">
-                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+                      <Star
+                        className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
+                        aria-hidden="true"
+                      />
                       {review.rating}/5
                     </span>
                     <Badge

@@ -54,10 +54,7 @@ export default async function VendorDeliveriesPage() {
             title="No deliveries yet"
             description="Set a delivery status from your orders page once you dispatch an order."
             action={
-              <a
-                href="/sell/orders"
-                className="text-brand-700 text-sm font-medium hover:underline"
-              >
+              <a href="/sell/orders" className="text-brand-700 text-sm font-medium hover:underline">
                 Go to orders
               </a>
             }
@@ -66,9 +63,10 @@ export default async function VendorDeliveriesPage() {
       ) : (
         <div className="mt-6 space-y-3">
           {deliveries.map((delivery) => {
-            const address = delivery.vendorOrder.order.deliveryAddressJson as
-              | { address?: string; phone?: string }
-              | null;
+            const address = delivery.vendorOrder.order.deliveryAddressJson as {
+              address?: string;
+              phone?: string;
+            } | null;
             return (
               <Card key={delivery.id} className="p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">

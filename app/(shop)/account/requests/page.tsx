@@ -75,7 +75,7 @@ export default async function SupportRequestsPage() {
 
       <section className="mt-6">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-neutral-900">
-          <MessageCircle className="h-4 w-4 text-brand-600" aria-hidden="true" />
+          <MessageCircle className="text-brand-600 h-4 w-4" aria-hidden="true" />
           Support conversations
         </h2>
         {supportThreads.length === 0 ? (
@@ -123,7 +123,7 @@ export default async function SupportRequestsPage() {
 
       <section className="mt-8">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-neutral-900">
-          <Scale className="h-4 w-4 text-brand-600" aria-hidden="true" />
+          <Scale className="text-brand-600 h-4 w-4" aria-hidden="true" />
           Reported problems
         </h2>
         {disputes.length === 0 ? (

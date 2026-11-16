@@ -46,7 +46,9 @@ export default async function AdminOverviewPage() {
     revenue,
     recentOrders,
   ] = await Promise.all([
-    prisma.user.count({ where: { deletedAt: null, roles: { none: { role: { name: "vendor" } } } } }),
+    prisma.user.count({
+      where: { deletedAt: null, roles: { none: { role: { name: "vendor" } } } },
+    }),
     prisma.vendorProfile.count({ where: { deletedAt: null } }),
     prisma.vendorProfile.count({ where: { status: "PENDING" } }),
     prisma.vendorProfile.count({ where: { status: "ACTIVE" } }),
@@ -117,12 +119,10 @@ export default async function AdminOverviewPage() {
       />
 
       {isAdmin ? (
-        <Card className="mt-5 border-brand-100 bg-brand-50/60 p-4">
-          <p className="text-sm text-brand-900">
+        <Card className="border-brand-100 bg-brand-50/60 mt-5 p-4">
+          <p className="text-brand-900 text-sm">
             Gross payment volume:{" "}
-            <span className="font-semibold">
-              {formatPesewas(revenue._sum.amountPesewas ?? 0)}
-            </span>{" "}
+            <span className="font-semibold">{formatPesewas(revenue._sum.amountPesewas ?? 0)}</span>{" "}
             from {paidOrders} paid order(s). Platform fees are recorded in the seller ledger.
           </p>
         </Card>
@@ -132,12 +132,15 @@ export default async function AdminOverviewPage() {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label} className="border-neutral-200/80 p-5 shadow-[var(--shadow-card)]">
+            <Card
+              key={stat.label}
+              className="border-neutral-200/80 p-5 shadow-[var(--shadow-card)]"
+            >
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
                   {stat.label}
                 </p>
-                <Icon className="h-4 w-4 text-brand-600" aria-hidden="true" />
+                <Icon className="text-brand-600 h-4 w-4" aria-hidden="true" />
               </div>
               <p className="mt-2 text-2xl font-bold text-neutral-900">{stat.value}</p>
             </Card>
@@ -153,7 +156,7 @@ export default async function AdminOverviewPage() {
               <li key={queue.label} className="flex items-center justify-between gap-3">
                 <Link
                   href={queue.href}
-                  className="text-sm text-neutral-700 hover:text-brand-700 hover:underline"
+                  className="hover:text-brand-700 text-sm text-neutral-700 hover:underline"
                 >
                   {queue.label}
                 </Link>
@@ -166,7 +169,10 @@ export default async function AdminOverviewPage() {
         <Card className="p-5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-neutral-900">Latest orders</h2>
-            <Link href="/admin/orders" className="text-brand-700 text-sm font-medium hover:underline">
+            <Link
+              href="/admin/orders"
+              className="text-brand-700 text-sm font-medium hover:underline"
+            >
               View all
             </Link>
           </div>

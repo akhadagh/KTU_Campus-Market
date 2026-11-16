@@ -64,8 +64,8 @@ export default async function VendorPayoutsPage() {
         description="What you have earned, what the platform has deducted, and what has already been settled."
       />
 
-      <Card className="mt-5 border-brand-100 bg-brand-50/60 p-4">
-        <p className="text-sm text-brand-900">
+      <Card className="border-brand-100 bg-brand-50/60 mt-5 p-4">
+        <p className="text-brand-900 text-sm">
           Settlement is manual. JUMART does not transfer money automatically; amounts marked
           &ldquo;available&rdquo; are released to you by the platform team after the delivery window
           closes. Refunds are deducted from gross sales.
@@ -174,7 +174,7 @@ export default async function VendorPayoutsPage() {
       )}
 
       <p className="mt-6 text-xs text-neutral-500">
-        Platform commission is {Math.round(platformFee(10000) / 10000 * 100)}% of each completed
+        Platform commission is {Math.round((platformFee(10000) / 10000) * 100)}% of each completed
         sale. Gross sales never include delivery fees, which are collected by the platform.
       </p>
     </div>
