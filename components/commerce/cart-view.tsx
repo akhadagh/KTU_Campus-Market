@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { buttonVariants } from "@/components/ui/button";
@@ -43,28 +42,6 @@ export function CartView({
     }
   }
 
-  async function changeVariant(itemId: string, variantId: string) {
-    setPending(itemId);
-    try {
-      const res = await fetch(`/api/v1/cart/items/${itemId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: 1, variantId: variantId || undefined }),
-      });
-      const json = (await res.json()) as { error?: { message?: string } };
-      if (!res.ok) {
-        toast.error(json.error?.message ?? "Could not change the option");
-        return;
-      }
-      toast.success("Option updated");
-      router.refresh();
-    } catch {
-      toast.error("Could not reach the server");
-    } finally {
-      setPending(null);
-    }
-  }
-
   async function remove(itemId: string) {
     setPending(itemId);
     try {
@@ -89,82 +66,59 @@ export function CartView({
   }, {});
 
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-      <div className="space-y-6">
-        {Object.entries(grouped).map(([vendorName, lines]) => (
-          <Card key={vendorName} className="p-5">
-            <p className="text-sm font-semibold text-neutral-900">
-              Sold by {vendorName}
-              {vendorCount > 1 ? " · shipped separately" : ""}
-            </p>
-            <ul className="mt-4 divide-y divide-neutral-100">
-              {lines.map((line) => (
-                <li key={line.id} className="flex flex-wrap items-center gap-4 py-4">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-                    {line.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={line.imageUrl}
-                        alt={line.productName}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : null}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/products/${line.productSlug}`}
-                      className="text-sm font-medium text-neutral-900 hover:underline"
-                    >
-                      {line.productName}
-                    </Link>
-                    <p className="text-xs text-neutral-500">
-                      {formatPesewas(line.variantPricePesewas ?? line.unitPricePesewas)} each
-                    </p>
-                    {line.variants.length > 0 ? (
-                      <label className="mt-1.5 block text-xs text-neutral-600">
-                        <span className="sr-only">Option for {line.productName}</span>
-                        <select
-                          value={line.variantId ?? ""}
-                          onChange={(event) => changeVariant(line.id, event.target.value)}
-                          disabled={pending === line.id}
-                          className="focus-visible:border-brand-500 mt-1 h-8 w-full max-w-[12rem] rounded-lg border border-neutral-300 bg-white px-2 text-xs"
-                        >
-                          <option value="">No option</option>
-                          {line.variants.map((variant) => (
-                            <option key={variant.id} value={variant.id}>
-                              {variant.name}
-                              {variant.stock === 0 ? " — out of stock" : ""}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ) : line.variantName ? (
-                      <p className="mt-1 text-xs text-neutral-500">Option: {line.variantName}</p>
-                    ) : null}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => update(line.id, Math.max(1, line.quantity - 1))}
-                      disabled={pending === line.id || line.quantity <= 1}
-                      aria-label={`Decrease quantity of ${line.productName}`}
-                      className="focus-visible:ring-brand-500/30 grid h-8 w-8 place-items-center rounded-md border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40"
-                    >
-                      <Minus className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
-                    <span className="w-8 text-center text-sm font-medium text-neutral-900">
-                      {line.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => update(line.id, Math.min(line.stock, line.quantity + 1))}
-                      disabled={pending === line.id || line.quantity >= line.stock}
-                      aria-label={`Increase quantity of ${line.productName}`}
-                      className="focus-visible:ring-brand-500/30 grid h-8 w-8 place-items-center rounded-md border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40"
-                    >
-                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
-                  </div>
+    <div className="space-y-6">
+      {Object.entries(grouped).map(([vendorName, lines]) => (
+        <Card key={vendorId} className="p-5">
+          <p className="text-sm font-semibold text-neutral-900">
+            Sold by {vendorName}
+            {vendorCount > 1 ? " · shipped separately" : ""}
+          </p>
+          <ul className="mt-4 divide-y divide-neutral-100">
+            {lines.map((line) => (
+              <li key={line.id} className="flex flex-wrap items-center gap-4 py-4">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                  {line.imageUrl ? (
+                    <img
+                      src={line.imageUrl}
+                      alt={line.productName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/products/${line.productSlug}`}
+                    className="text-sm font-medium text-neutral-900 hover:underline"
+                  >
+                    {line.productName}
+                  </Link>
+                  <p className="text-xs text-neutral-500">{formatPesewas(line.unitPricePesewas)} each</p>
+                  {line.variantName && (
+                    <p className="text-[10px] text-neutral-500">Variant: {line.variantName}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => update(line.id, Math.max(1, line.quantity - 1))}
+                    disabled={pending === line.id || line.quantity <= 1}
+                    aria-label={`Decrease quantity of ${line.productName}`}
+                    className="focus-visible:ring-brand-500/30 grid h-8 w-8 place-items-center rounded-md border border-neutral-300 text-neutral-700 hover:bg-neutral-50 disabled:opacity-40"
+                  >
+                    <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                  <span className="w-8 text-center text-sm font-medium text-neutral-900">
+                    {line.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => update(line.id, Math.min(line.stock, line.quantity + 1))}
+                    disabled={pending === line.id || line.quantity >= line.stock}
+                    aria-label={`Increase quantity of ${line.productName}`}
+                    className="focus-visible:ring-brand-500/30 grid h-8 w-8 place-items-center rounded-md border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40"
+                  >
+                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
                   <div className="w-24 text-right">
                     <p className="text-sm font-semibold text-neutral-900">
                       {formatPesewas(line.lineTotalPesewas)}
@@ -203,12 +157,24 @@ export function CartView({
           </div>
           <div className="flex justify-between border-t border-neutral-200 pt-2 font-semibold text-neutral-900">
             <dt>Total</dt>
-            <dd>{formatPesewas(subtotalPesewas)}</dd>
+            <dd>{formatPesewas(subtotalPesewas + deliveryFeePesewas)}</dd>
           </div>
         </dl>
-        <Link href="/checkout" className={`${buttonVariants({ size: "lg" })} mt-5 w-full`}>
-          Continue to checkout
-        </Link>
+
+        {error ? (
+          <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+            {error}
+          </p>
+        ) : null}
+
+        <Button type="submit" size="lg" className="mt-4 w-full" disabled={pending}>
+          {pending ? (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+          )}
+          {pending ? "Placing order…" : "Place order and pay"}
+        </Button>
         <p className="mt-3 text-xs leading-5 text-neutral-500">
           Items from different vendors are split into separate vendor orders so each seller can
           fulfil their part.

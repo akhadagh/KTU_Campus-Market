@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { PackagePlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireVendor } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
-import { statusBadgeVariant, vendorOrderStatusLabels, vendorStatusLabels } from "@/lib/labels";
+import { statusBadgeVariant, vendorOrderStatusLabels } from "@/lib/labels";
 import { formatPesewas } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Seller dashboard" };
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat("en-GH", { dateStyle: "medium", timeStyle: "short" }).format(date);
 
 export default async function VendorDashboardPage() {
   const auth = await requireVendor();
@@ -77,7 +77,7 @@ export default async function VendorDashboardPage() {
           { label: "Pending review", value: countByStatus["PENDING_REVIEW"] ?? 0 },
           { label: "Open orders", value: openOrderCount },
           {
-            label: "Delivered",
+            label: "Delivered sales",
             value: `${formatPesewas(delivered._sum.totalPesewas ?? 0)} · ${delivered._count._all}`,
           },
         ].map((stat) => (
@@ -100,13 +100,7 @@ export default async function VendorDashboardPage() {
             <Link href="/sell/orders" className={buttonVariants({ variant: "outline" })}>
               Vendor orders
             </Link>
-            <Link href="/sell/analytics" className={buttonVariants({ variant: "outline" })}>
-              Sales analytics
-            </Link>
-            <Link
-              href={`/stores/${vendor.slug}`}
-              className={buttonVariants({ variant: "outline" })}
-            >
+            <Link href={`/stores/${vendor.slug}`} className={buttonVariants({ variant: "outline" })}>
               View public store
             </Link>
             <Link href="/sell" className={buttonVariants({ variant: "ghost" })}>
@@ -124,17 +118,11 @@ export default async function VendorDashboardPage() {
           ) : (
             <ul className="mt-3 divide-y divide-neutral-100">
               {recentOrders.map((order) => (
-                <li
-                  key={order.id}
-                  className="flex flex-wrap items-center justify-between gap-2 py-3"
-                >
+                <li key={order.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                   <div>
-                    <p className="text-sm font-medium text-neutral-900">
-                      {order.order.orderNumber}
-                    </p>
+                    <p className="text-sm font-medium text-neutral-900">{order.orderNumber}</p>
                     <p className="text-xs text-neutral-500">
-                      {order.order.buyer.fullName} · {order._count.items} item
-                      {order._count.items === 1 ? "" : "s"}
+                      {order.order.buyer.fullName} · {order._count.items} item{s === 1 ? "" : "s"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
