@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { WishlistToCartButton } from "@/components/commerce/wishlist-to-cart-button";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { formatPesewas } from "@/lib/money";
@@ -91,6 +92,12 @@ export default async function WishlistPage() {
                 <p className="mt-1 text-sm font-semibold text-neutral-900">
                   {formatPesewas(item.product.pricePesewas)}
                 </p>
+                <div className="mt-2">
+                  <WishlistToCartButton
+                    productId={item.product.id}
+                    productName={item.product.name}
+                  />
+                </div>
               </div>
             </Card>
           ))}

@@ -1091,6 +1091,7 @@ model Review {
   comment          String?
   status           ReviewStatus @default(PENDING)
   verifiedPurchase Boolean      @default(false)
+  vendorReply      String?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   deletedAt        DateTime?

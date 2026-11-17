@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CancelOrderButton } from "@/components/commerce/cancel-order-button";
 import { OrderSupportActions } from "@/components/commerce/order-support-actions";
 import { PayOrderButton } from "@/components/commerce/pay-order-button";
 import { ReviewForm } from "@/components/commerce/review-form";
@@ -257,6 +258,19 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             maxRefundCedis={maxRefundCedis}
             canRefund={canRefund}
             canDispute={canDispute}
+          />
+
+          <CancelOrderButton
+            orderId={order.id}
+            orderNumber={order.orderNumber}
+            disabled={
+              !["PENDING_PAYMENT", "PAID"].includes(order.status) ||
+              order.vendorOrders.some((vendorOrder) =>
+                ["ACCEPTED", "PREPARING", "READY_FOR_PICKUP", "OUT_FOR_DELIVERY", "DELIVERED"].includes(
+                  vendorOrder.status,
+                ),
+              )
+            }
           />
 
           {orderRefunds.length > 0 ? (

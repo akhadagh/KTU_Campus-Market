@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { VendorReviewButtons } from "@/components/admin/vendor-review-buttons";
 import { AlertTriangle, ExternalLink } from "lucide-react";
+import { getAllVendorRiskSignals } from "@/lib/vendor-monitoring";
 import { PERMISSION, requirePermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
 import { statusBadgeVariant, vendorStatusLabels } from "@/lib/labels";
@@ -26,7 +27,8 @@ export default async function AdminVendorsPage({
     ? (params.status as (typeof statuses)[number])
     : "PENDING";
 
-  const vendors = await prisma.vendorProfile.findMany({
+  const [vendors, riskSignals] = await Promise.all([
+    prisma.vendorProfile.findMany({
     where: { status },
     orderBy: { createdAt: "asc" },
     take: 100,
@@ -64,7 +66,10 @@ export default async function AdminVendorsPage({
       },
       _count: { select: { products: true } },
     },
-  });
+    }),
+    getAllVendorRiskSignals(),
+  ]);
+  const signalsByVendor = new Map(riskSignals.map((entry) => [entry.vendorId, entry.signals]));
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -169,6 +174,17 @@ export default async function AdminVendorsPage({
                       {vendor.documentType ?? "Verification document"}
                     </a>
                   ) : null}
+                  {signalsByVendor.get(vendor.id)?.length ? (
+                    <ul className="mt-2 space-y-1 rounded-lg bg-amber-50 p-2 text-xs text-amber-900">
+                      {signalsByVendor.get(vendor.id)!.map((signal) => (
+                        <li key={signal.code} className="flex items-center gap-1.5">
+                          <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
+                          {signal.message}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+
                   {Array.isArray(vendor.riskFlagsJson) && vendor.riskFlagsJson.length > 0 ? (
                     <ul className="mt-2 space-y-1 rounded-lg bg-amber-50 p-2 text-xs text-amber-900">
                       {(vendor.riskFlagsJson as string[]).map((flag: string) => (

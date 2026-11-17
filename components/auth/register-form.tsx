@@ -71,6 +71,7 @@ export function RegisterForm() {
         });
         return;
       }
+      void fetch("/api/v1/cart/merge", { method: "POST" }).catch(() => undefined);
       toast.success(`Account created. Welcome, ${json.data?.user.fullName ?? "student"}!`, {
         description:
           json.data?.emailVerification === "sent"

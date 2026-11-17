@@ -89,6 +89,7 @@ export function LoginForm() {
         toast.error(json.error?.message ?? "That code is not correct");
         return;
       }
+      void fetch("/api/v1/cart/merge", { method: "POST" }).catch(() => undefined);
       toast.success("Signed in");
       const next = new URLSearchParams(window.location.search).get("next");
       const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/admin";
