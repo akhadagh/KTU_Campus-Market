@@ -1,14 +1,16 @@
 import { fail, ok } from "@/lib/api-response";
 import { prisma } from "@/lib/db";
+import { getMarketplaceSettings, vendorFilter } from "@/lib/settings";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const settings = await getMarketplaceSettings();
   const product = await prisma.product.findFirst({
     where: {
       slug,
       status: "ACTIVE",
       deletedAt: null,
-      vendor: { status: "ACTIVE" },
+      vendor: { status: "ACTIVE", ...vendorFilter(settings) },
       OR: [{ purchaseMode: "INTERNAL" }, { externalStatus: "APPROVED" }],
     },
     select: {

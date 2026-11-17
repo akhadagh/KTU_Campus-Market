@@ -613,6 +613,7 @@ model VendorProfile {
   campusId           String?                  @db.Uuid
   businessCategory   String?                  @db.VarChar(80)
   sellerType         SellerType               @default(INDIVIDUAL)
+  isDemo             Boolean                  @default(false)
   businessAddress    String?
   registrationNumber String?                  @db.VarChar(80)
   documentUrl        String?

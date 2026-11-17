@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getMarketplaceSettings, vendorFilter } from "@/lib/settings";
 import { Prisma } from "@/lib/generated/prisma/client";
 
 export interface MarketplaceVariant {
@@ -130,13 +131,15 @@ export async function listMarketplaceProducts(query: MarketplaceQuery): Promise<
   const pageSize = Math.min(48, Math.max(6, query.pageSize ?? 24));
   const search = query.q?.trim();
 
+  const settings = await getMarketplaceSettings();
+  const demoFilter = vendorFilter(settings);
   const where: Prisma.ProductWhereInput = {
     status: "ACTIVE",
     deletedAt: null,
     OR: [{ purchaseMode: "INTERNAL" }, { externalStatus: "APPROVED" }],
     ...(query.vendorSlug
-      ? { vendor: { slug: query.vendorSlug, status: "ACTIVE" } }
-      : { vendor: { status: "ACTIVE" } }),
+      ? { vendor: { slug: query.vendorSlug, status: "ACTIVE", ...demoFilter } }
+      : { vendor: { status: "ACTIVE", ...demoFilter } }),
     ...(query.categorySlug ? { category: { slug: query.categorySlug } } : {}),
     ...(query.condition ? { condition: query.condition as never } : {}),
     ...(search
@@ -198,12 +201,13 @@ export async function getMarketplaceProduct(slug: string): Promise<
     })
   | null
 > {
+  const settings = await getMarketplaceSettings();
   const row = await prisma.product.findFirst({
     where: {
       slug,
       status: "ACTIVE",
       deletedAt: null,
-      vendor: { status: "ACTIVE" },
+      vendor: { status: "ACTIVE", ...vendorFilter(settings) },
       OR: [{ purchaseMode: "INTERNAL" }, { externalStatus: "APPROVED" }],
     },
     select: {
@@ -247,6 +251,7 @@ export async function getMarketplaceProduct(slug: string): Promise<
 }
 
 export async function listMarketplaceCategories() {
+  const settings = await getMarketplaceSettings();
   const categories = await prisma.category.findMany({
     where: { isActive: true, parentId: null },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -256,7 +261,13 @@ export async function listMarketplaceCategories() {
       slug: true,
       type: true,
       iconUrl: true,
-      _count: { select: { products: true } },
+      _count: {
+        select: {
+          products: {
+            where: { status: "ACTIVE", deletedAt: null, vendor: vendorFilter(settings) },
+          },
+        },
+      },
     },
   });
   return categories.map((category) => ({

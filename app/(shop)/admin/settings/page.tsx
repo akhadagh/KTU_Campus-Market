@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { PlatformSettingsForm } from "@/components/admin/platform-settings-form";
 import { PERMISSION, requirePermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
+import { getMarketplaceSettings } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "Platform settings" };
 
@@ -18,6 +19,7 @@ export default async function AdminSettingsPage() {
   const values = Object.fromEntries(
     settings.map((setting) => [setting.key, setting.valueJson]),
   ) as Record<string, unknown>;
+  const marketplaceSettings = await getMarketplaceSettings();
 
   return (
     <div>
@@ -44,6 +46,7 @@ export default async function AdminSettingsPage() {
                 ? (values["marketplace.paymentWindowMinutes"] as number)
                 : 30,
             maintenanceMode: values["marketplace.maintenanceMode"] === true,
+            showDemoStores: marketplaceSettings.demoStoresVisible,
           }}
         />
       </div>

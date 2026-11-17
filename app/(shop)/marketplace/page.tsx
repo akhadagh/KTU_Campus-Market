@@ -2,15 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PackageSearch, Sparkles } from "lucide-react";
 import { ProductCard } from "@/components/commerce/product-card";
-import { CategorySidebar } from "@/components/marketplace/category-sidebar";
+import { MarketplaceSidebar } from "@/components/marketplace/marketplace-sidebar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { isHiddenCategory, listRecentlyViewed } from "@/lib/discovery";
-import { listMarketplaceProducts } from "@/lib/marketplace";
+import {
+  isHiddenCategory,
+  listFrequentlyBoughtTogether,
+  listRecentlyViewed,
+} from "@/lib/discovery";
+import { listMarketplaceProducts, listMarketplaceVendors } from "@/lib/marketplace";
 import { conditionLabels } from "@/lib/labels";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -41,11 +45,10 @@ const conditionOptions = [
   "NOT_SPECIFIED",
 ];
 
-export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
-  const params = await searchParams;
+export default function MarketplacePage({ searchParams }: MarketplacePageProps) {
   return (
     <Suspense fallback={<MarketplaceSkeleton />}>
-      <MarketplaceResults params={params} />
+      <MarketplaceResults searchParams={searchParams} />
     </Suspense>
   );
 }
@@ -64,8 +67,13 @@ function MarketplaceSkeleton() {
   );
 }
 
-async function MarketplaceResults({ params }: { params: MarketplaceSearchParams }) {
+async function MarketplaceResults({
+  searchParams,
+}: {
+  searchParams: Promise<MarketplaceSearchParams>;
+}) {
   await connection();
+  const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const category = params.category ?? "";
   const condition = params.condition ?? "";
@@ -74,7 +82,7 @@ async function MarketplaceResults({ params }: { params: MarketplaceSearchParams 
 
   const session = await getSession();
 
-  const [results, categories, shelf, recentlyViewed] = await Promise.all([
+  const [results, categories, shelf, recentlyViewed, stores, frequentPairs] = await Promise.all([
     listMarketplaceProducts({ q: query, categorySlug: category, condition, sort, page }),
     prisma.category.findMany({
       where: { isActive: true, parentId: null },
@@ -98,6 +106,8 @@ async function MarketplaceResults({ params }: { params: MarketplaceSearchParams 
     }),
     listMarketplaceProducts({ sort: "rating", pageSize: 4 }),
     listRecentlyViewed(session?.user.id ?? null, 8),
+    listMarketplaceVendors({ pageSize: 6 }),
+    listFrequentlyBoughtTogether(4),
   ]);
 
   const sidebarCategories = categories
@@ -137,7 +147,21 @@ async function MarketplaceResults({ params }: { params: MarketplaceSearchParams 
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_1fr] lg:gap-8">
         <aside className="lg:pt-1">
-          <CategorySidebar categories={sidebarCategories} activeSlug={category} />
+          <MarketplaceSidebar
+            categories={sidebarCategories}
+            activeSlug={category}
+            stores={stores.items.map((store) => ({
+              slug: store.slug,
+              storeName: store.storeName,
+              businessCategory: store.businessCategory,
+              productCount: store.productCount,
+            }))}
+            frequentPairs={frequentPairs.map((pair) => ({
+              a: pair.a,
+              b: pair.b,
+              orders: pair.orders,
+            }))}
+          />
         </aside>
 
         <div className="min-w-0">

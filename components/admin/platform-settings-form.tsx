@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 
 export interface PlatformSettingsValues {
   marketplaceName: string;
+  showDemoStores: boolean;
   tagline: string;
   supportEmail: string;
   platformFeePercent: number;
@@ -139,6 +140,22 @@ export function PlatformSettingsForm({ initialValues }: { initialValues: Platfor
           />
         </div>
       </div>
+
+      <label className="mt-4 flex items-start gap-2 text-sm text-neutral-700">
+        <input
+          type="checkbox"
+          className="accent-brand-700 mt-0.5 h-4 w-4"
+          checked={values.showDemoStores}
+          onChange={(event) => setValues({ ...values, showDemoStores: event.target.checked })}
+        />
+        <span>
+          <span className="font-medium">Show demo stores</span>
+          <span className="block text-xs text-neutral-500">
+            The seeded showcase stores are marked as demo. Turn this off once real vendors are
+            approved so only genuine campus stores appear.
+          </span>
+        </span>
+      </label>
 
       <label className="mt-4 flex items-center gap-2 text-sm text-neutral-700">
         <input

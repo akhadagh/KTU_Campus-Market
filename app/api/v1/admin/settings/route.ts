@@ -13,6 +13,7 @@ const schema = z.object({
   refundWindowDays: z.coerce.number().int().min(0).max(90),
   paymentWindowMinutes: z.coerce.number().int().min(5).max(240),
   maintenanceMode: z.boolean(),
+  showDemoStores: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -54,6 +55,9 @@ export async function PUT(request: Request) {
     ["marketplace.refundWindowDays", values.refundWindowDays],
     ["marketplace.paymentWindowMinutes", values.paymentWindowMinutes],
     ["marketplace.maintenanceMode", values.maintenanceMode],
+    ...(values.showDemoStores !== undefined
+      ? [["marketplace.demoStoresVisible", values.showDemoStores] as [string, unknown]]
+      : []),
   ];
 
   for (const [key, value] of entries) {

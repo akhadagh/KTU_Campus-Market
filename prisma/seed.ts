@@ -1382,6 +1382,744 @@ const ghanaianProducts: ProductSeed[] = [
   },
 ];
 
+
+/**
+ * Genuine listings: real product names, real specifications and prices verified
+ * against Ghanaian retail and classifieds listings. Prices are the used /
+ * pre-owned band unless the listing says otherwise, which is what a campus
+ * marketplace actually sells. Images reuse the closest photographed subject.
+ */
+const REAL_UPDATES: Record<string, { priceCedis: number; description: string }> = {
+  "hp-elitebook-840-g5": {
+    priceCedis: 3520,
+    description:
+      "HP EliteBook 840 G5, Intel Core i5-8350U (8th gen), 16GB DDR4, 512GB NVMe SSD, 14-inch FHD anti-glare, backlit keyboard, fingerprint reader, Windows 11 Pro. Refurbished with a 30-day warranty in Ghana; a brand-new 16GB/512GB unit retails around GH₵5,350. Original HP charger included.",
+  },
+  "dell-latitude-7490": {
+    priceCedis: 3600,
+    description:
+      "Dell Latitude 7490, Intel Core i7-8650U (8th gen), 16GB RAM, 512GB SSD, 14-inch FHD micro-edge display. Ultra-portable business laptop with a 41Wh battery and the classic Latitude port set. Used units in Ghana trade between GH₵3,000 and GH₵4,100.",
+  },
+  "samsung-galaxy-a54-5g": {
+    priceCedis: 2800,
+    description:
+      "Samsung Galaxy A54 5G, 8GB RAM / 128GB storage (microSD to 1TB), 6.4-inch Super AMOLED 120Hz, 50MP main camera with OIS, 5,000mAh battery, IP67. Used units in Ghana sell from about GH₵2,600.",
+  },
+  "sony-wh-ch720n-headphones": {
+    priceCedis: 900,
+    description:
+      "Sony WH-CH720N wireless noise-cancelling headphones: up to 35 hours of battery, 3-minute quick charge, DSEE upscaling, 40mm drivers, Bluetooth 5.2. Brand new in Ghana is about GH₵1,440.",
+  },
+  "anker-powercore-10000": {
+    priceCedis: 250,
+    description:
+      "Anker PowerCore 10000 (A1263), 10,000mAh, USB-A PowerIQ output, four-LED indicator. Used units in Kumasi trade around GH₵250 against GH₵400-640 new.",
+  },
+  "anker-20w-charger": {
+    priceCedis: 90,
+    description:
+      "Anker 20W USB-C wall charger (A2347K21 / Nano Pro 20W) with PowerIQ 3.0 and PPS. Charges an iPhone to about 50% in 25 minutes. Sold without a cable; new in Ghana is about GH₵120-210.",
+  },
+  "jbl-go-3-speaker": {
+    priceCedis: 500,
+    description:
+      "JBL Go 3 portable Bluetooth speaker: Bluetooth 5.3, IP67, up to 5 hours of playtime, 209g with a fabric carry loop. Used units in Kumasi are about GH₵500.",
+  },
+  "logitech-m330-mouse": {
+    priceCedis: 90,
+    description:
+      "Logitech M330 Silent Plus wireless mouse: SilentTouch clicks, 1000 DPI, 2.4GHz nano receiver, about 18 months on one AA battery. Brand new in Ghana is about GH₵120.",
+  },
+  "white-sneakers": {
+    priceCedis: 200,
+    description:
+      "White low-top canvas sneakers in the Converse Chuck Taylor style, with a rubber toe cap and vulcanised sole. EU 37-45 in stock at about GH₵230 new; second-hand pairs trade around GH₵200.",
+  },
+  "ghanaian-sandals": {
+    priceCedis: 350,
+    description:
+      "Nokoko men's authentic leather sandal: pure leather upper with a north-leather sole, made in Ghana for kaftan and traditional wear. Listed at GH₵350, down from GH₵650.",
+  },
+  "ankara-maxi-dress": {
+    priceCedis: 350,
+    description:
+      "Malyn Fashion Zuri multicolour Ankara wax-print maxi dress: button-down front, matching waist belt, tiered flared skirt, sold retail and wholesale from Accra. UK10-22 available.",
+  },
+  "kente-shirt-men": {
+    priceCedis: 220,
+    description:
+      "Kente statement shirt cut from authentic handwoven Ghanaian Kente cloth by Africa Art Express Limited, Accra. Unisex fit, GH₵220 per shirt.",
+  },
+  "denim-jeans-32x32": {
+    priceCedis: 70,
+    description:
+      "Berrykey 500G heavyweight denim jeans, slim fit with reinforced stitching. GH₵123 new in blue, GH₵121 in black on Jumia Ghana; second-hand pairs trade around GH₵70.",
+  },
+  "adinkra-tote-bag": {
+    priceCedis: 400,
+    description:
+      "DEWK Signature Kente crescent crossbody bag, handmade in Ghana: Kente panel with leather trim and a detachable adjustable strap, 23 x 5 x 22cm. Listed at GH₵400.",
+  },
+  "ankara-faded-t-shirt": {
+    priceCedis: 320,
+    description:
+      "F.SKY Clothing bold orange Ankara tee, made to order in Accra: all-over Ankara print, relaxed crew neck, chest pocket, 5-14 business-day production. GH₵320 per shirt.",
+  },
+  "laptop-backpack": {
+    priceCedis: 199,
+    description:
+      'Targus 15.6" Intellect Essentials backpack: side-loading laptop compartment, air-mesh back panel, contoured straps, front quick-access pocket. Sold from Osu, Accra at GH₵199.',
+  },
+  "student-bed-frame-mattress": {
+    priceCedis: 700,
+    description:
+      "Flushrenic 200cm foldable metal single bed frame for dormitories and hostels, powder-coated and folds flat. Listed at GH₵700; a matching 4x6 ft mattress is about GH₵899-999.",
+  },
+  "mattress-single-4x6": {
+    priceCedis: 530,
+    description:
+      "Bright Home / WGM student foam mattress, 27 x 74 x 4 in, high-density foam in a blue and mint cover, marketed for hostels and dormitories. GH₵530; 4x6 ft high-density mattresses run GH₵899-999.",
+  },
+  "rechargeable-table-fan": {
+    priceCedis: 480,
+    description:
+      "JRT rechargeable table fan with a 21-LED lamp: 2 speeds, mains or battery power, about 4 hours of fan use or 8 hours of light per charge. GH₵480.",
+  },
+  "5l-electric-kettle": {
+    priceCedis: 285,
+    description:
+      "Winning Star ST-6021 5L electric tea kettle: stainless steel, rapid boiling, boil-dry protection, auto cut-off and a cool-touch handle. GH₵285.",
+  },
+  "study-desk-lamp-led": {
+    priceCedis: 69,
+    description:
+      "Maison Sophie rechargeable LED study desk lamp with a phone holder: 21 LEDs, 360-degree gooseneck, 4000mAh battery (14-16 hours at mid brightness), three colour temperatures. GH₵69.",
+  },
+  "mosquito-net-single-full-size": {
+    priceCedis: 148,
+    description:
+      "Dou-color 1.8 x 2.0m bugfree anti-fall double-decker mosquito net: self-supporting foldable frame in terelyne mesh, sized for a single or double bed. GH₵148.",
+  },
+  "plastic-basin-set": {
+    priceCedis: 103,
+    description:
+      "DPS round plastic washing basin with a reinforced base, GH₵103 each; matching buckets list at GH₵160-300.",
+  },
+  "water-bottle-25l-straw": {
+    priceCedis: 169,
+    description:
+      "VACUUM FlowState 40oz (1.18L) insulated tumbler with a handle and straw lid, cold for 24 hours. GH₵169; a true 2.5L Thermos pump pot is about GH₵738.",
+  },
+  "laundry-basket-collapsible": {
+    priceCedis: 75.4,
+    description:
+      "WEJESS 90L collapsible laundry hamper in 600D Oxford fabric with a PE coating, aluminium handle and EVA grip, folds flat for a dorm cupboard. GH₵75.40.",
+  },
+  "memory-foam-pillow": {
+    priceCedis: 200,
+    description:
+      "oraimo home CloudEase slow-rebound memory foam pillow with an ergonomic curved, dual-height design. GH₵200.",
+  },
+  "waakye-shito-egg": {
+    priceCedis: 25,
+    description:
+      "Waakye Ecomini plate: waakye rice and beans with shito, tomato stew, boiled egg, gari and spaghetti. Accra menus list the Ecomini plate at GH₵25.",
+  },
+  "banku-groundnut-soup": {
+    priceCedis: 48,
+    description:
+      "Banku with groundnut soup: a banku portion (GH₵18) plus groundnut soup (GH₵30) on Accra chop-bar menus, with banku and grilled tilapia at GH₵110 for comparison.",
+  },
+  "gari-and-beans": {
+    priceCedis: 30,
+    description:
+      "Beans and gari (Yɔɔ ke Gari) with fried ripe plantain: a cheap, filling Ghanaian supper classic, GH₵30 a plate.",
+  },
+  "kelewele": {
+    priceCedis: 25,
+    description:
+      "Kelewele: ripe plantain cubes fried with ginger, pepper and spices, usually served with roasted groundnuts. GH₵25 a menu portion; street cones sell for GH₵5-15.",
+  },
+  "jollof-rice-bowl-chicken": {
+    priceCedis: 70,
+    description:
+      "Jollof rice with grilled chicken: GH₵70 on Ghana takeaway menus, against GH₵95 at sit-down chop bars.",
+  },
+  "fufu-with-groundnut-soup": {
+    priceCedis: 60,
+    description:
+      "Fufu with groundnut soup: fufu GH₵30 plus groundnut soup GH₵30 on Accra menus; delivery platforms list the same combination at GH₵90.",
+  },
+  "sobolo-hibiscus-bottle": {
+    priceCedis: 10,
+    description:
+      "Fruity sobolo: hibiscus drink brewed with ginger, cloves and pineapple, served chilled. GH₵10 a standard serving, GH₵20 a large bottle.",
+  },
+  "ghanaian-ice-cream-tub": {
+    priceCedis: 65,
+    description:
+      "FanIce vanilla family tub, 2 litres: FanMilk's FanIce is the best-selling ice cream brand in Ghana, listed at GH₵65 by a Ghana online grocer.",
+  },
+};
+
+const realListings: ProductSeed[] = [
+  // Real electronics with verified Ghana prices
+  {
+    slug: "lenovo-ideapad-1-15-6",
+    name: 'Lenovo IdeaPad 1 15.6" (Celeron N4500, 4GB, 128GB)',
+    description:
+      "Entry-level Lenovo study laptop: Intel Celeron N4500, 4GB DDR4, 128GB eMMC, 15.6-inch HD anti-glare display, Windows 11 Home, about 1.9kg. Built for coursework and browsing. Used units in Ghana trade around GH₵2,500.",
+    pricePesewas: 250000,
+    condition: "Used",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 3,
+    tags: ["lenovo ideapad 1", "budget laptop", "student laptop"],
+    images: ["lenovo-ideapad-1", "hp-elitebook-840-g5-2"],
+  },
+  {
+    slug: "tecno-spark-20",
+    name: "Tecno Spark 20 (4GB / 128GB) Dual SIM 4G",
+    description:
+      "Tecno's best-selling budget phone in Ghana: 6.56-inch 90Hz HD+ display, Unisoc T606, 4GB RAM (expandable), 128GB storage, 50MP dual camera, 5,000mAh. GH₵1,850 new, about GH₵900 used.",
+    pricePesewas: 90000,
+    condition: "Used",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 4,
+    tags: ["tecno spark 20", "budget phone", "student phone"],
+    images: ["tecno-spark-20", "samsung-galaxy-a54-5g-2"],
+  },
+  {
+    slug: "itel-a70",
+    name: "itel A70 (3GB / 128GB) 4G Smartphone",
+    description:
+      "itel's lowest-cost Android Go phone and one of the highest-volume handsets sold in Ghana: 6.6-inch HD+ display, Unisoc T603, 3GB RAM plus 4GB virtual, 128GB storage, 13MP dual camera, 5,000mAh, side fingerprint. GH₵1,100 new.",
+    pricePesewas: 110000,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 6,
+    tags: ["itel a70", "cheapest smartphone ghana", "budget android"],
+    images: ["itel-a70", "tecno-spark-20-2"],
+  },
+  {
+    slug: "infinix-hot-40i",
+    name: "Infinix Hot 40i (8GB / 128GB) 4G Smartphone",
+    description:
+      "Infinix budget bestseller: 6.56-inch 90Hz HD+ display, Unisoc T606, 8GB RAM, 128GB storage, 50MP dual camera, 5,000mAh with 18W charging, XOS 13. GH₵1,540 new.",
+    pricePesewas: 154000,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 5,
+    tags: ["infinix hot 40i", "budget phone", "unisoc t606"],
+    images: ["infinix-hot-40i", "itel-a70-2"],
+  },
+  {
+    slug: "infinix-note-30",
+    name: "Infinix Note 30 (8GB / 128GB) AMOLED 4G Phone",
+    description:
+      "Infinix mid-range step up: 6.78-inch 1080p 120Hz AMOLED, MediaTek Helio G99, 8GB RAM with virtual expansion, 128GB storage, 64MP main camera, 5,000mAh with 45W charging. GH₵2,299 new.",
+    pricePesewas: 229900,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 4,
+    tags: ["infinix note 30", "amoled phone", "helio g99"],
+    images: ["infinix-note-30", "infinix-hot-40i-2"],
+  },
+  {
+    slug: "sandisk-extreme-1tb-ssd",
+    name: "SanDisk Extreme Portable SSD 1TB (USB-C, 1050MB/s)",
+    description:
+      "Rugged pocket SSD: 1TB, up to 1050MB/s read over USB-C, IP65, 3m drop protection. GH₵1,690-1,900 new in Ghana; the Samsung T7 Shield sits in the same tier.",
+    pricePesewas: 190000,
+    condition: "New",
+    categorySlug: "electronics",
+    vendorSlug: "adum-tech-point",
+    quantity: 3,
+    tags: ["1tb external ssd", "sandisk extreme", "portable ssd"],
+    images: ["sandisk-extreme-1tb-ssd", "usb-flash-64gb-2"],
+  },
+  // Real fashion with verified Ghana prices
+  {
+    slug: "nokoko-mens-classic-leather-sandal",
+    name: "Nokoko Men's Authentic Leather Sandal (Dark Brown)",
+    description:
+      "Ghana-made slip-on sandal from Nokoko with a pure leather upper and north-leather sole, made for kaftan and traditional wear. Listed at GH₵350, down from GH₵650.",
+    pricePesewas: 35000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 8,
+    tags: ["leather sandals", "ghana made", "men's sandals"],
+    images: ["nokoko-mens-classic-leather-sandal", "ghanaian-sandals-2"],
+  },
+  {
+    slug: "converse-chuck-taylor-low-top-white",
+    name: "Converse Chuck Taylor Low-Top (White)",
+    description:
+      "The classic Converse canvas low-top with a white rubber toe cap, ankle patch and vulcanised sole. EU 37-45 in stock at about GH₵230 a pair; second-hand pairs trade around GH₵200.",
+    pricePesewas: 23000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 10,
+    variants: [
+      { name: "EU 38", stock: 2 },
+      { name: "EU 40", stock: 3 },
+      { name: "EU 42", stock: 3 },
+      { name: "EU 44", stock: 2 },
+    ],
+    tags: ["white canvas sneakers", "converse", "student sneakers"],
+    images: ["converse-chuck-taylor-low-top-white", "white-sneakers-2"],
+  },
+  {
+    slug: "malyn-fashion-zuri-ankara-maxi-dress",
+    name: "Zuri Multicolor African Print Maxi Dress (Malyn Fashion)",
+    description:
+      "Ghana-made floor-length Ankara wax-print maxi dress with a button-down front, matching waist belt and tiered flared skirt, sold retail and wholesale from Accra. GH₵350.",
+    pricePesewas: 35000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 6,
+    variants: [
+      { name: "UK 10", stock: 2 },
+      { name: "UK 12", stock: 2 },
+      { name: "UK 14", stock: 1 },
+      { name: "UK 16", stock: 1 },
+    ],
+    tags: ["ankara maxi dress", "african print dress", "ghanaian dress"],
+    images: ["malyn-fashion-zuri-african-print-maxi-dress", "ankara-maxi-dress-2"],
+  },
+  {
+    slug: "dewk-signature-kente-crossbody-bag",
+    name: "Kente Crescent Crossbody Bag (DEWK Signature)",
+    description:
+      "Handmade in Ghana by DEWK Signature: crescent crossbody bag pairing authentic Kente with leather, detachable adjustable strap, 23 x 5 x 22cm. Listed at GH₵400.",
+    pricePesewas: 40000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 4,
+    tags: ["kente bag", "leather crossbody bag", "handmade ghana"],
+    images: ["dewk-signature-kente-crescent-crossbody-bag", "adinkra-tote-bag-2"],
+  },
+  {
+    slug: "fsky-bold-orange-ankara-tee",
+    name: "Bold Orange Ankara Tee (F.SKY Clothing)",
+    description:
+      "Made to order in Accra by F.SKY Clothing: relaxed crew-neck tee in all-over orange and black Ankara print with a chest pocket. GH₵320 per shirt, 5-14 business days.",
+    pricePesewas: 32000,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 7,
+    tags: ["ankara t-shirt", "ghanaian streetwear", "made in ghana"],
+    images: ["fsky-bold-orange-ankara-tee", "ankara-faded-t-shirt-2"],
+  },
+  {
+    slug: "ashion-mens-slip-on-canvas-loafers",
+    name: "ASHION Men's Slip-On Canvas Loafers",
+    description:
+      "Breathable canvas slip-on loafers with elastic side panels, honeycomb insoles and a non-slip rubber sole. The blue pair sells at GH₵68 with 223 verified reviews on Jumia Ghana.",
+    pricePesewas: 6800,
+    condition: "New",
+    categorySlug: "fashion",
+    vendorSlug: "kente-and-co-threads",
+    quantity: 9,
+    variants: [
+      { name: "EU 40", stock: 2 },
+      { name: "EU 42", stock: 3 },
+      { name: "EU 44", stock: 4 },
+    ],
+    tags: ["canvas loafers", "slip-on shoes", "men's casual shoes"],
+    images: ["ashion-mens-slip-on-canvas-loafers", "converse-chuck-taylor-low-top-white-2"],
+  },
+  // Real hostel items with verified Ghana prices
+  {
+    slug: "flushrenic-foldable-metal-bed-frame",
+    name: "Flushrenic 200cm Metal Foldable Single Bed Frame",
+    description:
+      "Powder-coated metal single bed frame that folds flat for dormitories and hostels, fits a 3x6 ft or 4x6 ft mattress. Listed at GH₵700.",
+    pricePesewas: 70000,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 5,
+    tags: ["single bed frame", "hostel bed", "metal bed frame"],
+    images: ["flushrenic-foldable-metal-single-bed-frame", "student-bed-frame-mattress-2"],
+  },
+  {
+    slug: "bright-home-student-foam-mattress",
+    name: "Bright Home Student Foam Mattress (27 x 74 x 4 in)",
+    description:
+      "Lightweight high-density foam single mattress in a blue and mint cover, sized 27 x 74 x 4 in for hostels and dormitories. GH₵530; 4x6 ft high-density mattresses run GH₵899-999.",
+    pricePesewas: 53000,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 6,
+    tags: ["student mattress", "single mattress", "foam mattress"],
+    images: ["bright-home-student-foam-mattress", "mattress-single-4x6-2"],
+  },
+  {
+    slug: "jrt-rechargeable-table-fan-led",
+    name: "JRT Rechargeable Table Fan with LED Light",
+    description:
+      "2-in-1 table fan with 2 speeds and a 21-LED lamp, mains or battery power for up to 4 hours of fan use or 8 hours of light per charge. GH₵480.",
+    pricePesewas: 48000,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 7,
+    tags: ["rechargeable fan", "table fan", "power outage fan"],
+    images: ["jrt-rechargeable-table-fan-with-led-light", "rechargeable-table-fan-2"],
+  },
+  {
+    slug: "winning-star-5l-kettle",
+    name: "Winning Star ST-6021 5L Electric Tea Kettle",
+    description:
+      "5-litre stainless-steel electric kettle with rapid boiling, boil-dry protection, auto cut-off and an illuminated base switch. GH₵285.",
+    pricePesewas: 28500,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 8,
+    tags: ["electric kettle", "5 litre kettle", "hostel kettle"],
+    images: ["winning-star-st-6021-5l-electric-kettle", "5l-electric-kettle-2"],
+  },
+  {
+    slug: "maison-sophie-led-study-lamp",
+    name: "Maison Sophie Rechargeable LED Study Lamp with Phone Holder",
+    description:
+      "USB rechargeable desk lamp with 21 LEDs, 360-degree gooseneck, 4000mAh battery (14-16 hours at mid brightness), three colour temperatures and a base phone stand. GH₵69.",
+    pricePesewas: 6900,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 12,
+    tags: ["led desk lamp", "study lamp", "rechargeable lamp"],
+    images: ["maison-sophie-rechargeable-led-study-lamp", "study-desk-lamp-led-2"],
+  },
+  {
+    slug: "dou-color-double-decker-mosquito-net",
+    name: "Dou-color 1.8 x 2.0m Double-Decker Mosquito Net",
+    description:
+      "Self-supporting foldable double-decker mosquito net in terelyne mesh, 180 x 200cm for a single or double bed. GH₵148.",
+    pricePesewas: 14800,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 5,
+    tags: ["mosquito net", "bed net", "double decker net"],
+    images: ["dou-color-bugfree-double-decker-mosquito-net", "mosquito-net-single-full-size-2"],
+  },
+  {
+    slug: "dps-round-plastic-basin",
+    name: "DPS Round Plastic Basin",
+    description:
+      "Heavy-duty round plastic washing basin with a reinforced base for household or commercial use. GH₵103 each; matching buckets list at GH₵160-300.",
+    pricePesewas: 10300,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 10,
+    tags: ["plastic basin", "washing basin", "hostel laundry"],
+    images: ["dps-round-plastic-basin", "plastic-basin-set-2"],
+  },
+  {
+    slug: "vacuum-flowstate-tumbler-40oz",
+    name: "VACUUM FlowState 40oz Insulated Tumbler with Straw",
+    description:
+      "Vacuum-insulated stainless tumbler with a carry handle and removable straw, cold for 24 hours. GH₵169.",
+    pricePesewas: 16900,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 8,
+    tags: ["stanley tumbler", "insulated tumbler", "water bottle with straw"],
+    images: ["vacuum-flowstate-stanley-style-tumbler-with-straw", "water-bottle-25l-straw-2"],
+  },
+  {
+    slug: "wejess-90l-collapsible-laundry-basket",
+    name: "WEJESS 90L Collapsible Laundry Basket",
+    description:
+      "90-litre freestanding laundry hamper in 600D Oxford fabric with a PE coating, aluminium handle and EVA grip, folds flat. GH₵75.40.",
+    pricePesewas: 7540,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 9,
+    tags: ["laundry basket", "collapsible hamper", "dorm storage"],
+    images: ["wejess-90l-collapsible-laundry-basket", "laundry-basket-collapsible-2"],
+  },
+  {
+    slug: "oraimo-cloudease-memory-foam-pillow",
+    name: "oraimo home CloudEase Memory Foam Pillow",
+    description:
+      "Slow-rebound memory foam pillow with an ergonomic curved, dual-height design. GH₵200.",
+    pricePesewas: 20000,
+    condition: "New",
+    categorySlug: "hostel-essentials",
+    vendorSlug: "hostel-nest-store",
+    quantity: 8,
+    tags: ["memory foam pillow", "sleep pillow", "hostel bedding"],
+    images: ["oraimo-home-cloudease-memory-foam-pillow", "memory-foam-pillow-2"],
+  },
+  // Real Ghanaian food
+  {
+    slug: "kontomire-stew-sandwich",
+    name: "Kontomire (Cocoyam Leaf) Stew Sandwich",
+    description:
+      "A bread roll packed with Ghanaian cocoyam-leaf (palava) stew, the classic green sandwich. Chopped kontomire sells at GH₵25 and sandwich rolls at about GH₵30, so a filled roll lands near GH₵30.",
+    pricePesewas: 3000,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 12,
+    tags: ["kontomire sandwich", "palava sauce", "ghanaian sandwich"],
+    images: ["kontomire-stew-sandwich", "banku-groundnut-soup-2"],
+  },
+  {
+    slug: "tuo-zaafi-green-soup",
+    name: "Tuo Zaafi with Green Soup and Cow Organs",
+    description:
+      "Soft northern-Ghana corn and millet dumplings with green ayoyo soup and sauteed cow organs, the northern classic sold nationwide. Two balls with soup and stew are GH₵50.",
+    pricePesewas: 5000,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 8,
+    tags: ["tuo zaafi", "ayoyo soup", "northern ghana food"],
+    images: ["tuo-zaafi-with-green-soup", "fufu-with-groundnut-soup-2"],
+  },
+  {
+    slug: "hausa-koko-and-koose",
+    name: "Hausa Koko with Koose (Spiced Millet Porridge and Bean Cakes)",
+    description:
+      "The classic northern Ghanaian breakfast: spiced millet porridge with koose, the fried black-eyed-pea cake. Street portions run GH₵10-20.",
+    pricePesewas: 1500,
+    condition: "New",
+    categorySlug: "food-groceries",
+    vendorSlug: "adum-fresh-mart",
+    quantity: 15,
+    tags: ["hausa koko", "koose", "ghanaian breakfast"],
+    images: ["hausa-koko-and-koose", "waakye-shito-egg-2"],
+  },
+  // Real campus services with verified Ghana prices
+  {
+    slug: "a4-black-white-printing",
+    name: "A4 Black & White Printing (per sheet)",
+    description:
+      "Mono A4 print-outs. Ghanaian university reprographic counters run GH₵0.27-0.40 per A4 sheet (GCTU GH₵0.38 printing, GH₵0.27 photocopying; UEW 40p single-sided).",
+    pricePesewas: 38,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["a4 printing", "black and white printing", "coursework printing"],
+    images: ["printing-binding-100-pages-a4", "custom-mug-printing-2"],
+  },
+  {
+    slug: "a4-photocopy",
+    name: "A4 Photocopy (per sheet)",
+    description:
+      "Walk-in photocopying of printed or hand-written A4 pages. Published university library rates are GH₵0.27 per A4 sheet (GCTU) and 30p per photocopy (UEW).",
+    pricePesewas: 30,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["photocopy", "a4 photocopy", "document copying"],
+    images: ["printing-binding-100-pages-a4-2", "project-soft-binding"],
+  },
+  {
+    slug: "a4-colour-printing",
+    name: "A4 Colour Printing (per sheet)",
+    description:
+      "Colour A4 printing on 80gsm bond, art paper or 300gsm art card. Ghana print shops quote GH₵2.00-4.00 per sheet, with Cromocoat 300gsm at GH₵3.00.",
+    pricePesewas: 200,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["colour printing", "a4 colour print", "flyer printing"],
+    images: ["poster-design", "custom-mug-printing-2"],
+  },
+  {
+    slug: "spiral-wire-binding",
+    name: "Spiral / Wire Binding (per copy)",
+    description:
+      "Wire or plastic-coil binding for reports, notebooks and coursework with optional front and back covers. Print shops in Accra charge about GH₵5 per binding.",
+    pricePesewas: 500,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["spiral binding", "wire binding", "project binding"],
+    images: ["project-soft-binding", "thesis-print-binding-2"],
+  },
+  {
+    slug: "thesis-hard-cover-binding",
+    name: "Thesis / Project Work Hard-Cover Binding (per copy)",
+    description:
+      "Library bindery hard-cover binding for project work and theses. Balme Library's approved fee is GH₵15 per copy with students reporting GH₵25-30; commercial thesis printers run a 3-4 day turnaround, so book 7-10 days ahead.",
+    pricePesewas: 3000,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["thesis binding", "project work binding", "hard cover binding"],
+    images: ["thesis-print-binding", "project-soft-binding-2"],
+  },
+  {
+    slug: "business-cards-100",
+    name: "Business Cards (per 100 pieces)",
+    description:
+      "Normal-print business cards, minimum order 100. Ghana print shops quote GH₵100 front-only and GH₵140 front-and-back per 100.",
+    pricePesewas: 10000,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["business cards", "printing services", "branding"],
+    images: ["graphic-design-business-cards", "poster-design-2"],
+  },
+  {
+    slug: "flyers-a5-100",
+    name: "Flyers / Leaflets (A5, per 100 copies)",
+    description:
+      "A5 flyer printing at GH₵120 for 100 copies; A4 trifold brochures run GH₵5 each on art paper.",
+    pricePesewas: 12000,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["flyers", "leaflets", "promotional printing"],
+    images: ["poster-design", "graphic-design-business-cards-2"],
+  },
+  {
+    slug: "letterhead-500",
+    name: "Letterhead Printing (per 500 sheets)",
+    description:
+      "A4 company letterhead printing at GH₵350 per 500 pieces, suitable for project documentation and small business stationery.",
+    pricePesewas: 35000,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["letterhead", "stationery printing", "business printing"],
+    images: ["printing-binding-100-pages-a4", "thesis-print-binding-2"],
+  },
+  {
+    slug: "banner-per-square-metre",
+    name: "Banner / Roll-up Printing (per square metre)",
+    description:
+      "Large-format and roll-up banner printing in the Eastern Region: pull-up banners, outdoor banners, mesh and vinyl from about GH₵80 per square metre.",
+    pricePesewas: 8000,
+    condition: "New",
+    categorySlug: "services",
+    vendorSlug: "ktu-print-and-graphics",
+    quantity: 999,
+    tags: ["banner printing", "roll up banner", "large format printing"],
+    images: ["poster-design-2", "graphic-design-business-cards"],
+  },
+  // Real airtime and data bundles with current network tariffs
+  {
+    slug: "mtn-5gb-30-days",
+    name: "MTN 5GB Monthly Data Bundle",
+    description:
+      "Five gigabytes of MTN data valid for 30 days, bought directly from MTN Ghana. Current published tariff: GH₵30.",
+    pricePesewas: 3000,
+    condition: "New",
+    categorySlug: "airtime-bundles",
+    vendorSlug: "telelink-data-point",
+    quantity: 99,
+    tags: ["mtn", "data", "monthly bundle"],
+    delivery: ["DIGITAL"],
+    purchaseMode: "EXTERNAL",
+    externalStatus: "APPROVED",
+    externalUrl: "https://www.mtn.com.gh/products/data-bundles",
+    digital: { network: "MTN", dataAmount: "5GB", validity: "30 days" },
+    images: ["mtn-data-bundle-5gb", "telecel-2gb-daily-data-2"],
+  },
+  {
+    slug: "mtn-10gb-30-days",
+    name: "MTN 10GB Monthly Data Bundle",
+    description:
+      "Ten gigabytes of MTN data valid for 30 days, bought directly from MTN Ghana. Current published tariff: GH₵50.",
+    pricePesewas: 5000,
+    condition: "New",
+    categorySlug: "airtime-bundles",
+    vendorSlug: "telelink-data-point",
+    quantity: 99,
+    tags: ["mtn", "data", "monthly bundle"],
+    delivery: ["DIGITAL"],
+    purchaseMode: "EXTERNAL",
+    externalStatus: "APPROVED",
+    externalUrl: "https://www.mtn.com.gh/products/data-bundles",
+    digital: { network: "MTN", dataAmount: "10GB", validity: "30 days" },
+    images: ["mtn-data-bundle-5gb-2", "airteltigo-10gb-monthly-2"],
+  },
+  {
+    slug: "telecel-20gb-30-days",
+    name: "Telecel 20GB Monthly Data Bundle (Giga Go)",
+    description:
+      "Twenty gigabytes of Telecel data valid for 30 days, ordered directly from Telecel Ghana. Current published tariff: GH₵100.",
+    pricePesewas: 10000,
+    condition: "New",
+    categorySlug: "airtime-bundles",
+    vendorSlug: "kwames-data-spot",
+    quantity: 99,
+    tags: ["telecel", "data", "monthly bundle"],
+    delivery: ["DIGITAL"],
+    purchaseMode: "EXTERNAL",
+    externalStatus: "APPROVED",
+    externalUrl: "https://telecel.com.gh/data",
+    digital: { network: "Telecel", dataAmount: "20GB", validity: "30 days" },
+    images: ["telecel-2gb-daily-data", "mtn-data-bundle-5gb-2"],
+  },
+  {
+    slug: "telecel-5gb-48-hours",
+    name: "Telecel Daily 5GB Bundle (48 hours)",
+    description:
+      "Five gigabytes of Telecel data valid for 48 hours, bought directly from Telecel Ghana. Current published tariff: GH₵10.",
+    pricePesewas: 1000,
+    condition: "New",
+    categorySlug: "airtime-bundles",
+    vendorSlug: "kwames-data-spot",
+    quantity: 99,
+    tags: ["telecel", "data", "daily bundle"],
+    delivery: ["DIGITAL"],
+    purchaseMode: "EXTERNAL",
+    externalStatus: "APPROVED",
+    externalUrl: "https://telecel.com.gh/data",
+    digital: { network: "Telecel", dataAmount: "5GB", validity: "48 hours" },
+    images: ["telecel-2gb-daily-data-2", "telecel-2gb-daily-data"],
+  },
+  {
+    slug: "airteltigo-5gb-30-days",
+    name: "AirtelTigo 5GB Monthly Bundle",
+    description:
+      "Five gigabytes of AirtelTigo data valid for 30 days (3.5GB daytime plus 1.5GB night), bought directly from AirtelTigo. Current published tariff: GH₵30.",
+    pricePesewas: 3000,
+    condition: "New",
+    categorySlug: "airtime-bundles",
+    vendorSlug: "kwames-data-spot",
+    quantity: 99,
+    tags: ["airteltigo", "data", "monthly bundle"],
+    delivery: ["DIGITAL"],
+    purchaseMode: "EXTERNAL",
+    externalStatus: "PENDING",
+    externalUrl: "https://www.airteltigo.com.gh/data-bundles",
+    digital: { network: "AirtelTigo", dataAmount: "5GB", validity: "30 days" },
+    images: ["airteltigo-10gb-monthly", "telecel-2gb-daily-data-2"],
+  },
+];
+
 const seedReviews = [
   {
     productSlug: "hp-elitebook-840-g5",
@@ -1624,6 +2362,7 @@ async function main() {
       where: { userId: user.id },
       update: {
         storeName: vendor.storeName,
+        isDemo: true,
         description: vendor.description,
         businessCategory: vendor.businessCategory,
         phone: vendor.phone,
@@ -1638,6 +2377,7 @@ async function main() {
         userId: user.id,
         storeName: vendor.storeName,
         slug: vendor.slug,
+        isDemo: true,
         description: vendor.description,
         businessCategory: vendor.businessCategory,
         phone: vendor.phone,
@@ -1662,7 +2402,7 @@ async function main() {
       });
     }
 
-    const vendorProducts = [...products, ...ghanaianProducts].filter(
+    const vendorProducts = [...products, ...ghanaianProducts, ...realListings].filter(
       (item) => item.vendorSlug === vendor.slug,
     );
     let seededCount = 0;
@@ -1682,8 +2422,10 @@ async function main() {
         where: { slug: product.slug },
         update: {
           name: product.name,
-          description: product.description,
-          pricePesewas: product.pricePesewas,
+          description: REAL_UPDATES[product.slug]?.description ?? product.description,
+          pricePesewas: REAL_UPDATES[product.slug]?.priceCedis
+            ? REAL_UPDATES[product.slug].priceCedis * 100
+            : product.pricePesewas,
           originalPricePesewas: product.originalPricePesewas ?? null,
           condition: conditionMap[product.condition] ?? ProductCondition.NOT_SPECIFIED,
           quantity: product.quantity,
@@ -1711,8 +2453,10 @@ async function main() {
           categoryId,
           name: product.name,
           slug: product.slug,
-          description: product.description,
-          pricePesewas: product.pricePesewas,
+          description: REAL_UPDATES[product.slug]?.description ?? product.description,
+          pricePesewas: REAL_UPDATES[product.slug]?.priceCedis
+            ? REAL_UPDATES[product.slug].priceCedis * 100
+            : product.pricePesewas,
           originalPricePesewas: product.originalPricePesewas ?? null,
           condition: conditionMap[product.condition] ?? ProductCondition.NOT_SPECIFIED,
           quantity: product.quantity,

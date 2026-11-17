@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { prisma } from "@/lib/db";
+import { getMarketplaceSettings, vendorFilter } from "@/lib/settings";
 import { listMarketplaceProducts } from "@/lib/marketplace";
 import { connection } from "next/server";
 
@@ -33,8 +34,9 @@ export default async function StorePage({ params, searchParams }: StorePageProps
   const query = await searchParams;
   const page = Math.max(1, Number(query.page ?? "1") || 1);
 
+  const settings = await getMarketplaceSettings();
   const vendor = await prisma.vendorProfile.findFirst({
-    where: { slug, status: "ACTIVE", deletedAt: null },
+    where: { slug, status: "ACTIVE", deletedAt: null, ...vendorFilter(settings) },
     select: {
       id: true,
       storeName: true,

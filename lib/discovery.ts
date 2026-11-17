@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getMarketplaceSettings, vendorFilter } from "@/lib/settings";
 import { Prisma } from "@/lib/generated/prisma/client";
 
 /**
@@ -83,11 +84,13 @@ export async function listDiscoveryShelf(
   const limit = Math.min(16, Math.max(4, options.limit ?? 8));
   const exclude = options.excludeIds ?? [];
 
+  const settings = await getMarketplaceSettings();
+  const demoFilter = vendorFilter(settings);
   const base: Prisma.ProductWhereInput = {
     status: "ACTIVE",
     deletedAt: null,
     quantity: { gt: 0 },
-    vendor: { status: "ACTIVE" },
+    vendor: { status: "ACTIVE", ...demoFilter },
     ...(exclude.length > 0 ? { id: { notIn: exclude } } : {}),
   };
 
@@ -156,3 +159,69 @@ const discoverySelect = {
   category: { select: { name: true, slug: true } },
   vendor: { select: { id: true, storeName: true, slug: true, campus: { select: { name: true } } } },
 } satisfies Prisma.ProductSelect;
+
+
+export interface FrequentPair {
+  a: { id: string; slug: string; name: string; pricePesewas: number };
+  b: { id: string; slug: string; name: string; pricePesewas: number };
+  orders: number;
+}
+
+/**
+ * Co-purchase pairs computed from real order items. Nothing is invented: if two
+ * products have never been ordered together the section simply stays hidden.
+ */
+export async function listFrequentlyBoughtTogether(limit = 4): Promise<FrequentPair[]> {
+  const items = await prisma.orderItem.findMany({
+    where: { productId: { not: null } },
+    select: { productId: true, vendorOrderId: true },
+    orderBy: { createdAt: "desc" },
+    take: 4000,
+  });
+
+  const byOrder = new Map<string, Set<string>>();
+  for (const item of items) {
+    if (!item.productId) continue;
+    const set = byOrder.get(item.vendorOrderId) ?? new Set<string>();
+    set.add(item.productId);
+    byOrder.set(item.vendorOrderId, set);
+  }
+
+  const counts = new Map<string, { a: string; b: string; orders: number }>();
+  for (const productIds of byOrder.values()) {
+    const ids = [...productIds].sort();
+    for (let i = 0; i < ids.length; i += 1) {
+      for (let j = i + 1; j < ids.length; j += 1) {
+        const key = `${ids[i]}|${ids[j]}`;
+        const entry = counts.get(key) ?? { a: ids[i], b: ids[j], orders: 0 };
+        entry.orders += 1;
+        counts.set(key, entry);
+      }
+    }
+  }
+
+  const top = [...counts.values()]
+    .sort((x, y) => y.orders - x.orders)
+    .slice(0, limit);
+  if (top.length === 0) return [];
+
+  const ids = [...new Set(top.flatMap((pair) => [pair.a, pair.b]))];
+  const products = await prisma.product.findMany({
+    where: { id: { in: ids }, status: "ACTIVE", deletedAt: null, vendor: { status: "ACTIVE" } },
+    select: { id: true, slug: true, name: true, pricePesewas: true },
+  });
+  const byId = new Map(products.map((product) => [product.id, product]));
+
+  return top.flatMap((pair) => {
+    const a = byId.get(pair.a);
+    const b = byId.get(pair.b);
+    if (!a || !b) return [];
+    return [
+      {
+        a: { id: a.id, slug: a.slug, name: a.name, pricePesewas: a.pricePesewas },
+        b: { id: b.id, slug: b.slug, name: b.name, pricePesewas: b.pricePesewas },
+        orders: pair.orders,
+      },
+    ];
+  });
+}
