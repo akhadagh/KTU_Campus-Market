@@ -15,13 +15,13 @@ export default async function CategoriesPage() {
   const categories = await listMarketplaceCategories();
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title="Browse categories"
         description="Find products and services by category. Counts reflect live listings."
       />
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
         {categories.map((category) => (
           <CategoryCard
             key={category.id}

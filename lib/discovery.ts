@@ -6,13 +6,18 @@ import { Prisma } from "@/lib/generated/prisma/client";
  * Categories that must never appear in the marketplace navigation.
  * The catalogue is database driven, so these are filtered by name and slug.
  */
-export const HIDDEN_CATEGORY_NAMES = new Set(["Data and Bundle", "AI Integrations"]);
+export const HIDDEN_CATEGORY_NAMES = new Set([
+  "Data and Bundle",
+  "AI Integrations",
+  "Airtime & Data Bundles",
+]);
 
 export function isHiddenCategory(category: { name: string; slug: string }): boolean {
   return (
     HIDDEN_CATEGORY_NAMES.has(category.name) ||
     category.slug === "data-and-bundle" ||
-    category.slug === "ai-integrations"
+    category.slug === "ai-integrations" ||
+    category.slug === "airtime-bundles"
   );
 }
 
@@ -90,6 +95,7 @@ export async function listDiscoveryShelf(
     status: "ACTIVE",
     deletedAt: null,
     quantity: { gt: 0 },
+    purchaseMode: "INTERNAL",
     vendor: { status: "ACTIVE", ...demoFilter },
     ...(exclude.length > 0 ? { id: { notIn: exclude } } : {}),
   };
@@ -160,7 +166,6 @@ const discoverySelect = {
   vendor: { select: { id: true, storeName: true, slug: true, campus: { select: { name: true } } } },
 } satisfies Prisma.ProductSelect;
 
-
 export interface FrequentPair {
   a: { id: string; slug: string; name: string; pricePesewas: number };
   b: { id: string; slug: string; name: string; pricePesewas: number };
@@ -200,14 +205,18 @@ export async function listFrequentlyBoughtTogether(limit = 4): Promise<FrequentP
     }
   }
 
-  const top = [...counts.values()]
-    .sort((x, y) => y.orders - x.orders)
-    .slice(0, limit);
+  const top = [...counts.values()].sort((x, y) => y.orders - x.orders).slice(0, limit);
   if (top.length === 0) return [];
 
   const ids = [...new Set(top.flatMap((pair) => [pair.a, pair.b]))];
   const products = await prisma.product.findMany({
-    where: { id: { in: ids }, status: "ACTIVE", deletedAt: null, vendor: { status: "ACTIVE" } },
+    where: {
+      id: { in: ids },
+      status: "ACTIVE",
+      deletedAt: null,
+      purchaseMode: "INTERNAL",
+      vendor: { status: "ACTIVE" },
+    },
     select: { id: true, slug: true, name: true, pricePesewas: true },
   });
   const byId = new Map(products.map((product) => [product.id, product]));

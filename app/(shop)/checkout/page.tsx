@@ -17,14 +17,20 @@ export default async function CheckoutPage() {
   const summary = await getCartSummary(cart.id);
   if (summary.items.length === 0) redirect("/cart");
 
-  const pickupLocations = await prisma.pickupLocation.findMany({
-    where: { isActive: true, campusId: session.user.campusId ?? undefined },
-    select: { id: true, name: true, address: true },
-    orderBy: { name: "asc" },
+  const ktuCampus = await prisma.campus.findFirst({
+    where: { university: { code: "KTU" }, isActive: true },
+    select: { id: true },
   });
+  const pickupLocations = ktuCampus
+    ? await prisma.pickupLocation.findMany({
+        where: { isActive: true, campusId: ktuCampus.id },
+        select: { id: true, name: true, address: true },
+        orderBy: { name: "asc" },
+      })
+    : [];
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title="Checkout"
         description="Confirm how you want to receive the items, then pay securely with Paystack."

@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/commerce/product-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { prisma } from "@/lib/db";
+import { isHiddenCategory } from "@/lib/discovery";
 import { listMarketplaceProducts } from "@/lib/marketplace";
 import { connection } from "next/server";
 
@@ -31,22 +32,22 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const query = await searchParams;
   const category = await prisma.category.findUnique({
     where: { slug },
-    select: { name: true, id: true, type: true },
+    select: { name: true, id: true, type: true, slug: true },
   });
-  if (!category) notFound();
+  if (!category || isHiddenCategory(category)) notFound();
 
   const page = Math.max(1, Number(query.page ?? "1") || 1);
   const results = await listMarketplaceProducts({ categorySlug: slug, page });
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title={category.name}
         description={`${results.total} live listing${results.total === 1 ? "" : "s"} in this category.`}
       />
 
       {results.items.length > 0 ? (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {results.items.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

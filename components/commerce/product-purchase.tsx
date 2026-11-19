@@ -2,51 +2,67 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, PackagePlus } from "lucide-react";
+import { ExternalLink, Loader2, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-
-export interface ProductPurchaseProps {
-  productId: string;
-  productName: string;
-  pricePesewas: number;
-  quantity: number;
-  vendorName: string;
-  purchaseMode: "DRAFT" | "PENDING_REVIEW" | "ARCHIVED";
-  externalUrl: string | null;
-  variants: {
-    id: string;
-    name: string;
-    sku: string | null;
-    priceDeltaPesewas: number;
-    stock: number;
-    isActive: boolean;
-  }[];
-}
+import { VariantSelector, type VariantOption } from "@/components/commerce/variant-selector";
+import { formatPesewas } from "@/lib/money";
 
 export function ProductPurchase({
   productId,
   productName,
   pricePesewas,
-  quantity,
+  stock,
   vendorName,
   purchaseMode,
   externalUrl,
   variants,
-}: ProductPurchaseProps) {
+}: {
+  productId: string;
+  productName: string;
+  pricePesewas: number;
+  stock: number;
+  vendorName: string;
+  purchaseMode: "INTERNAL" | "EXTERNAL";
+  externalUrl: string | null;
+  variants: VariantOption[];
+}) {
   const router = useRouter();
-  const [selectedVariantId, setVariantId] = useState<string | null>(null);
+  const [variantId, setVariantId] = useState<string | null>(
+    variants.find((variant) => variant.stock > 0)?.id ?? null,
+  );
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);
 
-  const activeVariant = variants.find((v) => variantId ? variant.id === variantId : true);
-  const availableStock = activeVariant?.stock ?? quantity;
-  const unitPrice = productPesewas + (activeVariant?.priceDeltaPesewas ?? 0);
-  const totalPrice = unitPrice * quantity;
+  if (purchaseMode === "EXTERNAL" && externalUrl) {
+    return (
+      <div className="space-y-3">
+        <a
+          href={externalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-brand-700 hover:bg-brand-600 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-6 text-base font-semibold text-white transition-all sm:w-auto"
+        >
+          <ExternalLink className="h-4 w-4" aria-hidden="true" />
+          Continue to {vendorName}
+        </a>
+        <p className="flex items-start gap-2 text-xs leading-5 text-neutral-500">
+          <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          This bundle is sold on the seller&rsquo;s own site or app. You will be redirected there to
+          complete the purchase, and JUMART does not handle that payment.
+        </p>
+      </div>
+    );
+  }
+
+  const activeVariant = variants.find((variant) => variant.id === variantId) ?? null;
+  const available = activeVariant ? activeVariant.stock : stock;
 
   async function addToCart() {
+    if (available < 1) {
+      toast.error("That option is out of stock");
+      return;
+    }
     setPending(true);
     try {
       const res = await fetch("/api/v1/cart", {
@@ -55,18 +71,17 @@ export function ProductPurchase({
         body: JSON.stringify({
           productId,
           quantity,
-          variantId,
+          ...(variantId ? { variantId } : {}),
         }),
       });
-      const json = (await res.json()) as {
-        error?: { message?: string };
-      };
+      const json = (await res.json()) as { error?: { message?: string } };
       if (!res.ok) {
         toast.error(json.error?.message ?? "Could not add to cart");
         return;
       }
+      const unit = activeVariant ? pricePesewas + activeVariant.priceDeltaPesewas : pricePesewas;
       toast.success("Added to cart", {
-        description: `${productName} x ${quantity}`,
+        description: `${productName} · ${formatPesewas(unit)} · ${vendorName}`,
       });
       router.refresh();
     } catch {
@@ -76,73 +91,43 @@ export function ProductPurchase({
     }
   }
 
-  if (purchaseMode === "PENDING_REVIEW") {
-    return (
-      <Card className="p-4 rounded-xl border border-neutral-200 bg-neutral-50">
-        <p className="text-sm text-neutral-700">
-          This product is pending review by our administrators and cannot be purchased yet.
-        </p>
-      </div>
-    </div>
-  ) : null}
+  return (
+    <div className="space-y-4">
+      {variants.length > 0 ? (
+        <VariantSelector
+          variants={variants}
+          basePricePesewas={pricePesewas}
+          onSelect={(nextVariantId) => setVariantId(nextVariantId)}
+        />
+      ) : null}
 
-      <div className="flex items-center gap-4 mb-3">
-        <span className="text-sm font-semibold text-neutral-900">Variant</span>
-        <Select
-          value={variantId}
-          onChange={(event) => setVariantId(event.target.value)}
-          className="w-full h-10 text-sm"
-        >
-          {variants.map((variant) => (
-            <option key={variant.id} value={variant.id}>
-              {variant.name} - {variant.sku} (+GH₵${variant.priceDeltaPesewas.toFixed(2)}) - {variant.stock} in stock
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <label className="text-xs font-medium text-neutral-700">Quantity</label>
-        <div className="flex items-center gap-2 w-32">
-          <button
-            type="button"
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            disabled={pending || quantity <= 1}
-            className="focus-visible:ring-brand-500 grid h-8 w-8 place-items-center rounded-md border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40"
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-28">
+          <label
+            htmlFor="product-quantity"
+            className="mb-1 block text-xs font-medium text-neutral-700"
           >
-            <Minus className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-          <Input
+            Quantity
+          </label>
+          <input
+            id="product-quantity"
             type="number"
+            min="1"
+            max={Math.max(1, available)}
             value={quantity}
-            onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))}
-            className="h-8 w-12 text-center text-center rounded-md border border-neutral-300 bg-white text-sm text-neutral-900 focus-visible:ring-brand-500/30 focus-visible:outline-none"
+            onChange={(event) => setQuantity(Math.max(1, Number(event.target.value) || 1))}
+            className="focus-visible:border-brand-500 h-11 w-28 rounded-xl border border-neutral-300 bg-white px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:outline-none"
           />
-          <button
-            type="button"
-            onClick={() => setQuantity(Math.min(stock, quantity + 1))}
-            disabled={pending || quantity >= available}
-            className="focus-visible:ring-brand-500/30 grid h-8 w-8 place-items-center rounded-md border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40"
-          >
-            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
         </div>
+        <Button size="lg" onClick={addToCart} disabled={pending || available < 1}>
+          {pending ? (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+          )}
+          {available < 1 ? "Out of stock" : "Add to cart"}
+        </Button>
       </div>
-
-      <Button
-        type="button"
-        onClick={addToCart}
-        disabled={pending || quantity <= 0 || quantity > available}
-        className="mt-4 w-full bg-brand-700 text-white hover:bg-brand-600 shadow-sm"
-        size="lg"
-      >
-        {pending ? (
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-        ) : (
-          <ShoppingCart className="h-4 w-4" aria-hidden="true" />
-        )}
-        Add to Cart
-      </Button>
     </div>
   );
 }

@@ -2,9 +2,9 @@
 
 **Your Campus. Your Marketplace.**
 
-JUMART is a mobile-first, multi-vendor marketplace for university communities, launching at Koforidua Technical University (KTU), Ghana. Students can discover products, buy from verified campus vendors, open their own stores, manage orders, download free past questions and lecture notes, top up airtime through approved merchants, and get help from an AI shopping assistant grounded in real listings.
+JUMART is a mobile-first, multi-vendor marketplace for university communities, launching at Koforidua Technical University (KTU), Ghana. Students can discover products, buy from verified campus vendors, open their own stores, manage orders, download free past questions and lecture notes, top up airtime through approved merchants via the header **Airtime** menu, and find what they need through search and deterministic recommendations.
 
-> **Project status:** production-readiness pass complete. The JUMART brand is live across every surface, with 8 campus stores, 90 listings, real photography, admin-approved vendor purchase links, a free learning-materials library, support messaging, refunds, disputes, delivery tracking, student verification and vendor analytics. See [docs/PRODUCTION_READINESS_AUDIT.md](./docs/PRODUCTION_READINESS_AUDIT.md) for the evidence-backed status of every module and [docs/CLIENT_HANDOVER.md](./docs/CLIENT_HANDOVER.md) for operating the platform.
+> **Project status:** production-readiness pass complete. The JUMART brand is live across every surface, with 8 campus stores, 129 live listings, real photography, admin-approved vendor purchase links, a free learning-materials library, support messaging, refunds, disputes, delivery tracking, student verification and vendor analytics. See [docs/PRODUCTION_READINESS_AUDIT.md](./docs/PRODUCTION_READINESS_AUDIT.md) for the evidence-backed status of every module and [docs/CLIENT_HANDOVER.md](./docs/CLIENT_HANDOVER.md) for operating the platform.
 
 ---
 
@@ -14,7 +14,7 @@ JUMART is a mobile-first, multi-vendor marketplace for university communities, l
 2. Eligible students can become vendors.
 3. Marketplace data comes from real database records.
 4. Payments are verified server-side — never trusted from the browser.
-5. AI recommendations are grounded in real listings and never invented.
+5. Discovery and recommendations are deterministic, computed from real database signals (views, ratings, purchases) and never invented.
 6. Trust, safety, and transparency are core features.
 7. The experience is mobile-first and accessible.
 8. Development and operating costs stay affordable.
@@ -32,9 +32,8 @@ JUMART is a mobile-first, multi-vendor marketplace for university communities, l
 | ORM        | Prisma                                                         |
 | Auth       | Opaque database sessions with hashed tokens (scrypt passwords) |
 | Validation | Zod, React Hook Form                                           |
-| Storage    | Cloudinary or Supabase Storage                                 |
+| Storage    | Vercel Blob                                                    |
 | Payments   | Paystack first, Hubtel adapter interface                       |
-| AI         | Provider-agnostic server-side LLM, feature-flagged             |
 | Email      | Resend or SMTP                                                 |
 | Testing    | Vitest (unit + API integration), Playwright (E2E specs)        |
 | Deployment | Vercel + managed PostgreSQL                                    |
@@ -46,7 +45,7 @@ JUMART is a mobile-first, multi-vendor marketplace for university communities, l
 ```bash
 # Requires Node.js 22+ and pnpm 10+
 pnpm install            # installs dependencies and generates the Prisma client
-cp .env.example .env    # fill in DATABASE_URL, then PAYSTACK_SECRET_KEY, AI_API_KEY, RESEND_API_KEY
+cp .env.example .env    # fill in DATABASE_URL, then PAYSTACK_SECRET_KEY, RESEND_API_KEY
 pnpm db:deploy         # apply committed migrations (requires a PostgreSQL database)
 pnpm db:seed           # load development sample data (development only)
 pnpm dev
@@ -73,13 +72,12 @@ The application will be available at `http://localhost:3000`.
 
 ### Current status
 
-- Working: marketing + shop + admin UI, auth with email verification and password reset, vendor onboarding and approval, product CRUD with moderation and real image uploads to Vercel Blob, database-backed marketplace with search/filters/pagination, cart, wishlist, multi-vendor checkout and orders, Paystack payments, seller fulfilment, airtime and data bundle purchase (in-site with MSISDN capture, or redirect to the seller's own link), reviews, reports, messaging, notifications, admin console and a grounded AI assistant.
-- Catalogue: 8 campus stores (Adum Tech Point, Campus Book Hub, Hostel Nest Store, Adum Fresh Mart, Kente & Co. Threads, KTU Print & Graphics, TeleLink Data Point, Kwame's Data Spot), 90 live listings priced in Ghana cedis — sandals, sneakers, ankara dresses, student beds, waakye, kelewele, banku, ice cream, study gear and services — with 76 real product photographs, 11 category images and 8 published verified-purchase reviews.
-- New JUMART modules: free past-questions and lecture-materials library (admin uploads to Vercel Blob, students download free), admin-approved vendor purchase links for airtime and data packages, and support messaging so students can message the JUMART team directly.
-- Database: Prisma schema (46 tables), migration `0001_init`, and seed applied to Neon PostgreSQL; `pnpm db:verify` and `/api/health` prove connectivity.
-- Verification: auth, email, vendor approval, moderation, cart → checkout → Paystack → fulfilment, RBAC denials, the AI assistant and the 21-test Vitest suite were all exercised against the live database.
+- Working: marketing + shop + admin UI, auth with email verification and password reset, vendor onboarding and approval, product CRUD with variants and moderation, real image uploads to Vercel Blob, database-backed marketplace with search/filters/pagination, cart, wishlist, multi-vendor checkout and orders, Paystack payments, seller fulfilment and delivery tracking, refunds, disputes, reports, reviews, messaging, notifications, student verification, vendor analytics, free learning materials, and an admin-approved airtime catalogue reachable from the header **Airtime** menu.
+- Catalogue: 8 genuine campus stores (Adum Tech Point, Campus Book Hub, Hostel Nest Store, Adum Fresh Mart, Kente & Co. Threads, KTU Print & Graphics, TeleLink Data Point, Kwame's Data Spot), 129 live listings priced in Ghana cedis — sandals, sneakers, clothing, student beds, food, study gear, electronics and services — with real product photographs and published verified-purchase reviews.
+- Database: Prisma schema, migrations `0001`–`0010`, and seed applied to Neon PostgreSQL; `pnpm db:verify` and `/api/health` prove connectivity.
+- Verification: 29 Vitest tests (12 unit + 17 integration) pass against the live database, covering auth, marketplace, airtime link gating, messaging, materials, variants, cart and checkout.
 - Deployed: https://campus-market-teal.vercel.app
-- Not yet implemented: refunds/payouts, disputes and evidence, student-verification records, product variants UI, vendor analytics charts. Email delivery needs `RESEND_API_KEY`.
+- Known limitations: distributed rate limiting needs Upstash credentials; email delivery needs `RESEND_API_KEY`; Playwright journeys run in CI only.
 
 ### Required environment
 
@@ -89,7 +87,7 @@ See [`.env.example`](./.env.example). At minimum:
 - `AUTH_SECRET`
 - `NEXT_PUBLIC_APP_URL`
 
-External integrations (payments, storage, AI, email, SMS) are optional during development and must fail visibly when unconfigured. The platform must never fake a successful payment or AI response.
+External integrations (payments, storage, email) are optional during development and must fail visibly when unconfigured. The platform must never fake a successful payment.
 
 ---
 
@@ -106,7 +104,7 @@ KTU_Campus-Market/
 │   ├── (admin)/
 │   └── api/
 ├── components/               # Reusable UI and domain components
-├── lib/                      # Auth, db, validation, services, AI
+├── lib/                      # Auth, db, validation, services
 ├── prisma/                   # Schema, migrations, seed
 ├── public/                   # Static assets
 ├── tests/                    # Unit, integration, E2E
@@ -141,7 +139,6 @@ KTU_Campus-Market/
 - Payment callbacks are signature-verified and idempotent.
 - Uploads are validated, re-encoded where possible, and size-limited.
 - Student verification documents are private.
-- AI API keys never reach the browser.
 - No live payment is simulated; unconfigured integrations fail with a clear message.
 
 See [SECURITY_NOTES.md](./docs/SECURITY_NOTES.md) for details.

@@ -2,6 +2,8 @@
 
 **Principle:** security is enforced server-side. Hiding a UI control is never authorization.
 
+> **Scope update (2026-11-18):** the AI assistant was removed. No student, payment or authentication data is sent to any AI provider because no AI provider is integrated. The only external services are Paystack, Resend (optional) and Vercel Blob.
+
 ---
 
 ## 1. Threat model
@@ -245,7 +247,7 @@ Audit logs are append-only and retained according to policy.
 
 ### Data protection
 
-- The assistant receives only public listing fields. No student, payment, session or authentication data is sent to the AI provider.
+- No third-party AI provider is integrated, so no listing, student, payment or authentication data leaves the platform for AI processing.
 - Student verification collects no identity documents, so no private bucket is required. If documents are introduced later they must be stored privately and served with short-lived signed URLs.
 - Financial records use restrictive foreign keys so a paid order cannot be deleted by accident, and administrative actions are audit-logged with actor, before/after state and IP address.
 - A legal review against Ghana's Data Protection Act, 2012 (Act 843) is outstanding and is recorded as an open item in the production readiness audit.

@@ -2,6 +2,8 @@
 
 **Goal:** prove that critical marketplace behavior works, is secure, and is accessible — not merely that the application builds.
 
+> **Scope update (2026-11-18):** the AI shopping assistant was removed from the product. Journey F and the AI-specific cases below are historical; the live suite is 29 tests (12 unit + 17 integration) covering the marketplace, auth, airtime links, messaging, materials, variants, cart and checkout.
+
 ---
 
 ## 1. Test layers
@@ -74,13 +76,9 @@
 5. Verify audit history.
 6. Confirm the reporter sees the resolution.
 
-### Journey F — AI shopping
-1. Open the assistant.
-2. Enter a natural-language request with a budget.
-3. Confirm real products are returned.
-4. Open a recommendation.
-5. Verify product, price, and vendor match the database.
-6. Test fallback with AI disabled.
+### Journey F — AI shopping — REMOVED
+
+The assistant was removed from scope. Replacement journey: open the marketplace, search for a budget-specific term, confirm every result is a real listing, open a recommendation, and verify product, price and vendor match the database.
 
 ---
 
@@ -94,7 +92,7 @@
 - Review eligibility.
 - Payment status normalization.
 - Zod schemas and edge cases.
-- AI filter parsing and fallback behavior.
+- Discovery/recommendation queries return only real, active listings.
 
 ---
 

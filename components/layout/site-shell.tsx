@@ -1,8 +1,16 @@
 import type { ReactNode } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { getSession } from "@/lib/auth/session";
 
-export function SiteShell({ children }: { children: ReactNode }) {
+export async function SiteShell({ children }: { children: ReactNode }) {
+  let isAuthenticated = false;
+  try {
+    isAuthenticated = Boolean(await getSession());
+  } catch {
+    isAuthenticated = false;
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <a
@@ -11,11 +19,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <AppHeader />
+      <AppHeader isAuthenticated={isAuthenticated} />
       <main id="main-content" className="flex-1">
         {children}
       </main>
-      <SiteFooter />
+      <SiteFooter isAuthenticated={isAuthenticated} />
     </div>
   );
 }

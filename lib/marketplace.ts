@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { isHiddenCategory } from "@/lib/discovery";
 import { getMarketplaceSettings, vendorFilter } from "@/lib/settings";
 import { Prisma } from "@/lib/generated/prisma/client";
 
@@ -136,7 +137,7 @@ export async function listMarketplaceProducts(query: MarketplaceQuery): Promise<
   const where: Prisma.ProductWhereInput = {
     status: "ACTIVE",
     deletedAt: null,
-    OR: [{ purchaseMode: "INTERNAL" }, { externalStatus: "APPROVED" }],
+    purchaseMode: "INTERNAL",
     ...(query.vendorSlug
       ? { vendor: { slug: query.vendorSlug, status: "ACTIVE", ...demoFilter } }
       : { vendor: { status: "ACTIVE", ...demoFilter } }),
@@ -207,8 +208,8 @@ export async function getMarketplaceProduct(slug: string): Promise<
       slug,
       status: "ACTIVE",
       deletedAt: null,
+      purchaseMode: "INTERNAL",
       vendor: { status: "ACTIVE", ...vendorFilter(settings) },
-      OR: [{ purchaseMode: "INTERNAL" }, { externalStatus: "APPROVED" }],
     },
     select: {
       ...productSelect,
@@ -264,20 +265,27 @@ export async function listMarketplaceCategories() {
       _count: {
         select: {
           products: {
-            where: { status: "ACTIVE", deletedAt: null, vendor: vendorFilter(settings) },
+            where: {
+              status: "ACTIVE",
+              deletedAt: null,
+              purchaseMode: "INTERNAL",
+              vendor: vendorFilter(settings),
+            },
           },
         },
       },
     },
   });
-  return categories.map((category) => ({
-    id: category.id,
-    name: category.name,
-    slug: category.slug,
-    type: category.type,
-    iconUrl: category.iconUrl,
-    productCount: category._count.products,
-  }));
+  return categories
+    .filter((category) => !isHiddenCategory(category))
+    .map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      type: category.type,
+      iconUrl: category.iconUrl,
+      productCount: category._count.products,
+    }));
 }
 
 export async function listMarketplaceVendors(options: {
@@ -318,7 +326,13 @@ export async function listMarketplaceVendors(options: {
         pickupAvailable: true,
         deliveryAvailable: true,
         campus: { select: { name: true } },
-        _count: { select: { products: true } },
+        _count: {
+          select: {
+            products: {
+              where: { status: "ACTIVE", deletedAt: null, purchaseMode: "INTERNAL" },
+            },
+          },
+        },
       },
     }),
     prisma.vendorProfile.count({ where }),
@@ -389,6 +403,7 @@ export async function listRecommendedProducts(options: {
       status: "ACTIVE",
       deletedAt: null,
       quantity: { gt: 0 },
+      purchaseMode: "INTERNAL",
       vendor: { status: "ACTIVE" },
       ...(categoryIds.length > 0 ? { categoryId: { in: categoryIds } } : {}),
     },
@@ -404,6 +419,7 @@ export async function listRecommendedProducts(options: {
       status: "ACTIVE",
       deletedAt: null,
       quantity: { gt: 0 },
+      purchaseMode: "INTERNAL",
       vendor: { status: "ACTIVE" },
     },
     orderBy: [{ ratingAvg: "desc" }, { publishedAt: "desc" }],

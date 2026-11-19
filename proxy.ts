@@ -113,6 +113,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // The Sell landing page is a public marketing page; only the seller
+  // workspace below it requires an account.
+  if (pathname === "/sell") {
+    return NextResponse.next();
+  }
+
   if (!token) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);

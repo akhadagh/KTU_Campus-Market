@@ -7,8 +7,6 @@ const envSchema = z.object({
   DIRECT_URL: z.string().min(1).optional(),
   AUTH_SECRET: z.string().min(32).optional(),
   AUTH_URL: z.string().url().optional(),
-  AI_ENABLED: z.enum(["true", "false"]).default("false"),
-  FEATURE_AI_ASSISTANT: z.enum(["true", "false"]).default("false"),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -37,8 +35,4 @@ export function getEnv(): Env {
 
 export function isProduction(): boolean {
   return process.env.NODE_ENV === "production";
-}
-
-export function isAiEnabled(): boolean {
-  return getEnv().AI_ENABLED === "true" && getEnv().FEATURE_AI_ASSISTANT === "true";
 }

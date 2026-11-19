@@ -257,7 +257,7 @@ Guests get a cart identified by the `cm_guest` cookie; signed-in users get one c
 | GET | `/orders/:id` | Implemented | Buyer order detail (page) |
 | GET | `/vendor/orders` | Implemented | Vendor order list (page) |
 | PATCH | `/vendor/orders/:id/status` | Implemented | Advance fulfilment status |
-| GET | `/airtime` | Implemented | Airtime and data bundle catalogue (page) |
+| GET | `/airtime` | Implemented | Airtime and data bundle catalogue (page), reachable from the header **Airtime** menu |
 | POST | `/checkout` | Planned | Combined checkout + payment endpoint |
 | POST | `/orders/:id/cancel` | Planned | Buyer cancellation request |
 
@@ -319,11 +319,11 @@ If Paystack is not configured the endpoint returns `503 PROVIDER_UNAVAILABLE` �
 
 | Method | Path | Status | Description |
 |---|---|---|---|
-| GET | `/airtime` | Implemented | Verified merchant catalogue with their packages (page) |
+| GET | `/airtime` | Implemented | Verified merchant catalogue with their packages (page), reached from the header **Airtime** menu |
 | GET | `/api/v1/products/:slug` | Implemented | Bundle details including `purchaseMode`, `externalStatus` and `digitalDetails` |
 | POST | `/api/v1/admin/products/:id/external-review` | Implemented | Approve or reject a vendor purchase link |
 
-Vendors register airtime and data packages as `purchaseMode: EXTERNAL` with `externalUrl` pointing at their own site or app. Every new link starts as `externalStatus: PENDING` and is hidden from students until an administrator approves it; the public catalogue, marketplace queries and product endpoint all filter on `purchaseMode = INTERNAL` **or** `externalStatus = APPROVED`. Rejecting a link notifies the vendor and records the decision in the audit log.
+Vendors register airtime and data packages as `purchaseMode: EXTERNAL` with `externalUrl` pointing at their own site or app. Every new link starts as `externalStatus: PENDING` and is hidden from students until an administrator approves it. External listings are **not** part of the main marketplace: marketplace, category, store and recommendation queries require `purchaseMode = INTERNAL`, the `airtime-bundles` category is hidden from navigation, and its category page returns not-found. Approved external links appear only on the dedicated `/airtime` page, which is reached from the header **Airtime** dropdown. Rejecting a link notifies the vendor and records the decision in the audit log.
 
 ---
 
@@ -390,39 +390,9 @@ Messages are restricted to the buyer, the store owner and staff on support threa
 
 ---
 
-## 15. AI — Implemented
+## 15. AI — Removed
 
-| Method | Path | Status | Description |
-|---|---|---|---|
-| POST | `/ai/assistant` | Implemented | Grounded shopping assistant |
-| POST | `/ai/description` | Planned | Vendor description drafting |
-
-Request: `{ "message": "I need a charger under GH₵100" }` →
-
-```json
-{
-  "data": {
-    "reply": "Two matching chargers are available on campus…",
-    "products": [
-      {
-        "id": "uuid",
-        "slug": "usb-c-fast-charger-65w",
-        "name": "USB-C Fast Charger 65W",
-        "pricePesewas": 8500,
-        "vendorName": "KTU Test Gadgets",
-        "vendorSlug": "ktu-test-gadgets",
-        "categoryName": "Electronics & Gadgets",
-        "condition": "NEW"
-      }
-    ],
-    "source": "ai"
-  },
-  "error": null,
-  "meta": null
-}
-```
-
-`source` is `ai` when Gemini answered or `search` when the assistant fell back to the listing index (provider missing, unreachable, or erroring). The prompt lists only live, approved listings, so the model cannot invent products or prices. Rate limit: 30 requests per user per hour.
+The shopping assistant was removed from the product. The assistant page, `/api/v1/ai/assistant`, `lib/ai.ts`, the chat component, navigation entries, environment variables, CSP provider origin and related tests no longer exist. There is no AI provider integration and no AI rate-limit scope.
 
 ---
 
@@ -464,7 +434,6 @@ Admin pages (`/admin`, `/admin/vendors`, `/admin/products`, `/admin/orders`, `/a
 | Per user | 3/10 minutes | `/auth/resend-verification` |
 | Per user | 5/hour | `/vendors/apply` |
 | Per IP | 60/minute | `/cart` |
-| Per user | 30/hour | `/ai/assistant` |
 | Per user | 20/10 minutes | `/payments/initialize` |
 | Per user | 30/10 minutes | `/conversations` (messages) |
 | Per user | 20/hour | `/reviews`, `/reports` |

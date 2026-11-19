@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/db";
-import { initiatePaystackRefund, paystackConfigured, verifyPaystackTransaction } from "@/lib/payments";
+import {
+  initiatePaystackRefund,
+  paystackConfigured,
+  verifyPaystackTransaction,
+} from "@/lib/payments";
 import { createNotification } from "@/lib/notifications";
 
 /**
@@ -20,7 +24,11 @@ export async function reconcileRefund(refundId: string): Promise<{
       status: true,
       amountPesewas: true,
       payment: {
-        select: { id: true, providerReference: true, order: { select: { buyerId: true, orderNumber: true } } },
+        select: {
+          id: true,
+          providerReference: true,
+          order: { select: { buyerId: true, orderNumber: true } },
+        },
       },
     },
   });

@@ -123,17 +123,19 @@
 | M8-06 | Policy pages and configurable rules | M2-03 | D |
 | M8-07 | Append-only audit log service | M3-08 | D |
 
-## Milestone 9 — AI integration
+## Milestone 9 — AI integration — REMOVED
 
 | ID | Task | Depends on | Status |
 |---|---|---|---|
-| M9-01 | AI provider adapter and feature flag | M4-07 | D |
-| M9-02 | Structured search tool registry and grounding | M9-01 | D |
-| M9-03 | Conversational assistant endpoint and UI | M9-02 | D |
-| M9-04 | Recommendations with personalization opt-out | M9-02 | NS |
-| M9-05 | Vendor description drafting with approval | M9-01 | NS |
-| M9-06 | Rate limits, logging, fallback tests | M9-03 | D |
-| M9-07 | Optional image quality/duplicate checks | M4-05 | NS |
+| M9-01 | AI provider adapter and feature flag | M4-07 | REMOVED |
+| M9-02 | Structured search tool registry and grounding | M9-01 | REMOVED |
+| M9-03 | Conversational assistant endpoint and UI | M9-02 | REMOVED |
+| M9-04 | Recommendations with personalization opt-out | M9-02 | REMOVED |
+| M9-05 | Vendor description drafting with approval | M9-01 | REMOVED |
+| M9-06 | Rate limits, logging, fallback tests | M9-03 | REMOVED |
+| M9-07 | Optional image quality/duplicate checks | M4-05 | REMOVED |
+
+The assistant was removed from scope; no AI provider integration remains. Deterministic discovery (views, ratings, real purchase signals) is delivered under M4/M11.
 
 ## Milestone 10 — Administration
 
@@ -230,6 +232,6 @@
 - Email verification and password reset verified end to end (token issue → consume → session state → session revocation).
 - Vendor application → admin approval → role grant → storefront verified; product create → moderation → publish → marketplace visibility verified.
 - Cart → checkout → order creation → Paystack initialisation → vendor fulfilment verified; buyer attempting a vendor action returns 403.
-- AI assistant verified against Gemini (`source: ai`) with a search-only fallback when the provider is unavailable.
-- Vitest unit and API integration suites added (21 tests, all passing); Playwright journey specs authored.
+- AI assistant removed from scope; no AI provider integration remains.
+- Vitest unit and API integration suites added (29 tests, all passing); Playwright journey specs authored.
 - Neon connection hardening: unpooled URL, keep-alive, 10s idle recycling and automatic retry on `P1017`/`ETIMEDOUT`.

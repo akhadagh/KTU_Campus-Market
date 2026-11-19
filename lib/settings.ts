@@ -5,7 +5,7 @@ export interface MarketplaceSettings {
 }
 
 const DEFAULTS: MarketplaceSettings = {
-  demoStoresVisible: true,
+  demoStoresVisible: false,
 };
 
 export async function getMarketplaceSettings(): Promise<MarketplaceSettings> {

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, Camera, PackagePlus, Store, Wallet } from "lucide-react";
+import { ArrowRight, BadgeCheck, Camera, PackagePlus, Store, Wallet } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { statusBadgeVariant, vendorStatusLabels } from "@/lib/labels";
 import { formatPesewas } from "@/lib/money";
 
 export const metadata: Metadata = {
-  title: "Sell on Campus Market",
+  title: "Sell on JUMART",
   description: "Open a campus store, list products, and manage orders.",
 };
 
@@ -51,7 +51,7 @@ function Marketing() {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
-        title="Sell on Campus Market"
+        title="Sell on JUMART"
         description="Turn your campus hustle into a storefront. One account lets you buy and sell."
         actions={
           <Link href="/register" className={buttonVariants({ size: "lg" })}>
@@ -63,7 +63,7 @@ function Marketing() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div>
           <Alert variant="info" title="Applications are reviewed by an administrator">
-            Submit your store details, then an administrator reviews it before your listings go
+            Submit your store details, then an administrator approves it before your listings go
             live. This keeps the marketplace trustworthy for buyers.
           </Alert>
 
@@ -87,14 +87,17 @@ function Marketing() {
           <Badge variant="success">What you will need</Badge>
           <ul className="mt-4 space-y-3 text-sm text-neutral-700">
             {[
-              "A Campus Market account",
+              "A JUMART account",
               "A store name and description",
               "Accurate product photos and prices",
               "Pickup or delivery preferences",
               "Agreement to marketplace policies",
             ].map((item) => (
               <li key={item} className="flex gap-2">
-                <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                <BadgeCheck
+                  className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"
+                  aria-hidden="true"
+                />
                 <span>{item}</span>
               </li>
             ))}
@@ -132,12 +135,15 @@ export default async function SellPage() {
           title="Start selling"
           description="You are signed in. Apply for a store and start listing once approved."
         />
-
         <Card className="mt-6 p-6">
           {!session.user.emailVerifiedAt ? (
-            <Alert variant="warning" title="Verify your email for a smoother review" className="mb-4">
-              Your email is not verified yet. You can still apply, but administrators may ask you
-              to verify before approving your store.
+            <Alert
+              variant="warning"
+              title="Verify your email for a smoother review"
+              className="mb-4"
+            >
+              Your email is not verified yet. You can still apply, but administrators may ask you to
+              verify before approving your store.
             </Alert>
           ) : null}
           <p className="text-sm leading-6 text-neutral-600">
@@ -146,10 +152,13 @@ export default async function SellPage() {
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/sell/apply" className={buttonVariants({ size: "lg" })}>
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
               Apply to sell
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-            <Link href="/marketplace" className={buttonVariants({ variant: "outline", size: "lg" })}>
+            <Link
+              href="/marketplace"
+              className={buttonVariants({ variant: "outline", size: "lg" })}
+            >
               Browse the marketplace
             </Link>
           </div>
@@ -162,12 +171,11 @@ export default async function SellPage() {
     return (
       <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <PageHeader title={vendor.storeName} description="Seller workspace" />
-
         <Card className="mt-6 p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-lg font-semibold text-neutral-900">{vendor.storeName}</p>
             <Badge variant={statusBadgeVariant(vendor.status)}>
-              {vendorStatusLabels[vendor.status]}
+              {vendorStatusLabels[vendor.status] ?? vendor.status}
             </Badge>
           </div>
           <p className="mt-3 text-sm leading-6 text-neutral-600">
@@ -187,6 +195,29 @@ export default async function SellPage() {
       </div>
     );
   }
+
+  const [productCounts, pendingOrders, revenue] = await Promise.all([
+    prisma.product.groupBy({
+      by: ["status"],
+      where: { vendorId: vendor.id, deletedAt: null },
+      _count: { _all: true },
+    }),
+    prisma.vendorOrder.count({
+      where: {
+        vendorId: vendor.id,
+        status: {
+          in: ["PENDING", "ACCEPTED", "PREPARING", "READY_FOR_PICKUP", "OUT_FOR_DELIVERY"],
+        },
+      },
+    }),
+    prisma.vendorOrder.aggregate({
+      where: { vendorId: vendor.id, status: "DELIVERED" },
+      _sum: { totalPesewas: true },
+    }),
+  ]);
+  const countByStatus = Object.fromEntries(
+    productCounts.map((row) => [row.status, row._count._all]),
+  ) as Record<string, number>;
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">

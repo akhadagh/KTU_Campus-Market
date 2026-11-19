@@ -44,12 +44,7 @@ export function CancelOrderButton({
 
   if (!confirming) {
     return (
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => setConfirming(true)}
-        disabled={disabled}
-      >
+      <Button size="sm" variant="ghost" onClick={() => setConfirming(true)} disabled={disabled}>
         <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
         Cancel order
       </Button>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Koforidua Technical University campus illustration">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c7d2fe"/>
+      <stop offset="0.55" stop-color="#ede9fe"/>
+      <stop offset="1" stop-color="#fdf4ff"/>
+    </linearGradient>
+    <linearGradient id="building" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f5f3ff"/>
+      <stop offset="1" stop-color="#ddd6fe"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#86efac"/>
+      <stop offset="1" stop-color="#4ade80"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#sky)"/>
+
+  <circle cx="980" cy="150" r="72" fill="#fde68a" opacity="0.9"/>
+  <circle cx="980" cy="150" r="104" fill="#fde68a" opacity="0.25"/>
+
+  <g fill="#ffffff" opacity="0.85">
+    <ellipse cx="240" cy="150" rx="90" ry="30"/>
+    <ellipse cx="320" cy="135" rx="70" ry="26"/>
+    <ellipse cx="700" cy="110" rx="80" ry="26"/>
+    <ellipse cx="780" cy="128" rx="60" ry="22"/>
+  </g>
+
+  <g opacity="0.55">
+    <rect x="80" y="330" width="150" height="220" rx="6" fill="#c7d2fe"/>
+    <rect x="250" y="290" width="120" height="260" rx="6" fill="#ddd6fe"/>
+    <rect x="880" y="300" width="130" height="250" rx="6" fill="#c7d2fe"/>
+    <rect x="1030" y="350" width="110" height="200" rx="6" fill="#ddd6fe"/>
+  </g>
+
+  <rect x="0" y="540" width="1200" height="260" fill="url(#ground)"/>
+
+  <g>
+    <polygon points="600,220 360,330 840,330" fill="#7c3aed"/>
+    <rect x="380" y="330" width="440" height="220" fill="url(#building)"/>
+    <rect x="360" y="540" width="480" height="18" fill="#a78bfa"/>
+
+    <g fill="#ede9fe">
+      <rect x="410" y="360" width="26" height="180"/>
+      <rect x="470" y="360" width="26" height="180"/>
+      <rect x="530" y="360" width="26" height="180"/>
+      <rect x="644" y="360" width="26" height="180"/>
+      <rect x="704" y="360" width="26" height="180"/>
+      <rect x="764" y="360" width="26" height="180"/>
+    </g>
+
+    <rect x="560" y="440" width="80" height="118" rx="4" fill="#4c1d95"/>
+    <circle cx="628" cy="500" r="5" fill="#fde68a"/>
+
+    <g fill="#ffffff" opacity="0.9">
+      <rect x="404" y="372" width="38" height="52" rx="2"/>
+      <rect x="464" y="372" width="38" height="52" rx="2"/>
+      <rect x="524" y="372" width="38" height="52" rx="2"/>
+      <rect x="638" y="372" width="38" height="52" rx="2"/>
+      <rect x="698" y="372" width="38" height="52" rx="2"/>
+      <rect x="758" y="372" width="38" height="52" rx="2"/>
+    </g>
+
+    <rect x="520" y="262" width="160" height="42" rx="6" fill="#3b087d"/>
+    <text x="600" y="291" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#ffffff">KTU</text>
+  </g>
+
+  <g>
+    <rect x="176" y="470" width="18" height="90" fill="#92400e"/>
+    <circle cx="185" cy="450" r="62" fill="#22c55e"/>
+    <circle cx="150" cy="470" r="40" fill="#16a34a"/>
+    <circle cx="220" cy="470" r="40" fill="#16a34a"/>
+
+    <rect x="990" y="470" width="18" height="90" fill="#92400e"/>
+    <circle cx="999" cy="450" r="62" fill="#22c55e"/>
+    <circle cx="964" cy="470" r="40" fill="#16a34a"/>
+    <circle cx="1034" cy="470" r="40" fill="#16a34a"/>
+  </g>
+
+  <path d="M520 800 C 560 700, 640 700, 680 800 Z" fill="#fef3c7" opacity="0.9"/>
+  <path d="M0 800 L1200 800 L1200 760 L0 760 Z" fill="#052e16" opacity="0.12"/>
+</svg>

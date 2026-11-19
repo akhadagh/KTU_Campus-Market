@@ -37,10 +37,9 @@ Copy `.env.example` and configure per environment. Never commit real values.
 | Variable group | Effect when missing |
 |---|---|
 | `RESEND_API_KEY` / SMTP | Email verification/notifications disabled; admin-assisted verification required |
-| `CLOUDINARY_*` / `SUPABASE_*` | Uploads disabled or local-only; production launch requires storage |
+| `BLOB_READ_WRITE_TOKEN` | Uploads disabled or local-only; production launch requires storage |
 | `PAYSTACK_*` | Checkout cannot take payment; show clear configuration notice |
 | `HUBTEL_*` | Hubtel adapter unavailable |
-| `AI_*` | AI assistant disabled; deterministic search remains |
 | `UPSTASH_*` | In-memory rate limiting in development; production should use distributed limiting |
 | `SENTRY_DSN` | Local logs only |
 | `SMS_*` | Phone verification disabled |
@@ -126,13 +125,9 @@ DIRECT_URL=... pnpm db:deploy
 
 ---
 
-## 7. AI configuration
+## 7. Discovery and recommendations
 
-- Set `AI_ENABLED=true` only when a provider is configured.
-- Set `AI_PROVIDER`, `AI_API_KEY`, `AI_BASE_URL`, and `AI_MODEL`.
-- Keep the AI feature flag off until grounding and fallback tests pass.
-- AI failures must degrade to normal search, not block the marketplace.
-- No AI keys in client-side variables.
+Discovery is deterministic and requires no configuration: recently-viewed, a varied shelf and frequently-bought-together pairs are computed from real database signals. There is no AI provider to configure.
 
 ---
 
@@ -181,7 +176,7 @@ Notes:
 - [ ] Reviews require eligible purchases.
 - [ ] Admin routes reject non-admin users.
 - [ ] Uploads work and invalid files are rejected.
-- [ ] AI assistant works or is clearly disabled.
+- [ ] Deterministic discovery and recommendations reference real listings.
 - [ ] Error tracking receives a test event.
 - [ ] Backups are configured.
 - [ ] Security headers are present.
@@ -247,7 +242,6 @@ Notes:
 | `AUTH_SECRET` | Yes | Session secret |
 | `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET`, `PAYSTACK_CALLBACK_URL` | Yes for payments | Sandbox or live credentials |
 | `BLOB_READ_WRITE_TOKEN` | Yes for uploads | Vercel Blob store token |
-| `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`, `AI_ENABLED` | Optional | Server-side assistant |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Optional | Without it, mail is written to the server log in development |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Recommended | Distributed rate limiting |
 | `CRON_SECRET` | Recommended | Protects the order-expiry endpoint |

@@ -26,7 +26,6 @@ export async function GET() {
       checks: {
         database,
         payments: process.env["PAYSTACK_SECRET_KEY"] ? "configured" : "not_configured",
-        ai: process.env["AI_ENABLED"] === "true" ? "enabled" : "disabled",
       },
     },
     {

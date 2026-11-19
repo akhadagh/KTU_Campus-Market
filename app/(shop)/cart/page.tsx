@@ -14,7 +14,7 @@ export default async function CartPage() {
   const summary = await getCartSummary(cart.id);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title="Shopping cart"
         description="Items from multiple vendors will be grouped into separate vendor orders at checkout."

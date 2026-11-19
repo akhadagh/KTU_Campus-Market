@@ -1382,7 +1382,6 @@ const ghanaianProducts: ProductSeed[] = [
   },
 ];
 
-
 /**
  * Genuine listings: real product names, real specifications and prices verified
  * against Ghanaian retail and classifieds listings. Prices are the used /
@@ -1535,7 +1534,7 @@ const REAL_UPDATES: Record<string, { priceCedis: number; description: string }> 
     description:
       "Beans and gari (Yɔɔ ke Gari) with fried ripe plantain: a cheap, filling Ghanaian supper classic, GH₵30 a plate.",
   },
-  "kelewele": {
+  kelewele: {
     priceCedis: 25,
     description:
       "Kelewele: ripe plantain cubes fried with ginger, pepper and spices, usually served with roasted groundnuts. GH₵25 a menu portion; street cones sell for GH₵5-15.",
@@ -2362,7 +2361,7 @@ async function main() {
       where: { userId: user.id },
       update: {
         storeName: vendor.storeName,
-        isDemo: true,
+        isDemo: false,
         description: vendor.description,
         businessCategory: vendor.businessCategory,
         phone: vendor.phone,
@@ -2377,7 +2376,7 @@ async function main() {
         userId: user.id,
         storeName: vendor.storeName,
         slug: vendor.slug,
-        isDemo: true,
+        isDemo: false,
         description: vendor.description,
         businessCategory: vendor.businessCategory,
         phone: vendor.phone,

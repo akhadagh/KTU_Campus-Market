@@ -11,8 +11,6 @@ import {
   Search,
   ShieldCheck,
   ShoppingBag,
-  Smartphone,
-  Sparkles,
   Store,
   Tag,
   Truck,
@@ -36,7 +34,7 @@ import { connection } from "next/server";
 export const metadata: Metadata = {
   title: "Buy and sell on your campus",
   description:
-    "Shop laptops, sandals, Ghanaian food, past questions and airtime bundles from verified vendors on your campus. Buy and sell with JUMART.",
+    "Shop laptops, sandals, Ghanaian food and past questions from verified vendors on your campus. Buy and sell with JUMART.",
 };
 
 const valueProps = [
@@ -119,8 +117,7 @@ export default async function HomePage() {
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-neutral-600 sm:text-lg">
               Buy laptops, sneakers, Ghanaian food and study materials from verified vendors around
-              you. Sell your own products, top up your airtime, and reach the JUMART team when you
-              need help.
+              you. Sell your own products and reach the JUMART team when you need help.
             </p>
 
             <form
@@ -179,10 +176,6 @@ export default async function HomePage() {
                 <Store className="h-4 w-4" aria-hidden="true" />
                 Start selling
               </Link>
-              <Link href="/airtime" className={buttonVariants({ variant: "ghost", size: "lg" })}>
-                <Smartphone className="h-4 w-4" aria-hidden="true" />
-                Buy airtime
-              </Link>
             </div>
 
             <dl className="mt-9 grid max-w-xl grid-cols-3 gap-4 border-t border-neutral-200 pt-6">
@@ -201,51 +194,60 @@ export default async function HomePage() {
             </dl>
           </div>
 
-          <div className="mesh-panel rounded-3xl p-7 text-white shadow-[var(--shadow-glow)]">
-            <Badge variant="accent" className="bg-accent-500 text-white">
-              Campus deals
-            </Badge>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight">
-              Shop smarter on <span className="text-accent-400">JUMART</span>
-            </h2>
-            <p className="text-brand-100 mt-2 text-sm leading-6">
-              Fresh listings from verified vendors around campus, updated every day.
-            </p>
+          <div
+            className="relative overflow-hidden rounded-3xl bg-cover bg-center p-7 text-white shadow-[var(--shadow-glow)]"
+            style={{ backgroundImage: "url(/campus.svg)" }}
+          >
+            <div
+              className="from-brand-900/85 via-brand-900/65 to-accent-700/50 absolute inset-0 bg-gradient-to-br"
+              aria-hidden="true"
+            />
+            <div className="relative z-10">
+              <Badge variant="accent" className="bg-accent-500 text-white">
+                Campus deals
+              </Badge>
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight">
+                Shop smarter on <span className="text-accent-400">JUMART</span>
+              </h2>
+              <p className="text-brand-100 mt-2 text-sm leading-6">
+                Fresh listings from verified vendors around campus, updated every day.
+              </p>
 
-            <ul className="mt-6 space-y-4">
-              {valueProps.map((prop) => {
-                const Icon = prop.icon;
-                return (
-                  <li key={prop.title} className="flex gap-3">
-                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10">
-                      <Icon className="text-accent-400 h-5 w-5" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{prop.title}</p>
-                      <p className="text-brand-100/85 mt-0.5 text-xs leading-5">
-                        {prop.description}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+              <ul className="mt-6 space-y-4">
+                {valueProps.map((prop) => {
+                  const Icon = prop.icon;
+                  return (
+                    <li key={prop.title} className="flex gap-3">
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10">
+                        <Icon className="text-accent-400 h-5 w-5" aria-hidden="true" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{prop.title}</p>
+                        <p className="text-brand-100/85 mt-0.5 text-xs leading-5">
+                          {prop.description}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
 
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                href="/categories"
-                className="text-brand-700 hover:bg-brand-50 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold transition-colors"
-              >
-                Browse categories
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-              <Link
-                href="/resources"
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-              >
-                <GraduationCap className="h-4 w-4" aria-hidden="true" />
-                Free past questions
-              </Link>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link
+                  href="/categories"
+                  className="text-brand-700 hover:bg-brand-50 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold transition-colors"
+                >
+                  Browse categories
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <Link
+                  href="/resources"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                >
+                  <GraduationCap className="h-4 w-4" aria-hidden="true" />
+                  Free past questions
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -409,30 +411,7 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto w-full max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Link
-            href="/airtime"
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 text-white shadow-[var(--shadow-lift)] transition-transform hover:-translate-y-0.5"
-          >
-            <div
-              className="absolute -right-8 -bottom-10 h-40 w-40 rounded-full bg-white/10"
-              aria-hidden="true"
-            />
-            <Smartphone className="h-7 w-7" aria-hidden="true" />
-            <h3 className="mt-4 text-lg font-semibold">Airtime &amp; data bundles</h3>
-            <p className="mt-1 max-w-sm text-sm leading-6 text-emerald-50/90">
-              Top up MTN, Telecel, Vodafone and AirtelTigo through verified merchants. Every link is
-              checked by our team before students can use it.
-            </p>
-            <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold">
-              Buy a bundle
-              <ArrowRight
-                className="h-4 w-4 transition-transform group-hover:translate-x-1"
-                aria-hidden="true"
-              />
-            </span>
-          </Link>
-
+        <div className="grid gap-4">
           <Link
             href="/sell"
             className="group from-accent-500 to-accent-600 relative overflow-hidden rounded-2xl bg-gradient-to-br p-6 text-white shadow-[var(--shadow-lift)] transition-transform hover:-translate-y-0.5"
@@ -499,7 +478,7 @@ export default async function HomePage() {
             {[
               { icon: Truck, label: "Campus delivery" },
               { icon: Headphones, label: "Real support" },
-              { icon: Sparkles, label: "Grounded AI help" },
+              { icon: PackageCheck, label: "Verified listings" },
               { icon: Wallet, label: "Paystack secured" },
             ].map((item) => {
               const Icon = item.icon;

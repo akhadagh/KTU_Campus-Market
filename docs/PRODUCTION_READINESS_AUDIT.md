@@ -50,7 +50,7 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 | PRA-016 | P2 | `prisma/schema.prisma` (`Delivery`) | Delivery status was never recorded; tracking codes lived only on the vendor order | No delivery history, no courier trail | Delivery record per vendor order with status flow, tracking code, buyer notification and audit; sellers drive it from the order screen | FIXED | `POST /api/v1/vendor/orders/:id/delivery` |
 | PRA-017 | P2 | `prisma/schema.prisma` (`StudentVerification`) | Student verification existed as a model only | "Verified students" was an unbacked claim | Application with university/campus and optional institutional email, admin review, audit trail. **No identity documents are collected or stored** | FIXED | `/account/verification`, `/admin/students` |
 | PRA-018 | P2 | vendor tooling | Vendors had counts but no sales analytics | Sellers could not see performance | `/sell/analytics` with gross sales, refunds, payable balance, delivery fees, order pipeline, inventory alerts, daily sales and product performance | FIXED | `lib/analytics.ts` |
-| PRA-019 | P2 | `lib/ai.ts` | The provider call had no timeout and sent a prompt without an explicit "never invent" instruction | A hung provider held a request open; the model could embellish listings | 20-second timeout, explicit grounding rules, only public listing fields are sent, no student or payment data leaves the server | FIXED | `lib/ai.ts` `askAssistant` |
+| PRA-019 | P2 | `lib/ai.ts` | The assistant provider call had no timeout and the feature added a third-party AI dependency to the catalogue | A hung provider could hold a request open and the product carried an integration the client did not want | **REMOVED** — the assistant page, API route, `lib/ai.ts`, chat component, navigation entries, environment variables, CSP provider origin, tests and docs were deleted. No AI provider calls remain in the codebase | REMOVED | `git grep -i assistant` returns no application code |
 | PRA-020 | P2 | `next.config.ts`, `proxy.ts` | No Content-Security-Policy, HSTS or cross-origin protection on state-changing API calls | Browser-level protections were missing; CSRF-style cross-site POSTs were possible | CSP, HSTS (production), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP/CORP, and origin/`Sec-Fetch-Site` validation on non-GET API requests | FIXED | Verified: cross-origin POST → 403, same-origin → handled, no-origin (provider webhook) → allowed |
 | PRA-021 | P2 | `tests/` | Integration tests hit the developer's running dev server and were flaky under latency | CI could not be trusted | Vitest global setup starts a dedicated instance when `TEST_DATABASE_URL` is provided, one retry absorbs transient link failures, and the suite is split into `test:unit` and `test:integration` | FIXED | `tests/global-setup.ts`; 27/27 tests green |
 | PRA-022 | P2 | `.github/workflows/ci.yml` | CI ran lint, typecheck and build but no tests and no dependency audit | Regressions reached `main` uncaught | CI now validates the Prisma schema, applies migrations to an isolated Postgres service, checks formatting, lints, typechecks, runs unit tests, builds, runs integration tests against the isolated database and audits dependencies; a second job runs Playwright | FIXED | `.github/workflows/ci.yml` |
@@ -59,7 +59,7 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 
 | ID | Severity | Item | Status | Why it is open / accepted |
 |----|----------|------|--------|-----------------------|
-| PRA-023 | P1 | Product variants are not exposed in the vendor or buyer UI | PARTIAL | The schema, cart, order and payment stock handling support variants (`ProductVariant`, `CartItem.variantId`, per-variant stock decrement on payment), but the vendor variant editor and the product-page variant picker are not built. Fashion listings therefore rely on variants described in the description. Estimated effort: 2–3 days. |
+| PRA-023 | P1 | Product variants are not exposed in the vendor or buyer UI | FIXED | Superseded by PRA-037: the vendor variant manager and the buyer variant selector are built, variant-aware cart/order handling is tested, and per-variant stock is decremented on payment. |
 | PRA-024 | P1 | Automated vendor settlement | ACCEPTED | No merchant onboarding or settlement contract exists with a payment provider, and no verified payout destination is stored. Moving money automatically would be unsafe. Settlement is manual: gross sales and refunds are separated in `/sell/analytics` and refunds are executed through the provider by an administrator. |
 | PRA-025 | P1 | Distributed rate limiting is not active in production | BLOCKED | `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are not provisioned. The code path is implemented and fails closed for anonymous abuse endpoints, but until credentials exist the in-process bucket is what protects the deployment. |
 | PRA-026 | P2 | Administrator MFA | OPEN | Recommended before handling real money at scale. Requires an additional authenticator surface and enrolment flow. |
@@ -86,6 +86,21 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 | PRA-040 | P1 | Staff accounts had no second factor | FIXED | Staff logins require a six-digit code emailed to the staff address, with challenge expiry, attempt limits, single use and a server-log fallback when no mail provider is configured |
 | PRA-041 | P1 | Vendor admission was a single form with no evidence, no risk signals and no review trail | FIXED | Structured application (individual, business, representative), business details, evidence links, risk flags (duplicate registration, reused document, prior rejection, burst applications) that never auto-reject, and an admin workflow with approve, reject or request-information, all audit-logged |
 | PRA-042 | P2 | Sellers could not manage their own storefront | FIXED | `/sell/store` with name, description, category, phone, WhatsApp, logo, banner and fulfilment options |
+
+---
+
+## 2c. Product-scope pass (third review round)
+
+| ID | Severity | Item | Status | Notes |
+|----|----------|------|--------|-------|
+| PRA-043 | P1 | Commit `08c8e09` was pushed with a non-compiling tree: the marketplace sidebar file had been replaced by a copy of the marketplace page, and `cart-view.tsx`, `product-purchase.tsx`, `product-gallery.tsx`, `admin/reports`, `sell/dashboard` and `sell/page` had missing imports and malformed JSX | FIXED | The bad commit was reverted to the last good baseline; `pnpm typecheck`, `pnpm lint`, `pnpm build` and the 29-test suite all pass again |
+| PRA-044 | P1 | Airtime and data-bundle listings appeared in the main marketplace, category sidebar, store pages and marketing page | FIXED | Marketplace/category/store/recommendation queries now require `purchaseMode = INTERNAL`; the `airtime-bundles` category is hidden from navigation and its category page returns not-found; the airtime catalogue is reachable only through the header **Airtime** dropdown |
+| PRA-045 | P2 | Notifications, messages, wishlist and account icons were rendered for anonymous visitors | FIXED | `SiteShell` resolves the session server-side and passes it to the header, navigation drawer and footer; account-only links are hidden until sign-in |
+| PRA-046 | P3 | The login and registration screens used a flat gradient with no campus imagery | FIXED | `public/campus.svg` is used as a background on every auth page and in the home hero, with a brand overlay for contrast |
+| PRA-047 | P1 | Every seeded vendor was flagged `isDemo: true`, so turning the demo flag off emptied the marketplace | FIXED | The genuine seeded stores are now `isDemo: false`; the demo flag defaults to **off** and remains as a kill switch for real sample stores. The database was updated to match |
+| PRA-048 | P2 | `/sell` redirected anonymous visitors to login, so the public selling landing page was unreachable | FIXED | The exact `/sell` path is public; `/sell/**` (application and seller workspace) stays behind the auth proxy |
+| PRA-049 | P2 | Checkout offered pickup points from any campus | FIXED | Checkout resolves the KTU campus and only offers its active pickup points |
+| PRA-050 | P3 | Product and cart grids did not use the available screen width | FIXED | Marketplace, category, store and cart containers were widened and product grids now scale to 5–6 columns on large screens |
 
 ---
 
@@ -117,7 +132,13 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 | Vendor application captures seller type, business details and evidence, and the admin queue shows risk flags | PASS |
 | Variant added to the cart, kept in the cart response and snapshotted on the order item | PASS |
 | Dashboard sidebars: every customer, vendor and admin link opens a working page with live data | PASS |
-| AI assistant answers from live listings (`source: ai`) and falls back cleanly when the provider fails | PASS |
+| Anonymous header hides Messages/Notifications/Wishlist/Account; authenticated header shows them | PASS (local production build) |
+| Airtime is absent from `/marketplace`, `/categories` and store pages but `/airtime` still lists verified merchants through the header dropdown | PASS |
+| `/assistant` returns 404 and no application code references the removed assistant | PASS |
+| `/sell` renders the public landing page; `/sell/apply` redirects anonymous visitors to login | PASS |
+| Login, register and home hero render the campus background image | PASS |
+| Checkout offers only KTU Main Campus pickup points | PASS |
+| Demo stores are hidden by default; the genuine seeded stores are live | PASS |
 
 ---
 
@@ -144,7 +165,6 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 | `CRON_SECRET` | Protects `/api/v1/cron/expire-orders` | Recommended; the route is open when unset |
 | `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET` | Payments | Configured (sandbox) |
 | `BLOB_READ_WRITE_TOKEN` | Product images and learning materials | Configured |
-| `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL` | Assistant | Configured |
 
 ---
 
@@ -152,4 +172,4 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 
 **CONDITIONALLY READY — documented non-critical limitations.**
 
-All P0 findings are fixed and verified. The platform can be demonstrated and operated as a campus marketplace with real payments, real fulfilment and a real admin console. Before a full commercial launch the client should accept the open items in §2.2 — most importantly the missing distributed rate limiting (a credentials task), product variants, and a legal review of the data protection position.
+All P0 findings are fixed and verified. The platform can be demonstrated and operated as a campus marketplace with real payments, real fulfilment and a real admin console. Before a full commercial launch the client should accept the open items in §2.2 — most importantly the missing distributed rate limiting (a credentials task) and a legal review of the data protection position.

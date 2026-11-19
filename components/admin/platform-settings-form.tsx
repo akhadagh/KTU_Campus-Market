@@ -151,8 +151,8 @@ export function PlatformSettingsForm({ initialValues }: { initialValues: Platfor
         <span>
           <span className="font-medium">Show demo stores</span>
           <span className="block text-xs text-neutral-500">
-            The seeded showcase stores are marked as demo. Turn this off once real vendors are
-            approved so only genuine campus stores appear.
+            Demo stores are hidden by default. Enable this only to preview sample stores while you
+            are setting up the marketplace.
           </span>
         </span>
       </label>

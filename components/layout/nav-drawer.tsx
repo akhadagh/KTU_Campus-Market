@@ -11,7 +11,6 @@ import {
   Package,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
   Store,
   User,
   X,
@@ -23,9 +22,7 @@ import { cn } from "@/lib/utils";
 const shopLinks = [
   { href: "/marketplace", label: "Explore marketplace", icon: ShoppingBag },
   { href: "/categories", label: "Categories", icon: LayoutGrid },
-  { href: "/airtime", label: "Airtime & data bundles", icon: Sparkles },
   { href: "/resources", label: "Free past questions", icon: BookOpen },
-  { href: "/assistant", label: "Ask the campus assistant", icon: Sparkles },
 ];
 
 const accountLinks = [
@@ -37,7 +34,15 @@ const accountLinks = [
   { href: "/sell", label: "Sell on JUMART", icon: Store },
 ];
 
-export function NavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function NavDrawer({
+  open,
+  onClose,
+  isAuthenticated,
+}: {
+  open: boolean;
+  onClose: () => void;
+  isAuthenticated: boolean;
+}) {
   const pathname = usePathname();
 
   return (
@@ -102,42 +107,63 @@ export function NavDrawer({ open, onClose }: { open: boolean; onClose: () => voi
             })}
           </ul>
 
-          <p className="px-2 pt-5 pb-2 text-xs font-semibold tracking-wide text-neutral-400 uppercase">
-            Your account
-          </p>
-          <ul className="space-y-1">
-            {accountLinks.map((link) => {
-              const Icon = link.icon;
-              const active = pathname === link.href;
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={onClose}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                      active
-                        ? "bg-brand-50 text-brand-700"
-                        : "hover:text-brand-700 text-neutral-700 hover:bg-neutral-50",
-                    )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    {link.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          {isAuthenticated ? (
+            <>
+              <p className="px-2 pt-5 pb-2 text-xs font-semibold tracking-wide text-neutral-400 uppercase">
+                Your account
+              </p>
+              <ul className="space-y-1">
+                {accountLinks.map((link) => {
+                  const Icon = link.icon;
+                  const active = pathname === link.href;
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={onClose}
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                          active
+                            ? "bg-brand-50 text-brand-700"
+                            : "hover:text-brand-700 text-neutral-700 hover:bg-neutral-50",
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        {link.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          ) : null}
         </nav>
 
         <div className="border-t border-neutral-200 p-4">
-          <Link href="/login" onClick={onClose} className={buttonVariants({ variant: "outline" })}>
-            <LogIn className="h-4 w-4" aria-hidden="true" />
-            Log in
-          </Link>
-          <Link href="/register" onClick={onClose} className={`${buttonVariants()} mt-2 w-full`}>
-            Create an account
-          </Link>
+          {isAuthenticated ? (
+            <Link href="/sell" onClick={onClose} className={buttonVariants()}>
+              <Store className="h-4 w-4" aria-hidden="true" />
+              Open a JUMART store
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                onClick={onClose}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                <LogIn className="h-4 w-4" aria-hidden="true" />
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                onClick={onClose}
+                className={`${buttonVariants()} mt-2 w-full`}
+              >
+                Create an account
+              </Link>
+            </>
+          )}
           <p className="mt-3 flex items-start gap-2 text-xs leading-5 text-neutral-500">
             <ShieldCheck
               className="text-brand-600 mt-0.5 h-3.5 w-3.5 shrink-0"

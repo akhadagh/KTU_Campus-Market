@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "JUMART — Your Campus. Your Marketplace.",
     short_name: "JUMART",
     description:
-      "JUMART connects students, vendors and service providers on one campus marketplace. Buy and sell laptops, fashion, food, study materials and airtime bundles.",
+      "JUMART connects students, vendors and service providers on one campus marketplace. Buy and sell laptops, fashion, food and study materials.",
     start_url: "/",
     display: "standalone",
     background_color: "#F8F5FC",

@@ -1,14 +1,16 @@
 # Campus Market — Software Requirements Specification (SRS)
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Approved for implementation planning  
 **Scope:** Initial launch at Koforidua Technical University (KTU), Ghana, with architecture ready for additional universities.
+
+> **Scope update (2026-11-18):** the AI shopping assistant has been removed from the product. Requirements in this document that refer to the assistant (including §5.8) are historical; the shipped system uses deterministic discovery computed from real database signals.
 
 ---
 
 ## 1. Purpose
 
-Campus Market is a multi-vendor marketplace for university communities. It enables students to buy and sell products, operate storefronts, arrange campus pickup or delivery, communicate, and discover products through search and a grounded AI shopping assistant.
+Campus Market is a multi-vendor marketplace for university communities. It enables students to buy and sell products, operate storefronts, arrange campus pickup or delivery, communicate, and discover products through search and deterministic recommendations.
 
 This SRS defines the functional and non-functional requirements for the first production release.
 
@@ -20,7 +22,7 @@ This SRS defines the functional and non-functional requirements for the first pr
 2. Eligible students can become vendors.
 3. Every marketplace claim is backed by database records.
 4. Payments are verified server-side.
-5. AI recommendations never invent products, prices, sellers, or availability.
+5. Recommendations are deterministic and reference real listings only — never invented products, prices, sellers, or availability.
 6. Trust and safety are built into the workflow.
 7. The experience is mobile-first, fast, and accessible.
 8. The platform can add universities and campuses without a rewrite.
@@ -42,7 +44,7 @@ This SRS defines the functional and non-functional requirements for the first pr
 - Reviews, reporting, disputes, moderation.
 - Buyer, vendor, moderator, support, and administrator roles.
 - In-app notifications and buyer–vendor messaging.
-- Grounded AI shopping assistant and optional vendor description drafting.
+- Deterministic recommendations and discovery built from real database signals.
 - Administration of users, vendors, categories, listings, orders, payments, reports, disputes, campuses, pickup locations, policies, and settings.
 
 ### Out of scope for launch
@@ -178,17 +180,9 @@ Priority: **M** = must have for launch, **S** = should have, **C** = could have.
 | FR-085 | Email notifications are supported when configured. | S |
 | FR-086 | SMS notifications are optional and configurable. | C |
 
-### 5.8 AI assistant
+### 5.8 AI assistant — REMOVED
 
-| ID | Requirement | Priority |
-|---|---|---|
-| FR-090 | Accept natural-language shopping requests and extract structured filters. | S |
-| FR-091 | Search only real marketplace listings through server-side tools. | S |
-| FR-092 | Return listing links and explain differences from real data. | S |
-| FR-093 | Never invent products, sellers, prices, ratings, or availability. | M |
-| FR-094 | Fall back to deterministic search when AI is unavailable. | M |
-| FR-095 | Allow users to disable personalization. | S |
-| FR-096 | Generate vendor description drafts that require vendor approval. | C |
+The assistant was removed from scope (2026-11-18). FR-090 to FR-096 are withdrawn. The platform uses deterministic discovery computed from real database signals, and personalization remains opt-out.
 | FR-097 | Optionally check image quality, duplicates, and inappropriate content. | C |
 
 ### 5.9 Dashboards and administration
@@ -284,7 +278,7 @@ Only server-side transition rules may change these statuses. Each transition is 
 - Core pages meet accessibility and performance targets.
 - All marketplace data shown to users originates from the database.
 - Payment verification and webhook idempotency are demonstrated in sandbox.
-- AI recommendations are grounded in real listings and fail gracefully.
+- Recommendations are deterministic and reference real database listings only.
 - Documentation, environment template, and deployment guide are complete.
 
 ---

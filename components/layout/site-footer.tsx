@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
-import { ShieldCheck, Sparkles } from "lucide-react";
+import { ShieldCheck, Store } from "lucide-react";
 import { JumartLogo, JumartWordmark } from "@/components/brand/logo";
 import { Input } from "@/components/ui/input";
 
@@ -10,55 +10,58 @@ async function getCopyrightYear() {
   return new Date().getFullYear();
 }
 
-const footerSections = [
-  {
-    title: "Shop",
-    links: [
-      { href: "/marketplace", label: "Explore marketplace" },
-      { href: "/categories", label: "Categories" },
-      { href: "/airtime", label: "Airtime & data" },
-      { href: "/resources", label: "Free past questions" },
-      { href: "/wishlist", label: "Wishlist" },
-    ],
-  },
-  {
-    title: "Sell",
-    links: [
-      { href: "/sell", label: "Open a JUMART store" },
-      { href: "/sell/apply", label: "Become a vendor" },
-      { href: "/help", label: "Seller guide" },
-    ],
-  },
-  {
-    title: "Account",
-    links: [
-      { href: "/login", label: "Log in" },
-      { href: "/register", label: "Create account" },
-      { href: "/orders", label: "Orders" },
-      { href: "/messages", label: "Messages" },
-    ],
-  },
-  {
-    title: "Support",
-    links: [
-      { href: "/help", label: "Help centre" },
-      { href: "/how-it-works", label: "How it works" },
-      { href: "/trust-safety", label: "Trust & safety" },
-      { href: "/policies", label: "Marketplace policies" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { href: "/terms", label: "Terms & conditions" },
-      { href: "/privacy", label: "Privacy policy" },
-      { href: "/policies", label: "Prohibited items" },
-    ],
-  },
-];
-
-export async function SiteFooter() {
+export async function SiteFooter({ isAuthenticated }: { isAuthenticated: boolean }) {
   const year = await getCopyrightYear();
+
+  const footerSections = [
+    {
+      title: "Shop",
+      links: [
+        { href: "/marketplace", label: "Explore marketplace" },
+        { href: "/categories", label: "Categories" },
+        { href: "/resources", label: "Free past questions" },
+        ...(isAuthenticated ? [{ href: "/wishlist", label: "Wishlist" }] : []),
+      ],
+    },
+    {
+      title: "Sell",
+      links: [
+        { href: "/sell", label: "Open a JUMART store" },
+        { href: "/sell/apply", label: "Become a vendor" },
+        { href: "/help", label: "Seller guide" },
+      ],
+    },
+    {
+      title: "Account",
+      links: isAuthenticated
+        ? [
+            { href: "/account", label: "My account" },
+            { href: "/orders", label: "Orders" },
+            { href: "/messages", label: "Messages" },
+          ]
+        : [
+            { href: "/login", label: "Log in" },
+            { href: "/register", label: "Create account" },
+          ],
+    },
+    {
+      title: "Support",
+      links: [
+        { href: "/help", label: "Help centre" },
+        { href: "/how-it-works", label: "How it works" },
+        { href: "/trust-safety", label: "Trust & safety" },
+        { href: "/policies", label: "Marketplace policies" },
+      ],
+    },
+    {
+      title: "Legal",
+      links: [
+        { href: "/terms", label: "Terms & conditions" },
+        { href: "/privacy", label: "Privacy policy" },
+        { href: "/policies", label: "Prohibited items" },
+      ],
+    },
+  ];
 
   return (
     <footer className="mt-16 border-t border-neutral-200 bg-white">
@@ -120,7 +123,7 @@ export async function SiteFooter() {
               Server-verified payments
             </p>
             <p className="flex items-center gap-1.5">
-              <Sparkles className="text-accent-500 h-3.5 w-3.5" aria-hidden="true" />
+              <Store className="text-accent-500 h-3.5 w-3.5" aria-hidden="true" />
               Admin-approved vendors
             </p>
           </div>

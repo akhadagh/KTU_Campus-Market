@@ -2,7 +2,7 @@
 
 **Platform:** JUMART — Your Campus. Your Marketplace.
 **Repository:** `akhadagh/KTU_Campus-Market` · **Production:** https://campus-market-teal.vercel.app
-**Stack:** Next.js 16 (App Router, React 19, TypeScript) · Tailwind CSS v4 · Prisma 7 · Neon PostgreSQL · Vercel Blob · Paystack · Gemini (server-side) · Resend (email)
+**Stack:** Next.js 16 (App Router, React 19, TypeScript) · Tailwind CSS v4 · Prisma 7 · Neon PostgreSQL · Vercel Blob · Paystack · Resend (email)
 
 This guide is written for the people who will operate and sell on the platform. It contains no credentials — every secret lives in the deployment environment, never in the repository.
 
@@ -32,8 +32,8 @@ The platform launched at Koforidua Technical University and is designed so other
 | Trust | Verified-purchase reviews with moderation, community reports, disputes with evidence, audit log |
 | Communication | Buyer–seller messaging, buyer–JUMART support channel, in-app notifications, email templates |
 | Content | Free past questions and lecture materials uploaded by administrators and downloaded by students |
-| Airtime | Vendor-registered purchase links that only appear for students after administrator approval |
-| Assistant | Grounded shopping assistant answering only from live, approved listings |
+| Airtime | Vendor-registered purchase links that only appear for students after administrator approval; the catalogue is reached from the header **Airtime** menu and is not part of the main marketplace browse |
+| Account privacy | Notifications, messages, wishlist and account entry points are only rendered for signed-in visitors |
 
 ## 3. User roles
 
@@ -121,9 +121,8 @@ Browser ──► Vercel (Next.js 16, Node runtime)
               ├── Route handlers      validation, authorisation, business logic
               ├── Prisma 7 ──► Neon PostgreSQL (pooled + direct URLs)
               ├── Vercel Blob         product images, learning materials
-              ├── Paystack API        transaction initialisation, verification, refunds
-              ├── Gemini API          grounded shopping assistant
-              └── Resend API          transactional email
+               ├── Paystack API        transaction initialisation, verification, refunds
+               └── Resend API          transactional email
 ```
 
 - **Database:** Neon PostgreSQL, branch `production`. `DATABASE_URL_UNPOOLED` is used at runtime for reliability; `DATABASE_URL` is kept for tooling.
@@ -141,7 +140,6 @@ Browser ──► Vercel (Next.js 16, Node runtime)
 | `PAYSTACK_WEBHOOK_SECRET` | Yes for payments | Used to sign webhook verification |
 | `PAYSTACK_CALLBACK_URL` | Yes for payments | `https://<domain>/api/v1/payments/callback` |
 | `BLOB_READ_WRITE_TOKEN` | Yes for uploads | Vercel Blob store token |
-| `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`, `AI_ENABLED` | Optional | Server-side assistant configuration |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Optional | Without a key, emails are written to the server log in development only |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Recommended | Distributed rate limiting; without it the in-process limiter applies |
 | `CRON_SECRET` | Recommended | Protects the order-expiry endpoint |
@@ -165,7 +163,7 @@ Preview deployments must not receive production credentials: they use their own 
 - Every state-changing API request is checked for cross-origin submission; the Paystack webhook is authenticated by signature instead.
 - Uploads are validated by content, re-encoded without metadata, stored under random names and deleted with their database row.
 - The audit log records administrative and financial actions. Financial records use restrictive foreign keys so a paid order cannot be deleted by accident.
-- **Data minimisation:** the assistant receives only public listing fields. No student, payment or authentication data is sent to the AI provider.
+- **Data minimisation:** no third-party AI provider is used. The only external services are Paystack (payments), Resend (email, if configured) and Vercel Blob (files).
 - **Legal review is outstanding.** The privacy notice, terms and retention behaviour have not been reviewed against Ghana's Data Protection Act, 2012 (Act 843). Obtain a legal opinion before launch, and publish a retention schedule for orders, verification requests and disputes.
 
 ## 14. Known limitations
@@ -173,7 +171,7 @@ Preview deployments must not receive production credentials: they use their own 
 | Limitation | Impact | Mitigation |
 |---|---|---|
 | Rate limiting is per instance until Upstash is provisioned | Weaker abuse protection in production | Provision Upstash; anonymous endpoints already fail closed when the store is configured but unreachable |
-| Product variants are not exposed in the UI | Sellers describe sizes in the description | Variants are supported in the schema, cart, orders and payment stock handling |
+| Demo stores are hidden by default | Sample stores will not appear until the setting is enabled | Genuine seeded stores are marked as real; an administrator can preview sample stores from Admin → Settings |
 | Vendor settlement is manual | Sellers are paid outside the platform | Gross sales, refunds and delivery fees are separated in analytics; refunds run through the provider |
 | Refunds stay "processing" until a person confirms | Slight lag in refund status | An administrator confirms each refund against the provider reference |
 | No administrator MFA | Account takeover risk for staff | Enable MFA at the identity provider, or add an enrolment flow, before handling larger volumes |

@@ -17,11 +17,11 @@ This roadmap is the approved implementation plan for Campus Market. Work proceed
 | M4 | Marketplace core | Completed |
 | M5 | Cart, checkout, and orders | Completed |
 | M6 | Dashboards and messaging | Completed |
-| M7 | Payments and delivery | In Progress |
-| M8 | Trust, safety, and moderation | In Progress |
-| M9 | AI integration | In Progress |
-| M10 | Administration and configuration | In Progress |
-| M11 | Quality assurance and hardening | In Progress |
+| M7 | Payments and delivery | Completed |
+| M8 | Trust, safety, and moderation | Completed |
+| M9 | AI integration | Removed from scope |
+| M10 | Administration and configuration | Completed |
+| M11 | Quality assurance and hardening | Completed |
 | M12 | Deployment and launch | In Progress |
 
 ---
@@ -281,30 +281,9 @@ This roadmap is the approved implementation plan for Campus Market. Work proceed
 
 ---
 
-## Milestone 9 — AI integration
+## Milestone 9 — AI integration — REMOVED
 
-**Objective:** grounded shopping assistance that never invents listings.
-
-**Tasks**
-- Provider-agnostic AI adapter and feature flag.
-- Structured search tool registry.
-- Conversational assistant endpoint and UI.
-- Recommendations with personalization opt-out.
-- Vendor description drafting with human approval.
-- Rate limits, logging, and fallback.
-- Optional image quality and duplicate checks.
-
-**Acceptance criteria**
-- Journey F passes.
-- Every recommendation references a real database listing.
-- AI outage or missing credentials do not break search.
-- No API keys in the frontend.
-
-**Dependencies:** M4, M7 (for order-aware recommendations).
-
-**Testing:** grounding, prompt injection resistance, no-result behavior, fallback.
-
-**Risks:** hallucination; provider cost/outage; privacy.
+The assistant was removed from the product scope. The client did not want a third-party AI integration, so the assistant page, API route, provider adapter, chat component, navigation entries, environment variables, CSP origin, tests and documentation were deleted. Discovery and recommendations remain fully deterministic and are computed from real database signals (views, ratings, cart/wishlist/purchase categories).
 
 ---
 

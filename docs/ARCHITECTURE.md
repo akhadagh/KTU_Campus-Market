@@ -87,7 +87,6 @@ External services:
 | Messaging | Conversations and messages |
 | Notifications | In-app notifications; optional email/SMS |
 | Admin | Administrative operations and configuration |
-| AI | Grounded assistant, tools, recommendations, description drafting |
 | Audit | Append-only privileged action logging |
 
 Each module exposes service functions with explicit actor context and validation. Route handlers and server actions are thin adapters; business logic lives in services.
@@ -152,14 +151,9 @@ Benefits:
 7. Apply the payment result transactionally.
 8. Mark the event processed.
 
-### 6.3 AI assistant
+### 6.3 Discovery
 
-1. Authenticate and rate-limit the request.
-2. Send the user request and tool definitions to the AI provider.
-3. AI extracts filters and calls `search_products`.
-4. The tool executes the same search service used by the marketplace.
-5. AI summarizes only returned records and includes listing IDs.
-6. On provider failure or invalid output, return deterministic search results.
+Discovery is deterministic and reads only real database signals: product views for “recently viewed”, a varied shelf that mixes recency with rating and interleaves vendors, and frequently-bought-together pairs computed from real order items. There is no third-party AI provider and nothing is invented.
 
 ---
 
@@ -178,30 +172,24 @@ Detailed controls are in `SECURITY_NOTES.md`.
 
 ---
 
-## 8. AI architecture
+## 8. Discovery architecture
 
 ```text
-/api/v1/ai/assistant
-  → auth + rate limit + validation
-  → AI orchestrator
-      → provider adapter
-      → tool registry
-          → search_products
-          → get_product
-          → get_vendor
-          → compare_products
-      → grounding guardrail
-  → response with real listing IDs
+marketplace / store / category / home pages
+  → discovery service
+      → recently viewed          (ProductView)
+      → varied shelf             (recency + rating, interleaved by vendor)
+      → frequently bought together (real order items)
+      → recommendations          (cart / wishlist / purchase categories)
+  → rendered with personalization opt-out respected
 ```
 
 Requirements:
 
-- API keys only on the server.
-- Feature-flagged; disabled by default until configured.
-- Tool outputs are the only source of product facts.
-- Maximum tool calls and output length.
-- Fallback to normal search.
-- No personalization when disabled by the user.
+- Every recommendation references a real database listing.
+- No synthetic popularity or unavailable listings are invented.
+- Users can opt out of personalization.
+- No third-party AI provider is integrated.
 - Structured logging without sensitive data.
 
 ---
@@ -310,7 +298,7 @@ Environment-based configuration. No hardcoded credentials. See `DEPLOYMENT_GUIDE
 | ADR-002 | PostgreSQL + Prisma over MongoDB | Accepted |
 | ADR-003 | Web/PWA first, native later | Accepted |
 | ADR-004 | Server-side payment verification and webhook idempotency | Accepted |
-| ADR-005 | Grounded AI with deterministic fallback | Accepted |
+| ADR-005 | Deterministic discovery from real database signals (AI assistant removed from scope) | Accepted |
 | ADR-006 | Multi-university by data scoping, not separate databases | Accepted |
 | ADR-007 | Parent order + vendor orders for multi-vendor checkout | Accepted |
 | ADR-008 | No escrow claims without legal/provider approval | Accepted |

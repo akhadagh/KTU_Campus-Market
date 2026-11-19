@@ -266,9 +266,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             disabled={
               !["PENDING_PAYMENT", "PAID"].includes(order.status) ||
               order.vendorOrders.some((vendorOrder) =>
-                ["ACCEPTED", "PREPARING", "READY_FOR_PICKUP", "OUT_FOR_DELIVERY", "DELIVERED"].includes(
-                  vendorOrder.status,
-                ),
+                [
+                  "ACCEPTED",
+                  "PREPARING",
+                  "READY_FOR_PICKUP",
+                  "OUT_FOR_DELIVERY",
+                  "DELIVERED",
+                ].includes(vendorOrder.status),
               )
             }
           />

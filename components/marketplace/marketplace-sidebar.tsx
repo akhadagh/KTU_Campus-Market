@@ -1,239 +1,24 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { PackageSearch, ShoppingBag } from "lucide-react";
-import { ProductCard } from "@/components/commerce/product-card";
-import { MarketplaceSidebar } from "@/components/marketplace/marketplace-sidebar";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { PageHeader } from "@/components/ui/page-header";
-import { Select } from "@/components/ui/select";
-import { getSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/db";
-import { listMarketplaceProducts, listMarketplaceVendors } from "@/lib/marketplace";
-import { conditionLabels } from "@/lib/labels";
-import { connection } from "next/server";
-import { Suspense } from "react";
+import { usePathname } from "next/navigation";
+import {
+  ChevronDown,
+  ChevronRight,
+  LayoutGrid,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ShoppingBag,
+  Store,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Explore marketplace",
-  description: "Browse products and services from verified campus vendors.",
-};
-
-interface MarketplacePageProps {
-  searchParams: Promise<{
-    q?: string;
-    category?: string;
-    condition?: string;
-    sort?: string;
-    page?: string;
-  }>;
-}
-
-const conditionOptions = [
-  "NEW",
-  "LIKE_NEW",
-  "USED_GOOD",
-  "USED_FAIR",
-  "REFURBISHED",
-  "NOT_SPECIFIED",
-];
-
-export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
-  return (
-    <Suspense fallback={<MarketplaceSkeleton />}>
-      <MarketplaceResults searchParams={searchParams} />
-    </Suspense>
-  );
-}
-
-function MarketplaceSkeleton() {
-  return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="skeleton h-10 w-48 rounded-lg" />
-      <div className="mt-6 flex flex-wrap items-start justify-between gap-3">
-        <div className="skeleton h-24 w-28 rounded-xl" />
-      </div>
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-        {[...Array(8)].map((_, index) => (
-          <div key={index} className="skeleton h-72 rounded-xl" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-async function MarketplaceResults({ searchParams }: { searchParams: Promise<MarketplacePageProps["searchParams"]> }) {
-  const params = await searchParams;
-  const query = params.q?.trim() ?? "";
-  const category = params.category ?? "";
-  const condition = params.condition ?? "";
-  const sort = params.sort ?? "newest";
-  const page = Math.max(1, Number(params.page ?? "1") || 1);
-
-  const session = await getSession();
-
-  const [results, categories, frequentlyBoughtTogether, stores] = await Promise.all([
-    listMarketplaceProducts({ q: query, categorySlug: category, condition, sort, page }),
-    prisma.category.findMany({
-      where: { isActive: true, parentId: null },
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        _count: { select: { products: true } },
-        children: {
-          where: { isActive: true },
-          orderBy: { name: "asc" },
-          select: { id: true, name: true, slug: true },
-        },
-      },
-    }),
-    listMarketplaceProducts({ sort: "rating", pageSize: 4 }),
-    listMarketplaceVendors({ pageSize: 6 }),
-  ]);
-
-  const sidebarCategories = categories
-    .filter((item) => !isHiddenCategory(item))
-    .map((item) => ({
-      name: item.name,
-      slug: item.slug,
-      productCount: item._count.products,
-      children: item.children.map((child) => ({
-        name: child.name,
-        slug: child.slug,
-        productCount: child._count.products,
-      })),
-    }));
-
-  const buildUrl = (next: Record<string, string | undefined>) => {
-    const search = new URLSearchParams();
-    if (query) search.set("q", query);
-    if (category) search.set("category", category);
-    if (condition) search.set("condition", condition);
-    if (sort !== "newest") search.set("sort", sort);
-    for (const [key, value] of Object.entries(next)) {
-      if (value) search.set(key, value);
-    }
-    const qs = search.toString();
-    return qs ? `/marketplace?${qs}` : "/marketplace";
-  };
-
-  return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <PageHeader
-        title="Explore marketplace"
-        description="Browse products and services from verified campus vendors."
-      />
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_1fr] lg:gap-8">
-        <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
-          <MarketplaceSidebar
-            categories={sidebarCategories}
-            activeSlug={category}
-            stores={stores.items.map((store) => ({
-              slug: store.slug,
-              storeName: store.storeName,
-              businessCategory: store.businessCategory,
-              productCount: store.productCount,
-            }))}
-            frequentPairs={frequentlyBoughtTogether.map((pair) => ({
-              a: pair.a,
-              b: pair.b,
-              orders: pair.orders,
-            }))}
-          />
-        </aside>
-
-        <div className="min-w-0">
-          <form action="/marketplace" method="get" className="flex flex-wrap items-end gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-[var(--shadow-card)]">
-            <div className="relative w-full">
-              <SearchIcon className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden="true" />
-              <Input
-                id="marketplace-search"
-                name="q"
-                type="search"
-                defaultValue={query}
-                placeholder="Search products and services"
-                className="h-11 rounded-full pl-10 bg-neutral-100"
-              />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-[10rem_1fr]">
-              <div>
-                <label htmlFor="marketplace-condition" className="mb-1 block text-xs font-medium text-neutral-700">
-                  Condition
-                </label>
-                <Select id="marketplace-condition" name="condition" defaultValue={condition} className="h-10 w-full">
-                  <option value="">Any condition</option>
-                  {conditionOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {conditionLabels[option]}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="flex items-end">
-                <Button type="submit" className="h-10 w-full bg-brand-700 text-white font-semibold">
-                  Apply filters
-                </Button>
-              </div>
-            </div>
-          </form>
-
-          <div className="mt-4 flex items-center justify-between text-sm text-neutral-600">
-            <span>
-              {results.total} listing{results.total === 1 ? "" : "s"}
-              {query ? ` for “${query}”` : ""}
-            </span>
-            <span>Page {results.page} of {results.pages}</span>
-          </div>
-
-          {results.items.length === 0 ? (
-            <div className="mt-4">
-              <EmptyState icon={PackageSearch} title="No listings match those filters" description="Try another category, clear the filters, or browse what other students are buying." action={<Link href="/marketplace" className={buttonVariants()}>Clear filters</Link>} />
-            </div>
-          ) : (
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-              {results.items.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-
-          {results.pages > 1 ? (
-            <nav aria-label="Pagination" className="mt-8 flex items-center justify-between">
-              {results.page > 1 ? (
-                <Link href={buildUrl({ page: String(results.page - 1) })} className={buttonVariants({ variant: "outline" })}>
-                  Previous
-                </Link>
-              ) : (
-                <span />
-              )}
-              <span className="text-sm text-neutral-600">Page {results.page} of {results.pages}</span>
-              {results.page < results.pages ? (
-                <Link href={buildUrl({ page: String(results.page + 1) })} className={buttonVariants({ variant: "outline" })}>
-                  Next
-                </Link>
-              ) : (
-                <span />
-              )}
-            </nav>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export interface CategorySidebarItem {
+export interface SidebarCategory {
   name: string;
   slug: string;
   productCount: number;
-  children: {
-    name: string;
-    slug: string;
-    productCount: number;
-  }[];
+  children: { name: string; slug: string; productCount: number }[];
 }
 
 export interface SidebarStore {
@@ -249,128 +34,259 @@ export interface FrequentPair {
   orders: number;
 }
 
-function MarketplaceSidebar({
+export function MarketplaceSidebar({
   categories,
   activeSlug,
   stores,
   frequentPairs,
 }: {
-  categories: CategorySidebarItem[];
+  categories: SidebarCategory[];
   activeSlug: string;
   stores: SidebarStore[];
   frequentPairs: FrequentPair[];
 }) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(true);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <>
-      <button type="button" onClick={() => setOpen((o) => !open)} className="focus-visible:ring-brand-500 flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 transition-colors focus-visible:ring-2 focus-visible:outline-none">
-        <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden="true" />
-        <span className="hidden sm:block text-sm font-semibold text-neutral-900">Categories</span>
-        {open ? <ChevronUp className="h-4 w-4" aria-hidden="true" /> : <ChevronRight className="h-4 w-4" aria-hidden="true" />}
-      </button>
-      <nav className={cn(
-        "fixed inset-y-0 left-0 z-50 flex-col bg-white shadow-2xl transition-all duration-300",
-        open ? "w-[260px] translate-x-0" : "-translate-x-full hidden lg:block"
-      )}>
-        <div className="flex items-center justify-between gap-3 px-4 py-4 border-b border-neutral-200">
-          <div className="flex items-center gap-2">
-            <JumartMark className="h-8 w-12" />
-            <JumartWordmark className="text-2xl font-bold tracking-tight text-brand-700" />
-          </div>
-          <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation" className="grid h-9 w-9 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-100 focus-visible:ring-brand-500/30 focus-visible:ring-2 focus-visible:outline-none">
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="px-2 pb-2 text-xs font-semibold tracking-wide text-neutral-400 uppercase">Categories</p>
-          <ul className="space-y-1">
-            {categories.map((category) => (
+  const isActive = (href: string) =>
+    href === pathname || (href !== "/" && pathname.startsWith(`${href}/`));
+  const allCategoriesActive = activeSlug === "" && pathname === "/marketplace";
+
+  const body = (
+    <div className="space-y-6">
+      <section>
+        <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-neutral-900">
+          <LayoutGrid className="text-brand-600 h-4 w-4" aria-hidden="true" />
+          Categories
+        </p>
+        <ul className="space-y-1">
+          <li>
+            <Link
+              href="/marketplace"
+              onClick={() => setMobileOpen(false)}
+              aria-current={allCategoriesActive ? "page" : undefined}
+              className={cn(
+                "flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                allCategoriesActive
+                  ? "bg-brand-700 text-white"
+                  : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900",
+              )}
+            >
+              All categories
+              <span
+                className={cn(
+                  "text-xs",
+                  allCategoriesActive ? "text-white/70" : "text-neutral-400",
+                )}
+              >
+                {categories.reduce((total, category) => total + category.productCount, 0)}
+              </span>
+            </Link>
+          </li>
+          {categories.map((category) => {
+            const active = isActive(`/categories/${category.slug}`);
+            const isExpanded = expanded === category.slug;
+            return (
               <li key={category.slug}>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setExpandedCategory(expandedCategory === category.slug ? null : category.slug)}
-                    aria-expanded={expandedCategory === category.slug}
-                    className="flex w-full items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-medium transition-colors"
+                <div className="flex items-center gap-1">
+                  <Link
+                    href={`/marketplace?category=${category.slug}`}
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-medium transition-colors",
-                      activeSlug === category.slug ? "bg-brand-50 text-brand-700" : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+                      "flex flex-1 items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-brand-700 text-white"
+                        : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900",
                     )}
                   >
-                    <span className="truncate text-sm">{category.name}</span>
-                    <span className="text-xs text-neutral-400">{category.productCount}</span>
-                    <ChevronDown className="h-3 w-3 shrink-0 text-neutral-400" aria-hidden="true" />
-                  </button>
-                  {expandedCategory === category.slug && category.children.length > 0 ? (
-                    <ul className="mt-1 space-y-1">
-                      {category.children.map((child) => (
-                        <li key={child.slug}>
-                          <Link
-                            href={`/marketplace?category=${child.slug}`}
-                            className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 hover:text-brand-700"
-                          >
-                            <span className="truncate">{child.name}</span>
-                            <span className="text-xs text-neutral-400">{child.productCount}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+                    <span className="truncate">{category.name}</span>
+                    <span className={cn("text-xs", active ? "text-white/70" : "text-neutral-400")}>
+                      {category.productCount}
+                    </span>
+                  </Link>
+                  {category.children.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(isExpanded ? null : category.slug)}
+                      aria-expanded={isExpanded}
+                      aria-label={
+                        isExpanded ? `Collapse ${category.name}` : `Expand ${category.name}`
+                      }
+                      className="grid h-8 w-8 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-100"
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
                   ) : null}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold text-neutral-900">Stores in the Marketplace</p>
-            <Badge variant="muted">{stores.length}</Badge>
-          </div>
+                </div>
+                {isExpanded && category.children.length > 0 ? (
+                  <ul className="mt-1 ml-3 space-y-1 border-l border-neutral-200 pl-3">
+                    {category.children.map((child) => (
+                      <li key={child.slug}>
+                        <Link
+                          href={`/marketplace?category=${child.slug}`}
+                          onClick={() => setMobileOpen(false)}
+                          className="hover:text-brand-700 flex items-center justify-between rounded-lg px-2 py-1.5 text-xs text-neutral-600"
+                        >
+                          <span className="truncate">{child.name}</span>
+                          <span className="text-neutral-400">{child.productCount}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section>
+        <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-neutral-900">
+          <Store className="text-brand-600 h-4 w-4" aria-hidden="true" />
+          Stores in the market
+        </p>
+        {stores.length === 0 ? (
+          <p className="px-1 text-xs text-neutral-500">No stores are approved yet.</p>
+        ) : (
           <ul className="space-y-1">
             {stores.map((store) => (
               <li key={store.slug}>
                 <Link
                   href={`/stores/${store.slug}`}
-                  className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:text-brand-700"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-start justify-between gap-2 rounded-xl px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-neutral-900">{store.storeName}</p>
-                    {store.businessCategory ? (
-                      <p className="text-xs text-neutral-500">{store.businessCategory}</p>
-                    ) : null}
-                    <span className="text-xs font-medium text-neutral-700">{store.productCount}</span>
-                  </div>
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{store.storeName}</span>
+                    <span className="block truncate text-xs text-neutral-500">
+                      {store.businessCategory ?? "Campus store"}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-xs text-neutral-400">{store.productCount}</span>
                 </Link>
               </li>
             ))}
           </ul>
-        </div>
-        {frequentPairs.length > 0 ? (
-          <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-neutral-900">
-            <ShoppingBag className="h-4 w-4 text-accent-500" aria-hidden="true" />
-            Frequently Bought Together
-          </div>
-          <div className="mt-2 space-y-2">
-            {frequentPairs.map(({ productA, productB }) => (
-              <li key={`${productA.slug}-${productB.slug}`}>
-                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white p-3">
-                  <div className="min-w-0 flex-1">
-                    <Link href={`/products/${productA.slug}`} className="text-sm font-semibold text-neutral-900 hover:underline">
-                      {productA.name}
-                    </Link>
-                    <span className="text-xs text-neutral-500">{formatPesewas(productA.pricePesewas)}</span>
-                  </div>
-                  <div className="min-w-0 flex-1 text-right">
-                    <Link href={`/products/${productB.slug}`} className="text-sm font-medium text-neutral-900 hover:underline">
-                      {productB.name}
-                    </Link>
-                  </div>
+        )}
+      </section>
+
+      {frequentPairs.length > 0 ? (
+        <section>
+          <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-neutral-900">
+            <ShoppingBag className="text-accent-500 h-4 w-4" aria-hidden="true" />
+            Frequently bought together
+          </p>
+          <ul className="space-y-2">
+            {frequentPairs.map((pair) => (
+              <li
+                key={`${pair.a.slug}-${pair.b.slug}`}
+                className="rounded-xl border border-neutral-200 p-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Link href={`/products/${pair.a.slug}`} className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-neutral-900">{pair.a.name}</p>
+                  </Link>
+                  <span className="text-xs text-neutral-400">+</span>
+                  <Link href={`/products/${pair.b.slug}`} className="min-w-0 flex-1 text-right">
+                    <p className="truncate text-xs font-medium text-neutral-900">{pair.b.name}</p>
+                  </Link>
                 </div>
-              ))}
-            </ul>
-          ) : null}
+                <p className="mt-1 text-[11px] text-neutral-500">
+                  Bought together in {pair.orders} order{pair.orders === 1 ? "" : "s"}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="focus-visible:ring-brand-500/30 inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:outline-none"
+      >
+        {open ? (
+          <PanelLeftClose className="h-4 w-4" aria-hidden="true" />
+        ) : (
+          <PanelLeftOpen className="h-4 w-4" aria-hidden="true" />
+        )}
+        {open ? "Hide categories" : "Show categories"}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className="focus-visible:ring-brand-500/30 inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:outline-none lg:hidden"
+      >
+        <PanelLeftOpen className="h-4 w-4" aria-hidden="true" />
+        Browse
+      </button>
+
+      {mobileOpen ? (
+        <div
+          className="bg-brand-900/40 fixed inset-0 z-40 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      ) : null}
+
+      <div className={cn("transition-all duration-300", open ? "lg:w-72" : "lg:w-14")}>
+        <div className="hidden lg:block">
+          <div
+            className={cn(
+              "overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-[var(--shadow-card)] transition-all",
+              open ? "opacity-100" : "h-auto p-2 opacity-0",
+            )}
+            aria-hidden={!open}
+          >
+            {open ? (
+              body
+            ) : (
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                aria-label="Expand categories"
+                className="grid h-9 w-9 place-items-center rounded-lg text-neutral-600 hover:bg-neutral-100"
+              >
+                <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
+          </div>
         </div>
-      </nav>
+
+        <div
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 w-[84%] max-w-xs transform bg-white p-4 shadow-2xl transition-transform duration-300 lg:hidden",
+            mobileOpen ? "translate-x-0" : "-translate-x-full",
+          )}
+          aria-label="Marketplace navigation"
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-sm font-bold text-neutral-900">Browse</p>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close navigation"
+              className="grid h-9 w-9 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-100"
+            >
+              <PanelLeftClose className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+          <div className="max-h-[calc(100vh-5rem)] overflow-y-auto">{body}</div>
+        </div>
+      </div>
     </>
   );
 }

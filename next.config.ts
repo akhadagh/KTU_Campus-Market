@@ -10,7 +10,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://api.paystack.co https://generativelanguage.googleapis.com",
+  "connect-src 'self' https://api.paystack.co",
   "frame-src 'self' https://checkout.paystack.com https://*.paystack.com",
   "form-action 'self' https://checkout.paystack.com",
   "base-uri 'self'",

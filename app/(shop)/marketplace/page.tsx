@@ -58,7 +58,7 @@ function MarketplaceSkeleton() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="skeleton h-10 w-64 rounded-lg" />
       <div className="skeleton mt-6 h-12 w-full rounded-2xl" />
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {Array.from({ length: 8 }).map((_, index) => (
           <div key={index} className="skeleton h-72 rounded-xl" />
         ))}
@@ -139,7 +139,7 @@ async function MarketplaceResults({
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title="Explore marketplace"
         description="Live listings from approved campus vendors. Search from the header, then narrow the results here."
@@ -245,7 +245,7 @@ async function MarketplaceResults({
               />
             </div>
           ) : (
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
               {results.items.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -321,7 +321,7 @@ async function MarketplaceResults({
               <p className="mt-1 text-sm text-neutral-600">
                 The listings students are rating highest this week.
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {shelf.items.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

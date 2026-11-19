@@ -19,8 +19,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         Skip to content
       </a>
 
-      <aside className="mesh-panel hidden flex-col justify-between p-10 text-white lg:flex">
-        <Link href="/" className="flex items-center gap-2" aria-label="JUMART home">
+      <aside
+        className="relative hidden flex-col justify-between bg-cover bg-center p-10 text-white lg:flex"
+        style={{ backgroundImage: "url(/campus.svg)" }}
+      >
+        <div
+          className="from-brand-900/90 via-brand-900/70 to-accent-700/55 absolute inset-0 bg-gradient-to-br"
+          aria-hidden="true"
+        />
+        <Link href="/" className="relative z-10 flex items-center gap-2" aria-label="JUMART home">
           <JumartMark variant="light" className="h-10 w-10" />
           <div>
             <JumartWordmark tone="light" className="text-2xl" />
@@ -30,7 +37,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </div>
         </Link>
 
-        <div className="max-w-md">
+        <div className="relative z-10 max-w-md">
           <p className="text-brand-200 text-sm font-medium">Welcome to JUMART</p>
           <p className="mt-3 text-3xl font-semibold tracking-tight">
             Your Campus. Your Marketplace.
@@ -48,14 +55,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </ul>
         </div>
 
-        <p className="text-brand-200 text-xs">
-          Payments, verification and AI features are enabled only when their providers are
-          configured.
+        <p className="text-brand-200 relative z-10 text-xs">
+          Payments and verification are enabled only when their providers are configured.
         </p>
       </aside>
 
       <div className="flex items-center justify-center px-4 py-10 sm:px-6">
         <main id="main-content" className="w-full max-w-md">
+          <div
+            className="mb-6 h-44 w-full rounded-2xl bg-cover bg-center shadow-[var(--shadow-card)] lg:hidden"
+            style={{ backgroundImage: "url(/campus.svg)" }}
+            aria-hidden="true"
+          />
           <div className="mb-8 lg:hidden">
             <Link href="/" className="flex items-center gap-2" aria-label="JUMART home">
               <JumartMark className="h-9 w-9" />

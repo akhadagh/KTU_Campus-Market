@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | JUMART",
   },
   description:
-    "JUMART connects students, vendors and service providers on one campus marketplace. Buy and sell laptops, fashion, food, study materials and airtime bundles, all around your campus.",
+    "JUMART connects students, vendors and service providers on one campus marketplace. Buy and sell laptops, fashion, food and study materials, all around your campus.",
   applicationName: "JUMART",
   keywords: [
     "JUMART",
@@ -27,7 +27,6 @@ export const metadata: Metadata = {
     "student marketplace",
     "Ghana",
     "buy and sell on campus",
-    "airtime bundles",
     "past questions",
   ],
   authors: [{ name: "JUMART" }],
