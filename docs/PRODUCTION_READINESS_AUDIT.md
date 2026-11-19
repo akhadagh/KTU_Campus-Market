@@ -140,6 +140,19 @@ All P0 and P1 findings listed below are now **fixed and verified**. The remainin
 | Checkout offers only KTU Main Campus pickup points | PASS |
 | Demo stores are hidden by default; the genuine seeded stores are live | PASS |
 
+### 3b. Live production verification (2026-11-19, deploy `7a8e13e`)
+
+| Check | Result |
+|---|---|
+| `/api/health` reports `database: ok`, `payments: configured`, and no `ai` check | PASS |
+| `/assistant` → `404` | PASS |
+| `/marketplace` renders 44 product links with no airtime category and no assistant link | PASS |
+| `/categories` hides the airtime category | PASS |
+| `/airtime` lists the verified merchants (TeleLink Data Point, Kwame's Data Spot) | PASS |
+| `/login` and the home hero render `campus.svg` | PASS |
+| `/sell` is public (`200`); `/admin/settings` redirects anonymous visitors (`307`) | PASS |
+| Anonymous header hides Messages/Notifications/Account/Wishlist; an authenticated session shows them | PASS |
+
 ---
 
 ## 4. Database review
